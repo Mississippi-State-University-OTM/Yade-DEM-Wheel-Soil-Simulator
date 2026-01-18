@@ -147,7 +147,7 @@ def PIDcontroller():
     torque=kp*diff+ki*integral+kd*(diff-diff0)/O.dt
     O.engines [5].moment=(torque,0,0)
     #print O.iter,diff,integral,torque
-    diff@=diff
+    diff0=diff
 
 O.engines+=[PyRunner(command='PIDcontroller()',iterPeriod=1,firstIterRun=waitfor+1)]
 globals()['diff0']=locals()['diff0']
