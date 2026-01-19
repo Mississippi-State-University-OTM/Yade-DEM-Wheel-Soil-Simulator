@@ -76,9 +76,9 @@ O.engines = [
     ),
     PyRunner(command='addforce()',iterPeriod=1,firstIterRun=waitfor,dead=False), # dead=True for constant wheel slip
     PyRunner(command='addvforce()',iterPeriod=1,firstIterRun=waitfor//2+20000,dead=False),
-    TorqueEngine(ids=[0+1],moment=(0,0,0)), # give torque on wheel, which controlled by PIDcontroller()
+    TorqueEngine(ids=[o+1],moment=(0,0,0)), # give torque on wheel, which controlled by PIDcontroller()
     NewtonIntegrator(gravity=(0,0,-9.81),damping=0.0), # calculate forces and give gravity force
-    RotationEngine(ids = [0+1], angularVelocity = 0,dead=False), # used to fix wheel at consolidation step
+    RotationEngine(ids = [o+1], angularVelocity = 0,dead=False), # used to fix wheel at consolidation step
     PyRunner(command='tirepos0()',iterPeriod=1,nDo=waitfor -1,dead=False),
     PyRunner(command='tirepos()',iterPeriod=1,firstIterRun=waitfor),
     PyRunner(command='savefile1s()', iterPeriod=1,firstIterRun=waitfor//2,nDo=1,dead=False),
@@ -161,7 +161,7 @@ def heightadjuster():
         if O.bodies[i].state.pos[2]>hh:
             hh=O.bodies[i].state.pos[2]
             r=O.bodies[i].shape.radius
-    O.bodies[0+1].state.pos=Vector3(0,-0.35,hh+r+radius+lugh+.0001)
+    O.bodies[o+1].state.pos=Vector3(0,-0.35,hh+r+radius+lugh+.0001)
 
 globals()['heightadjuster']=locals()['heightadjuster']
 def timecalculator():
@@ -230,7 +230,9 @@ plot.plot()
 O.saveTmp()
 # display GUI controller
 yade.qt.Controller()
+# qt.Controller() ## for new version of YADE, says copilot
 # run the simulation
-O.run()
 # stop the simulation after 450001 time steps
-O.stopAtIter=450001
+O.stopAtIter=450001 ## set stopAfter before run, says copilot
+O.run()
+## O.stopAtIter=450001
