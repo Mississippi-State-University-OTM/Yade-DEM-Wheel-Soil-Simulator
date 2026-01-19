@@ -157,11 +157,14 @@ globals()['PIDcontroller']=locals()['PIDcontroller']
 # move wheel to the surface of soil
 def heightadjuster():
     hh=-.5/2
+    idx = None
     for i in range(o+2,o+2+elenum):
         if O.bodies[i].state.pos[2]>hh:
             hh=O.bodies[i].state.pos[2]
-            r=O.bodies[i].shape.radius
-    O.bodies[o+1].state.pos=Vector3(0,-0.35,hh+r+radius+lugh+.0001)
+            idx=i
+    if idx is not None:
+        r=O.bodies[idx].shape.radius
+        O.bodies[o+1].state.pos=Vector3(0,-0.35,hh+r+radius+lugh+.0001)
 
 globals()['heightadjuster']=locals()['heightadjuster']
 def timecalculator():
