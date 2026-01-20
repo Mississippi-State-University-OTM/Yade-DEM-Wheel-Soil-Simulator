@@ -16,7 +16,9 @@ lugt=.005 # lug thickness
 angvel =.138*20 # (rad/s)
 tractionf=4.9 # traction load: 0.0, 4.9, 9.8, 12.5, 14.7 N
 segnum=18 # the number of partitions of wheel (the number of lugs)
-partnum=80000 # the number of particles
+pscale=1.0 # particle scale
+partnum=round(80000/pscale**3) # the number of particles
+print(f"number of particles, requested {partnum}")
 wheelweight=.5 # the weight of wheel
 wheeldensity=wheelweight/((width*radius*4*math.pi*radius/(1.95* segnum)+width*2*lugh*lugt)*segnum)
 timestep=.00001 #when changed, interperiod in forcerecorder,xyzforce,slipplot should also be changed
@@ -48,6 +50,8 @@ O.bodies.append([box((0,-.35+hr*math.cos((segnum-1+.5)*2*math.pi/segnum),-.5/2+.
 O.bodies.appendClumped([box((0,-.35+radius*math.cos((segnum-1)*2*math.pi/segnum),-.5/2+.23+.12+hplus+radius*math.sin((segnum-1)*2*math.pi/segnum)),
                             (hw,lugh,lugt/2),orientation=Quaternion((1,0,0), (segnum-1)*2*math.pi/segnum),color=(.7,.7,.7),material='wheelmat')])
 o=9+2* segnum
+print(f"number of objects {o}")
+
 clump=O.bodies[o+1]
 i=10
 while 9<i<o:
@@ -56,14 +60,17 @@ while 9<i<o:
 # create empty sphere packing
 # sphere packing is not equivalent to particles in simulation, it contains only the pure geometry
 sp=pack.SpherePack()
-S1r=pack.SpherePack([((0,0,0),.00225)])
-S1=pack.SpherePack([((0,0,0),.0025)])
-S1R=pack.SpherePack ([((0,0,0),.00275)])
+S1r=pack.SpherePack([((0,0,0),pscale*.00225)])
+S1=pack.SpherePack([((0,0,0),pscale*.0025)])
+S1R=pack.SpherePack ([((0,0,0),pscale*.00275)])
 # generate randomly spheres with uniform radius distribution
 sp.makeClumpCloud((-.15/2,-1./2,-.5/2),(.15/2,1./2,-.5/2+.225513+hplus),[S1,S1r,
     S1R],num=partnum)
 # add the sphere pack to the simulation
 sp.toSimulation(color=(.6,.57,.53))
+nb=len(O.bodies);
+print(f"numdber of bodies {nb}")
+
 # engines which run while simulation
 O.engines = [
     ForceResetter(),
