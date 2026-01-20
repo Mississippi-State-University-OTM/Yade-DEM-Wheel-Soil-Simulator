@@ -16,7 +16,7 @@ lugt=.005 # lug thickness
 angvel =.138*20 # (rad/s)
 tractionf=4.9 # traction load: 0.0, 4.9, 9.8, 12.5, 14.7 N
 segnum=18 # the number of partitions of wheel (the number of lugs)
-elenum=80000 # the number of particles
+partnum=80000 # the number of particles
 wheelweight=.5 # the weight of wheel
 wheeldensity=wheelweight/((width*radius*4*math.pi*radius/(1.95* segnum)+width*2*lugh*lugt)*segnum)
 timestep=.00001 #when changed, interperiod in forcerecorder,xyzforce,slipplot should also be changed
@@ -61,7 +61,7 @@ S1=pack.SpherePack([((0,0,0),.0025)])
 S1R=pack.SpherePack ([((0,0,0),.00275)])
 # generate randomly spheres with uniform radius distribution
 sp.makeClumpCloud((-.15/2,-1./2,-.5/2),(.15/2,1./2,-.5/2+.225513+hplus),[S1,S1r,
-    S1R],num=elenum)
+    S1R],num=partnum)
 # add the sphere pack to the simulation
 sp.toSimulation(color=(.6,.57,.53))
 # engines which run while simulation
@@ -158,7 +158,7 @@ globals()['PIDcontroller']=locals()['PIDcontroller']
 def heightadjuster():
     hh=-.5/2
     idx = None
-    for i in range(o+2,o+2+elenum):
+    for i in range(o+2,o+2+partnum):
         if O.bodies[i].state.pos[2]>hh:
             hh=O.bodies[i].state.pos[2]
             idx=i
