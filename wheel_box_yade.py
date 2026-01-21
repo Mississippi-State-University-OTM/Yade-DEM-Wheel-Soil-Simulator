@@ -64,8 +64,10 @@ S1r=pack.SpherePack([((0,0,0),pscale*.00225)])
 S1=pack.SpherePack([((0,0,0),pscale*.0025)])
 S1R=pack.SpherePack ([((0,0,0),pscale*.00275)])
 # generate randomly spheres with uniform radius distribution
-sp.makeClumpCloud((-.15/2,-1./2,-.5/2),(.15/2,1./2,-.5/2+.225513+hplus),[S1,S1r,
-    S1R],num=partnum)
+sp.makeClumpCloud((-.15/2, -1./2, -.5/2),
+                  ( .15/2,  1./2, -.5/2+.225513+hplus),
+                  [S1, S1r, S1R],
+                  num=partnum, seed=12345)
 # add the sphere pack to the simulation
 sp.toSimulation(color=(.6,.57,.53))
 nb=len(O.bodies);
