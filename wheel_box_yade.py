@@ -4,6 +4,7 @@ from yade import pack,plot,qt
 import numpy as np
 import math,time
 
+plotLive=False # show live plot window during simulation
 # variable for timecalculator()
 timestart=time.time()
 # the unit of length is m
@@ -25,8 +26,8 @@ timestep=.00001 #when changed, interperiod in forcerecorder,xyzforce,slipplot sh
 waitfor=200000 # the time step for beginning of wheel rotate
 hplus=0.5 # the height of wheel at the start of simulation
 # file name of force data file and simulation data file
-fileName='PIDrotateing_lugged_boxtire_en_10mm_rimang_'+str(tractionf)+'N_d220_.5MPasoil_kr.00005_r.00225.0025.00275_d500g1GPawheel_.5MPawall_fr0compaction_fri36.7_2830den_' # may be changed
-savefileName='PIDrotateing_lugged_boxtire_en_10mm_rimang_d220_.5MPasoil_kr.00005_r.00225.0025.00275_d500g1GPawheel_.5MPawall_fr0compaction_fri36.7_2830den_' # may be changed
+fileName='PIDrotate_tractionF_'+str(tractionf)+'N' # may be changed
+savefileName='save' # may be changed
 
 # specify materials
 O.materials.append(FrictMat(density=wheeldensity,frictionAngle=math.atan(.5), young=1e9,poisson=0.3,label='wheelmat'))
@@ -99,10 +100,8 @@ O.engines = [
     PyRunner(command='time2s=time.time()', iterPeriod=1,firstIterRun=waitfor,nDo=1,dead=False),
     PyRunner(command='timefinish=time.time()', iterPeriod=1,firstIterRun=450000,nDo = 1,dead=False),
     PyRunner(command='timecalculator()', iterPeriod=1,firstIterRun=450000,nDo=1,dead=False),
-    VTKRecorder(fileName='3d-vtk-'+fileName,recorders=['all'],iterPeriod=5000,firstIterRun=waitfor//2,dead=False),
-    # save data from Yade's own 3d view
-    qt.SnapshotEngine(fileBase='3d-'+fileName,iterPeriod=1,firstIterRun=450001,label='snapshot',dead=False),
-    PyRunner(command='plot.saveDataTxt("plot_"+fileName+".txt")', iterPeriod=1,firstIterRun=450000,nDo=1,dead=False)
+    PyRunner(command='plot.saveDataTxt("plot_end.txt")', iterPeriod=1,firstIterRun=450000,nDo=1,dead=False),
+    PyRunner(command='plot.plot(noShow=True).savefig("plot_end.pdf")', iterPeriod=1,firstIterRun=450000,nDo=1,dead=False)
 ]
 # specify time increments
 O.dt=timestep
@@ -237,7 +236,8 @@ plot.plots={
     't':('Fx','Fy','Fz','grosstraction','motionresistance'),'i':('h','slip')
 }
 # show the plot on the screen, and update while the simulation runs
-plot.plot()
+if plotLive:
+    plot.plot()
 # save simulation to memory
 O.saveTmp()
 # display GUI controller
