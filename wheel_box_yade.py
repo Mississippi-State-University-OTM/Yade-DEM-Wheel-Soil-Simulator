@@ -77,7 +77,7 @@ sp.makeClumpCloud((-.15/2, -1./2, -.5/2),
 # add the sphere pack to the simulation
 sp.toSimulation(color=(.6,.57,.53))
 nb=len(O.bodies);
-print(f"numdber of bodies {nb}")
+print(f"number of bodies {nb}")
 
 # engines which run while simulation
 O.engines = [
@@ -139,10 +139,10 @@ def tirepos0():
     clump.state.pos=(0,-.35,clump.state.pos[2])
 
 def savefile1s():
-    O.save(savefileName+'1s_.bz2')
+    O.save(savefileName+'_1s.bz2')
 
 def savefile2s():
-    O.save(savefileName+'2s_.bz2')
+    O.save(savefileName+'_2s.bz2')
 
 diff0=0
 integral=0
@@ -191,7 +191,7 @@ def timecalculator():
     print('0s to 2s: {0} s'.format(time0sto2s))
     print('0s to finish: {0} s'.format(time0stofinish))
     print('2s to finish: {0} s'.format(time2stofinish))
-    f = open('caltime_'+fileName,'w')
+    f = open('calltime_'+fileName+'.txt','w')
     f.write('0s to 1s: {0} s\n'.format(time0sto1s))
     f.write('0s to 2s: {0} s\n'.format(time0sto2s))
     f.write('0s to finish: {0} s\n'.format(time0stofinish))
