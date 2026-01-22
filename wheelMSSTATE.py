@@ -13,7 +13,7 @@ objScale = 1.0                     # Scale OBJ on import
 objShift = Vector3(0,0,0)          # Shift OBJ after import
 
 # --- Rigid body properties ---
-cylMass = 10.0                     # Rigid-body mass
+cylMass = 100.0                    # Rigid-body mass
 cylInertia = (1,1,1)               # Override inertia tensor
 startHeight = 3.0                  # Drop height
 
@@ -68,6 +68,42 @@ def triangulate_cap(z, segments, r, material, upward):
 ###############################################
 facets = []
 
+
+############################################################
+# CHECK AND FIX INVERTED NORMALS FOR OBJ-IMPORTED FACETS
+############################################################
+def fix_normals(facetList):
+    """
+    Ensure all facets point outward by flipping those whose
+    normals point inward based on object centroid.
+    """
+    # Compute centroid of all vertices
+    allVerts = []
+    for f in facetList:
+        for v in f.shape.vertices:
+            allVerts.append(v)
+    if not allVerts:
+        return facetList
+
+    centroid = sum(allVerts, Vector3.Zero) / len(allVerts)
+
+    def facet_normal(f):
+        v = f.shape.vertices
+        p0, p1, p2 = v[0], v[1], v[2]
+        return (p1 - p0).cross(p2 - p0)
+
+    for f in facetList:
+        v = f.shape.vertices
+        fCenter = (v[0] + v[1] + v[2]) / 3.0
+        outward = (fCenter - centroid)
+        n = facet_normal(f)
+
+        # If dot < 0 → normal points toward centroid → needs flipping
+        if n.dot(outward) < 0:
+            f.shape.vertices = [v[0], v[2], v[1]]   # swap to flip orientation
+
+    return facetList
+
 if useOBJ:
     #
     # YADE imports triangulated OBJ/STL-like meshes using ymport.stl
@@ -83,6 +119,11 @@ if useOBJ:
         fixed=False,
         noBound=False
     )
+
+    print("Checking OBJ facet normals...")
+    facets = fix_normals(facets)
+    print("OBJ facet normals validated / corrected.")
+
     print("Imported", len(facets), "facets from OBJ.")
 else:
     # --- Procedural closed cylinder ---
@@ -112,8 +153,10 @@ else:
 # YADE 2022.01 requires non‑zero mass for clumped facets. [1](https://answers.launchpad.net/yade/+question/696056)
 
 for f in facets:
-    f.state.mass    = 100.0
+    # not used, using body mass and inertia instead
+    f.state.mass    = 1.0
     f.state.inertia = (1,1,1)
+    f.shape.wire = False
 
 ###############################################
 # CREATE RIGID CLUMP
