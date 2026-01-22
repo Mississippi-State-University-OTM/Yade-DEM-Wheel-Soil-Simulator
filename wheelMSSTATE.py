@@ -13,22 +13,22 @@ objScale = 1.0                     # Scale OBJ on import
 objShift = Vector3(0,0,0)          # Shift OBJ after import
 
 # --- Rigid body properties ---
-cylMass = 100.0                    # Rigid-body mass
+cylMass = 500.0                    # Rigid-body mass
 cylInertia = (10000,10000,10000)   # Override inertia tensor
-startHeight =  2.0                 # Drop height
+startHeight =  1.8                 # Drop height
 startY      = -1.5                 # Starting y-coordinate
 
 # --- Procedural-cylinder fallback parameters ---
 radius   = 0.5
-height   = 2.0
-segments = 40                      # Cylinder resolution
+height   = 0.25
+segments = 20                      # Cylinder resolution
 
 # Particle parameters
 rMean    = 0.05
 rRelFuzz = 0.3
 
 # Box interior region (open top)
-boxX = 2.0
+boxX = 0.5
 boxY = 2.0
 boxZ = 1.5   # height of box
 
@@ -247,7 +247,7 @@ clump.state.inertia = cylInertia
 clump.state.pos     = Vector3(0,startY,startHeight)
 
 # No initial angular velocity
-clump.state.angVel = Vector3(-50,0,0)
+clump.state.angVel = Vector3(-25,0,0)
 clump.state.vel = Vector3(0,0,0)
 
 # Allow *ONLY* translation in Z direction: block X,Y & all rotations including about Z
@@ -309,3 +309,4 @@ O.dt = 0.5 * utils.PWaveTimeStep()
 
 # save simulation to memory
 O.saveTmp()
+O.stopAtIter=30000
