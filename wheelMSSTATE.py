@@ -2,15 +2,25 @@
 from yade import *
 import math
 
-###############################################
-# PARAMETERS
-###############################################
+############################################################
+# USER OPTIONS
+############################################################
+
+# --- Cylinder source ---
+useOBJ = False                     # Set False → use procedural cylinder
+objFile = "cylinder.obj"           # Your triangulated OBJ mesh
+objScale = 1.0                     # Scale OBJ on import
+objShift = Vector3(0,0,0)          # Shift OBJ after import
+
+# --- Rigid body properties ---
+cylMass = 10.0                     # Rigid-body mass
+cylInertia = (1,1,1)               # Override inertia tensor
+startHeight = 3.0                  # Drop height
+
+# --- Procedural-cylinder fallback parameters ---
 radius   = 0.5
 height   = 2.0
-segments = 40
-cylMass  = 1000.0
-cylInertia = (1,1,1)          # override later as clump inertia
-startHeight = 3.0             # cylinder starting height
+segments = 40                      # Cylinder resolution
 
 # Particle parameters
 rMean    = 0.05
@@ -37,7 +47,7 @@ def ringPoint(angle, r, z):
     return Vector3(r*math.cos(angle), r*math.sin(angle), z)
 
 def triangulate_cap(z, segments, r, material, upward):
-    """Create triangulated circular cap with correct normal direction."""
+    """Create triangulated circular cap."""
     facets = []
     center = Vector3(0,0,z)
     dth = 2*math.pi/segments
@@ -54,43 +64,65 @@ def triangulate_cap(z, segments, r, material, upward):
     return facets
 
 ###############################################
-# BUILD CLOSED CYLINDER (side + top + bottom)
+# IMPORT CYLINDER FROM OBJ OR BUILD PROCEDURALLY
 ###############################################
 facets = []
 
+if useOBJ:
+    #
+    # YADE imports triangulated OBJ/STL-like meshes using ymport.stl
+    # as shown in mesh‑import examples. 
+    #
+    from yade import ymport
+    facets = ymport.stl(
+        objFile,
+        scale=objScale,
+        shift=objShift,
+        material=idCylMat,
+        dynamic=None,
+        fixed=False,
+        noBound=False
+    )
+    print("Imported", len(facets), "facets from OBJ.")
+else:
+    # --- Procedural closed cylinder ---
+    dth = 2*math.pi/segments
+
 # ---- Side facets ----
-dth = 2*math.pi/segments
-for i in range(segments):
-    a1 = i*dth
-    a2 = (i+1)*dth
-    b1 = ringPoint(a1, radius, 0)
-    b2 = ringPoint(a2, radius, 0)
-    t1 = ringPoint(a1, radius, height)
-    t2 = ringPoint(a2, radius, height)
+    for i in range(segments):
+        a1 = i*dth
+        a2 = (i+1)*dth
+        b1 = ringPoint(a1, radius, 0)
+        b2 = ringPoint(a2, radius, 0)
+        t1 = ringPoint(a1, radius, height)
+        t2 = ringPoint(a2, radius, height)
 
-    facets.append(facet([b1, b2, t1], material=idCylMat))
-    facets.append(facet([b2, t2, t1], material=idCylMat))
+        facets.append(facet([b1, b2, t1], material=idCylMat))
+        facets.append(facet([b2, t2, t1], material=idCylMat))
 
-# ---- Caps ----
-facets += triangulate_cap(0, segments, radius, idCylMat, upward=False)  # bottom
-facets += triangulate_cap(height, segments, radius, idCylMat, upward=True)  # top
+    # Bottom + top caps
+    facets += triangulate_cap(0, segments, radius, idCylMat, upward=False)
+    facets += triangulate_cap(height, segments, radius, idCylMat, upward=True)
+
+    print("Procedural cylinder:", len(facets), "facets.")
 
 ###############################################
 # ASSIGN MASS BEFORE CLUMPING (required!)
 ###############################################
-# YADE 2022.01 requires non‑zero mass for clumped facets (developer‑confirmed).
+# YADE 2022.01 requires non‑zero mass for clumped facets. [1](https://answers.launchpad.net/yade/+question/696056)
+
 for f in facets:
     f.state.mass    = 100.0
     f.state.inertia = (1,1,1)
 
 ###############################################
-# CREATE THE RIGID CLUMP
+# CREATE RIGID CLUMP
 ###############################################
 ret = O.bodies.appendClumped(facets)
 clumpId = ret[0]
 clump = O.bodies[clumpId]
 
-# Override global rigid-body properties
+# Override rigid-body properties
 clump.state.mass    = cylMass
 clump.state.inertia = cylInertia
 clump.state.pos     = Vector3(0,0,startHeight)
@@ -105,70 +137,32 @@ clump.state.blockedDOFs = 'xyXYZ'
 ###############################################
 # BUILD OPEN-TOP FACET BOX
 ###############################################
-# Bottom
-O.bodies.append(facet([
-    (-boxX, -boxY, 0),
-    ( boxX, -boxY, 0),
-    (-boxX,  boxY, 0)
-], material=idCylMat))
-O.bodies.append(facet([
-    ( boxX, -boxY, 0),
-    ( boxX,  boxY, 0),
-    (-boxX,  boxY, 0)
-], material=idCylMat))
 
-# Walls (no top)
-# Left
-O.bodies.append(facet([
-    (-boxX, -boxY, 0),
-    (-boxX,  boxY, 0),
-    (-boxX, -boxY, boxZ)
-], material=idCylMat))
-O.bodies.append(facet([
-    (-boxX,  boxY, 0),
-    (-boxX,  boxY, boxZ),
-    (-boxX, -boxY, boxZ)
-], material=idCylMat))
+# ---- Bottom (two triangles) ----
+O.bodies.append(facet([(-boxX,-boxY,0),( boxX,-boxY,0),(-boxX, boxY,0)], material=idCylMat))
+O.bodies.append(facet([( boxX,-boxY,0),( boxX, boxY,0),(-boxX, boxY,0)], material=idCylMat))
 
-# Right
-O.bodies.append(facet([
-    (boxX, -boxY, 0),
-    (boxX, -boxY, boxZ),
-    (boxX,  boxY, 0)
-], material=idCylMat))
-O.bodies.append(facet([
-    (boxX,  boxY, 0),
-    (boxX, -boxY, boxZ),
-    (boxX,  boxY, boxZ)
-], material=idCylMat))
+# ---- Four walls ----
+# Left wall
+O.bodies.append(facet([(-boxX,-boxY,0),(-boxX, boxY,0),(-boxX,-boxY,boxZ)], material=idCylMat))
+O.bodies.append(facet([(-boxX, boxY,0),(-boxX, boxY,boxZ),(-boxX,-boxY,boxZ)], material=idCylMat))
 
-# Front
-O.bodies.append(facet([
-    (-boxX, -boxY, 0),
-    (-boxX, -boxY, boxZ),
-    ( boxX, -boxY, 0)
-], material=idCylMat))
-O.bodies.append(facet([
-    ( boxX, -boxY, 0),
-    (-boxX, -boxY, boxZ),
-    ( boxX, -boxY, boxZ)
-], material=idCylMat))
+# Right wall
+O.bodies.append(facet([( boxX,-boxY,0),( boxX,-boxY,boxZ),( boxX, boxY,0)], material=idCylMat))
+O.bodies.append(facet([( boxX, boxY,0),( boxX,-boxY,boxZ),( boxX, boxY,boxZ)], material=idCylMat))
 
-# Back
-O.bodies.append(facet([
-    (-boxX, boxY, 0),
-    ( boxX, boxY, 0),
-    (-boxX, boxY, boxZ)
-], material=idCylMat))
-O.bodies.append(facet([
-    ( boxX, boxY, 0),
-    ( boxX, boxY, boxZ),
-    (-boxX, boxY, boxZ)
-], material=idCylMat))
+# Front wall
+O.bodies.append(facet([(-boxX,-boxY,0),(-boxX,-boxY,boxZ),( boxX,-boxY,0)], material=idCylMat))
+O.bodies.append(facet([( boxX,-boxY,0),(-boxX,-boxY,boxZ),( boxX,-boxY,boxZ)], material=idCylMat))
+
+# Back wall
+O.bodies.append(facet([(-boxX, boxY,0),( boxX, boxY,0),(-boxX, boxY,boxZ)], material=idCylMat))
+O.bodies.append(facet([( boxX, boxY,0),( boxX, boxY,boxZ),(-boxX, boxY,boxZ)], material=idCylMat))
 
 ###############################################
-# PARTICLES INSIDE THE BOX (NOT ON TOP)
+# ADD PARTICLES INSIDE THE BOX (NOT ON TOP)
 ###############################################
+
 sp = pack.SpherePack()
 sp.makeCloud(
     (-boxX*0.9, -boxY*0.9, 0.05),      # slightly inside box
