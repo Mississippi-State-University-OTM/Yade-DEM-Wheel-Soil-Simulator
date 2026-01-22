@@ -14,8 +14,9 @@ objShift = Vector3(0,0,0)          # Shift OBJ after import
 
 # --- Rigid body properties ---
 cylMass = 100.0                    # Rigid-body mass
-cylInertia = (1,1,1)               # Override inertia tensor
-startHeight = 3.0                  # Drop height
+cylInertia = (10000,10000,10000)   # Override inertia tensor
+startHeight =  2.0                 # Drop height
+startY      = -1.5                 # Starting y-coordinate
 
 # --- Procedural-cylinder fallback parameters ---
 radius   = 0.5
@@ -43,25 +44,109 @@ idSphereMat = O.materials.append(matSphere)
 ###############################################
 # GEOMETRY HELPERS
 ###############################################
-def ringPoint(angle, r, z):
-    return Vector3(r*math.cos(angle), r*math.sin(angle), z)
 
-def triangulate_cap(z, segments, r, material, upward):
-    """Create triangulated circular cap."""
+def ringPoint(axis, angle, r, h):
+    """
+    Universal ring point generator.
+    axis: 'x', 'y', or 'z'
+    angle: polar angle 0..2π
+    r: radius
+    h: height position along cylinder axis
+    Returns a Vector3 point on a circular ring.
+    """
+
+    c = math.cos(angle)
+    s = math.sin(angle)
+
+    if axis == 'x':
+        # cylinder axis = X
+        return Vector3(h, r*c, r*s)
+
+    elif axis == 'y':
+        # cylinder axis = Y
+        return Vector3(r*c, h, r*s)
+
+    elif axis == 'z':
+        # cylinder axis = Z
+        return Vector3(r*c, r*s, h)
+
+    else:
+        raise ValueError("axis must be 'x','y', or 'z'")
+
+
+def triangulate_cap(axis, centerH, segments, r, material, upward):
+    """
+    Create a circular cap on a cylinder aligned with X, Y, or Z axis.
+    centerH  = coordinate along cylinder axis for this cap
+    upward   = True  -> normal direction is +axis
+               False -> normal direction is -axis
+    """
+
     facets = []
-    center = Vector3(0,0,z)
     dth = 2*math.pi/segments
+
+    # center of cap
+    if axis == 'x':
+        center = Vector3(centerH, 0, 0)
+        normal_dir = Vector3(1,0,0 if upward else -1)
+
+    elif axis == 'y':
+        center = Vector3(0, centerH, 0)
+
+    elif axis == 'z':
+        center = Vector3(0,0, centerH)
+
     for i in range(segments):
         a1 = i*dth
         a2 = (i+1)*dth
-        p1 = ringPoint(a1, r, z)
-        p2 = ringPoint(a2, r, z)
+
+        p1 = ringPoint(axis, a1, r, centerH)
+        p2 = ringPoint(axis, a2, r, centerH)
+
+        # outward normals using right‑hand rule
         if upward:
             tri = [p1, p2, center]
         else:
             tri = [p2, p1, center]
+
         facets.append(facet(tri, material=material))
+
     return facets
+
+
+def build_cylinder(axis, radius, height, segments, material):
+    """
+    Returns a list of facet bodies forming a closed cylindrical surface.
+    axis ∈ {'x','y','z'} defines which axis the cylinder is aligned with.
+    height = total length along axis
+    """
+
+    facets = []
+    dth = 2*math.pi / segments
+
+    # ---- side facets ----
+    for i in range(segments):
+        a1 = i*dth
+        a2 = (i+1)*dth
+
+        # bottom ring at h=0, top ring at h=height
+        b1 = ringPoint(axis, a1, radius, 0.0)
+        b2 = ringPoint(axis, a2, radius, 0.0)
+        t1 = ringPoint(axis, a1, radius, height)
+        t2 = ringPoint(axis, a2, radius, height)
+
+        facets.append(facet([b1, b2, t1], material=material))
+        facets.append(facet([b2, t2, t1], material=material))
+
+    # ---- caps ----
+    # bottom = h=0 → faces -axis
+    facets += triangulate_cap(axis, 0.0, segments, radius, material, upward=False)
+
+    # top = h=height → faces +axis
+    facets += triangulate_cap(axis, height, segments, radius, material, upward=True)
+
+    return facets
+
 
 ###############################################
 # IMPORT CYLINDER FROM OBJ OR BUILD PROCEDURALLY
@@ -125,27 +210,18 @@ if useOBJ:
     print("OBJ facet normals validated / corrected.")
 
     print("Imported", len(facets), "facets from OBJ.")
+
 else:
-    # --- Procedural closed cylinder ---
-    dth = 2*math.pi/segments
-
-# ---- Side facets ----
-    for i in range(segments):
-        a1 = i*dth
-        a2 = (i+1)*dth
-        b1 = ringPoint(a1, radius, 0)
-        b2 = ringPoint(a2, radius, 0)
-        t1 = ringPoint(a1, radius, height)
-        t2 = ringPoint(a2, radius, height)
-
-        facets.append(facet([b1, b2, t1], material=idCylMat))
-        facets.append(facet([b2, t2, t1], material=idCylMat))
-
-    # Bottom + top caps
-    facets += triangulate_cap(0, segments, radius, idCylMat, upward=False)
-    facets += triangulate_cap(height, segments, radius, idCylMat, upward=True)
-
-    print("Procedural cylinder:", len(facets), "facets.")
+    myaxis = 'x'
+    facets = build_cylinder(
+        axis=myaxis,           # 'x', 'y', or 'z'
+        radius=radius,
+        height=height,
+        segments=segments,
+        material=idCylMat
+    )
+    print("Built procedural cylinder aligned with'", myaxis , "'axis:",
+          len(facets), "facets.")
 
 ###############################################
 # ASSIGN MASS BEFORE CLUMPING (required!)
@@ -168,14 +244,14 @@ clump = O.bodies[clumpId]
 # Override rigid-body properties
 clump.state.mass    = cylMass
 clump.state.inertia = cylInertia
-clump.state.pos     = Vector3(0,0,startHeight)
+clump.state.pos     = Vector3(0,startY,startHeight)
 
 # No initial angular velocity
-clump.state.angVel = Vector3(0,0,0)
+clump.state.angVel = Vector3(-50,0,0)
 clump.state.vel = Vector3(0,0,0)
 
 # Allow *ONLY* translation in Z direction: block X,Y & all rotations including about Z
-clump.state.blockedDOFs = 'xyXYZ'
+clump.state.blockedDOFs = 'xYZ'
 
 ###############################################
 # BUILD OPEN-TOP FACET BOX
@@ -231,3 +307,5 @@ O.engines = [
 
 O.dt = 0.5 * utils.PWaveTimeStep()
 
+# save simulation to memory
+O.saveTmp()
