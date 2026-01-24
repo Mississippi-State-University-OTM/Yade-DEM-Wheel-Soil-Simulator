@@ -1,10 +1,7 @@
 import numpy as np
-from stl import mesh
+import stl, sys
 
-import numpy as np
-from stl import mesh
-
-def create_cylinder(radius, height, nsegments):
+def create_cylinder(radius, height, nsegments, orient):
     # 1. Generate Vertices (Centered at origin, along Z-axis)
     vertices = []
     # Bottom cap center and top cap center
@@ -41,6 +38,17 @@ def create_cylinder(radius, height, nsegments):
     # 3. Convert to np array and return
     vertices = np.array(vertices)
     faces = np.array(faces)
+    for i in range(len(vertices)):
+        if orient == 'z':
+            pass
+        elif orient == 'x':
+            vertices[i] = np.roll(vertices[i], shift=1)
+        elif orient == 'y':
+            vertices[i] = np.roll(vertices[i], shift=2)
+        else:
+            print(f"Error: Wrong orientation: \"{orient}\"", file = sys.stderr)
+            sys.exit(1)
+
     return vertices, faces
 
 
@@ -64,12 +72,11 @@ def create_cube():
     return vertices, faces
 
 object = "cube"
-#object = "cylinder"
+object = "cylinder"
 
 if object == "cylinder":
-    vertices, faces = create_cylinder(radius=10, height=50, nsegments=32)
-    print(vertices)
-    print(faces)
+    vertices, faces = create_cylinder(radius=10, height=50,
+                                      nsegments=32, orient = 'x')
 elif object == "cube":
     vertices, faces = create_cube()
 else:
@@ -78,7 +85,7 @@ else:
     sys.exit(1)
 
 # Initialize the mesh data structure with number of triangles
-mesh = mesh.Mesh(np.zeros(faces.shape[0], dtype=mesh.Mesh.dtype))
+mesh = stl.mesh.Mesh(np.zeros(faces.shape[0], dtype=stl.mesh.Mesh.dtype))
 
 # Populate the mesh vectors with the vertices from our faces list
 for i, f in enumerate(faces):
@@ -87,5 +94,5 @@ for i, f in enumerate(faces):
 
 # Write the mesh to an STL file
 ofile = object + '.stl'
-mesh.save(ofile)
-print(f"Successfully wrote the mesh to {ofile}")
+mesh.save(ofile, mode=stl.Mode.ASCII)
+print(f"Successfully wrote the mesh to \"{ofile}\".")

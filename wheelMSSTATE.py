@@ -12,9 +12,15 @@ startWelX   =  25.0
 
 # --- Wheel read from OBJ file
 fromFile = True                    # False: build cylindrical wheel
-objFile = "lugged_wheel.stl"       # Wheel STL file
-objScale = 0.01                    # Scale STL on import
-objShift = Vector3(-50*objScale/2, startY, startZ) # Shift wheel after import
+objFile = "cylinder.stl"           # Wheel STL file
+objScale = 1.0
+# Shift wheel after import
+if objFile == "lugged_whel.stl":
+    objScale = 0.01
+    objShift = Vector3(-50*objScale/2, startY, startZ)
+else:
+    objScale = 0.01
+    objShift = Vector3(0, startY, startZ)
 
 # --- Wheel constructed from cylinder facets ---
 wheelRadius  = 0.5
@@ -208,7 +214,7 @@ if fromFile:
         fixed=False,
         noBound=False
     )
-    print("Imported", len(facets), "facets from OBJ.")
+    print(f"Imported {len(facets)} facets from \"{objFile}\" file.")
 
 else:
     myaxis = 'x'
