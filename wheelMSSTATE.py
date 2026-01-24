@@ -1,7 +1,7 @@
 from yade import *
 import math
 
-# --- Wheel properties and initial coordinates ---
+# Wheel properties and initial coordinates
 wheelMass = 500.0                  # Rigid-body mass
 wheelInertia = (1,1,1)             # Inertia tensor
 startX      =  0.0                 # Starting x-coordinate
@@ -10,22 +10,14 @@ startZ      =  1.8                 # Drop height
 startVelY   =  0.0
 startWelX   =  25.0
 
-# --- Wheel read from OBJ file
-fromFile = True                    # False: build cylindrical wheel
-objFile = "cylinder.stl"           # Wheel STL file
-objScale = 1.0
-# Shift wheel after import
-if objFile == "lugged_whel.stl":
-    objScale = 0.01
-    objShift = Vector3(-50*objScale/2, startY, startZ)
-else:
-    objScale = 0.01
-    objShift = Vector3(0, startY, startZ)
-
-# --- Wheel constructed from cylinder facets ---
-wheelRadius  = 0.5
-wheelWidth   = 0.25
-segments = 10                      # Cylinder resolution
+# Wheel read from STL/OBJ file
+stlFile = "cylinder.stl"
+if stlFile == "lugged_whel.stl":
+    stlScale = 0.01
+    stlShift = Vector3(-50*stlScale/2, startY, startZ)
+elif stlFile == "cylinder.stl":
+    stlScale = 1.0
+    stlShift = Vector3(0, startY, startZ)
 
 # Particle parameters
 rMean    = 0.05
@@ -40,117 +32,8 @@ boxZ = 1.5   # height of box
 # Materials
 matWheel = FrictMat(young=1e7, poisson=0.3, frictionAngle=0.5)
 matSphere = FrictMat(young=1e7, poisson=0.3, frictionAngle=0.6)
-
 idWheelMat = O.materials.append(matWheel)
 idSphereMat = O.materials.append(matSphere)
-
-# Geometry helpers
-def ringPoint(axis, angle, r, h):
-    """
-    Universal ring point generator.
-    axis: 'x', 'y', or 'z'
-    angle: polar angle 0..2pi
-    r: radius
-    h: height position along cylinder axis
-    Returns a Vector3 point on a circular ring.
-    """
-
-    c = math.cos(angle)
-    s = math.sin(angle)
-
-    if axis == 'x':
-        # cylinder axis = X
-        return Vector3(h, r*c, r*s)
-
-    elif axis == 'y':
-        # cylinder axis = Y
-        return Vector3(r*c, h, r*s)
-
-    elif axis == 'z':
-        # cylinder axis = Z
-        return Vector3(r*c, r*s, h)
-
-    else:
-        raise ValueError("axis must be 'x','y', or 'z'")
-
-
-def triangulate_cap(axis, centerH, segments, r, material, offset, upward):
-    """
-    Create a circular cap on a cylinder aligned with X, Y, or Z axis.
-    centerH  = coordinate along cylinder axis for this cap
-    upward   = True  -> normal direction is +axis
-               False -> normal direction is -axis
-    """
-
-    facets = []
-    dth = 2*math.pi/segments
-
-    # center of cap
-    if axis == 'x':
-        center = Vector3(centerH, 0, 0)
-        normal_dir = Vector3(1,0,0 if upward else -1)
-
-    elif axis == 'y':
-        center = Vector3(0, centerH, 0)
-
-    elif axis == 'z':
-        center = Vector3(0,0, centerH)
-
-    center = center+offset
-
-    for i in range(segments):
-        a1 = i*dth
-        a2 = (i+1)*dth
-
-        p1 = ringPoint(axis, a1, r, centerH) + offset
-        p2 = ringPoint(axis, a2, r, centerH) + offset
-
-        # outward normals using right-hand rule
-        if upward:
-            tri = [p1, p2, center]
-        else:
-            tri = [p2, p1, center]
-
-        facets.append(facet(tri, material=material))
-
-    return facets
-
-
-def build_cylinder(axis, radius, height, segments, material,
-                   offset):
-    """
-    Returns a list of facet bodies forming a closed cylindrical surface.
-    axis ('x', 'y', or 'z') defines which axis the cylinder is aligned with.
-    height = total length along axis
-    """
-
-    facets = []
-    dth = 2*math.pi / segments
-
-    # ---- side facets ----
-    for i in range(segments):
-        a1 = i*dth
-        a2 = (i+1)*dth
-
-        # bottom ring at h=-height/2, top ring at h=height/2
-        b1 = ringPoint(axis, a1, radius, -height/2) + offset
-        b2 = ringPoint(axis, a2, radius, -height/2) + offset
-        t1 = ringPoint(axis, a1, radius,  height/2) + offset
-        t2 = ringPoint(axis, a2, radius,  height/2) + offset
-
-        facets.append(facet([b1, b2, t1], material=material))
-        facets.append(facet([b2, t2, t1], material=material))
-
-    # ---- caps ----
-    # bottom = h=-height/2 : faces -axis
-    facets += triangulate_cap(axis, -height/2, segments, radius, material,
-                              offset, upward=False)
-
-    # top = h=height/2 : faces +axis
-    facets += triangulate_cap(axis,  height/2, segments, radius, material,
-                              offset, upward=True)
-
-    return facets
 
 # Check and fix inverted normals for facets
 def fix_normals(facetList):
@@ -197,38 +80,18 @@ def setConstantWelX(bodyID, value):
     O.bodies[bodyID].state.angVel[0] = value
 
 # Main program
-# Import wheel from OBJ file or create it
-facets = []
-if fromFile:
-    #
-    # YADE imports triangulated OBJ/STL-like meshes using ymport.stl
-    # as shown in mesh import examples.
-    #
-    from yade import ymport
-    facets = ymport.stl(
-        objFile,
-        scale=objScale,
-        shift=objShift,
-        material=idWheelMat,
-        dynamic=None,
-        fixed=False,
-        noBound=False
-    )
-    print(f"Imported {len(facets)} facets from \"{objFile}\" file.")
-
-else:
-    myaxis = 'x'
-    myOffset = Vector3(startX, startY, startZ)
-    facets = build_cylinder(
-        axis=myaxis,           # 'x', 'y', or 'z'
-        radius=wheelRadius,
-        height=wheelWidth,
-        segments=segments,
-        material=idWheelMat,
-        offset = myOffset
-    )
-    print("Construct cylindical wheel aligned with 'x' axis:",
-          len(facets), "facets.")
+# Import wheel from STL (or OBJ) file
+from yade import ymport
+facets = ymport.stl(
+    stlFile,
+    scale = stlScale,
+    shift = stlShift,
+    material = idWheelMat,
+    dynamic = None,
+    fixed = False,
+    noBound = False
+)
+print(f"Imported {len(facets)} facets from \"{stlFile}\" file.")
 
 print("Checking facet normals...")
 facets = fix_normals(facets)

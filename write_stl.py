@@ -75,8 +75,12 @@ object = "cube"
 object = "cylinder"
 
 if object == "cylinder":
-    vertices, faces = create_cylinder(radius=10, height=50,
-                                      nsegments=32, orient = 'x')
+    wheelRadius  = 0.5
+    wheelWidth   = 0.25
+    segments = 10     # Cylinder resolution
+    myorient = 'x'
+    vertices, faces = create_cylinder(radius=wheelRadius, height=wheelWidth,
+                                      nsegments=segments, orient=myorient)
 elif object == "cube":
     vertices, faces = create_cube()
 else:
