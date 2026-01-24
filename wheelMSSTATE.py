@@ -2,13 +2,15 @@ from yade import *
 import math
 
 # Wheel properties and initial coordinates
-wheelMass = 500.0                  # Rigid-body mass
+wheelMass    = 500.0               # Rigid-body mass
 wheelInertia = (1,1,1)             # Inertia tensor
-startX      =  0.0                 # Starting x-coordinate
-startY      = -1.5                 # Starting y-coordinate
-startZ      =  1.8                 # Drop height
-startVelY   =  0.0
-startWelX   =  25.0
+startX       =  0.0                # Starting x-coordinate
+startY       = -1.5                # Starting y-coordinate
+startZ       =  1.8                # Drop height
+initVelY     =  0.0                # set initial value of wheel Vy
+fixVelY      = False               # True: fix the initial Vy over time
+initWelX     = 25.0                # set initial value of wheel Wx
+fixWelX      = True                # True: fix the initial Wy over time
 
 # Wheel read from STL/OBJ file
 stlFile = "cylinder.stl"
@@ -71,11 +73,11 @@ def fix_normals(facetList):
 
     return facetList
 
-def setConstantVelY(bodyID, value):
+def setVelY(bodyID, value):
     # Set y-component of body linear velocity
     O.bodies[bodyID].state.vel[1] = value
 
-def setConstantWelX(bodyID, value):
+def setWelX(bodyID, value):
     # Set x-component of body angular velocity
     O.bodies[bodyID].state.angVel[0] = value
 
@@ -110,8 +112,8 @@ wheelBody = O.bodies[wheelBodyId]
 wheelBody.state.mass    = wheelMass
 wheelBody.state.inertia = wheelInertia
 wheelBody.state.blockedDOFs = 'xYZ'
-wheelBody.state.vel = Vector3(0,startVelY,0)
-wheelBody.state.angVel = Vector3(startWelX,0,0)
+wheelBody.state.vel = Vector3(0,initVelY,0)
+wheelBody.state.angVel = Vector3(initWelX,0,0)
 
 # Create rectangular open-top box
 O.bodies.append(geom.facetBox((0, 0, boxHeight/2),
@@ -130,8 +132,8 @@ sp.makeCloud(
 sp.toSimulation(material=idSphereMat)
 
 # Engines
-setVelYCall='setConstantVelY(' + str(wheelBodyId) + ',' + str( startVelY) + ')'
-setWelXCall='setConstantWelX(' + str(wheelBodyId) + ',' + str(-startWelX) + ')'
+setVelYString='setVelY(' + str(wheelBodyId) + ',' + str( initVelY) + ')'
+setWelXString='setWelX(' + str(wheelBodyId) + ',' + str(-initWelX) + ')'
 O.engines = [
     ForceResetter(),
     InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb()]),
@@ -139,15 +141,15 @@ O.engines = [
         [Ig2_Sphere_Sphere_ScGeom(), Ig2_Facet_Sphere_ScGeom()],
         [Ip2_FrictMat_FrictMat_FrictPhys()],
         [Law2_ScGeom_FrictPhys_CundallStrack()]
-    ),
-    # PyRunner(command=setVelYCall, iterPeriod=1),
-    PyRunner(command=setWelXCall, iterPeriod=1),
-    NewtonIntegrator(gravity=(0,0,-9.81), damping=0.3)
+    )
 ]
-
+if fixWelX:
+    O.engines += [PyRunner(command=setWelXString, iterPeriod=1)]
+if fixVelY:
+    O.engines += [PyRunner(command=setVelYString, iterPeriod=1)]
+O.engines += [NewtonIntegrator(gravity=(0,0,-9.81), damping=0.3)]
 
 O.dt = 0.5 * utils.PWaveTimeStep()
-
 # save simulation to memory
 O.saveTmp()
 O.stopAtIter=10000
