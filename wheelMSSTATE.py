@@ -11,10 +11,10 @@ startVelY   =  0.0
 startWelX   =  25.0
 
 # --- Wheel read from OBJ file
-useOBJ = False                     # Set False -> build cylindrical wheel
-objFile = "wheel.obj"              # Wheel triangulated OBJ mesh
-objScale = 1.0                     # Scale OBJ on import
-objShift = Vector3(0,0,0)          # Shift OBJ after import
+useOBJ = True                      # Set False -> build cylindrical wheel
+objFile = "lugged_wheel.stl"       # Wheel STL file
+objScale = 0.01                    # Scale STL on import
+objShift = Vector3(-50*objScale/2, startY, startZ) # Shift wheel after import
 
 # --- Wheel constructed from cylinder facets ---
 wheelRadius  = 0.5
