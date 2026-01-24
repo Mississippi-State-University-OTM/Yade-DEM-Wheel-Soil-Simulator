@@ -25,9 +25,9 @@ rRelFuzz = 0.3
 rndSeed  = 123
 
 # Box interior region (open top)
-boxX = 0.5   # half width
-boxY = 2.0   # half lenght
-boxZ = 1.5   # height of box
+hboxX     = 0.5   # half width
+hboxY     = 2.0   # half lenght
+boxHeight = 1.5   # height of box
 
 # Materials
 matWheel = FrictMat(young=1e7, poisson=0.3, frictionAngle=0.5)
@@ -113,38 +113,16 @@ wheelBody.state.blockedDOFs = 'xYZ'
 wheelBody.state.vel = Vector3(0,startVelY,0)
 wheelBody.state.angVel = Vector3(startWelX,0,0)
 
-# Build open-top facet box
-# Bottom (two triangles)
-O.bodies.append(facet([(-boxX,-boxY,0),( boxX,-boxY,   0),(-boxX, boxY,   0)],
-                      material=idWheelMat))
-O.bodies.append(facet([( boxX,-boxY,0),( boxX, boxY,   0),(-boxX, boxY,   0)],
-                      material=idWheelMat))
-# Left wall
-O.bodies.append(facet([(-boxX,-boxY,0),(-boxX, boxY,   0),(-boxX,-boxY,boxZ)],
-                      material=idWheelMat))
-O.bodies.append(facet([(-boxX, boxY,0),(-boxX, boxY,boxZ),(-boxX,-boxY,boxZ)],
-                      material=idWheelMat))
-# Right wall
-O.bodies.append(facet([( boxX,-boxY,0),( boxX,-boxY,boxZ),( boxX, boxY,   0)],
-                      material=idWheelMat))
-O.bodies.append(facet([( boxX, boxY,0),( boxX,-boxY,boxZ),( boxX, boxY,boxZ)],
-                      material=idWheelMat))
-# Front wall
-O.bodies.append(facet([(-boxX,-boxY,0),(-boxX,-boxY,boxZ),( boxX,-boxY,   0)],
-                      material=idWheelMat))
-O.bodies.append(facet([( boxX,-boxY,0),(-boxX,-boxY,boxZ),( boxX,-boxY,boxZ)],
-                      material=idWheelMat))
-# Back wall
-O.bodies.append(facet([(-boxX, boxY,0),( boxX, boxY,   0),(-boxX, boxY,boxZ)],
-                      material=idWheelMat))
-O.bodies.append(facet([( boxX, boxY,0),( boxX, boxY,boxZ),(-boxX, boxY,boxZ)],
-                      material=idWheelMat))
+# Create rectangular open-top box
+O.bodies.append(geom.facetBox((0, 0, boxHeight/2),
+                              (hboxX, hboxY, boxHeight/2),
+                              wallMask=31))
 
 # Add particles inside the box (not on top)
 sp = pack.SpherePack()
 sp.makeCloud(
-    (-boxX*0.9, -boxY*0.9, 0.05),      # slightly inside box
-    ( boxX*0.9,  boxY*0.9, boxZ*0.8),  # well below top edge
+    (-hboxX*0.9, -hboxY*0.9, 0.05),      # slightly inside box
+    ( hboxX*0.9,  hboxY*0.9, boxHeight*0.8),  # well below top edge
     rMean=rMean,
     rRelFuzz=rRelFuzz,
     seed=rndSeed
@@ -172,4 +150,4 @@ O.dt = 0.5 * utils.PWaveTimeStep()
 
 # save simulation to memory
 O.saveTmp()
-O.stopAtIter=15000
+O.stopAtIter=10000
