@@ -11,7 +11,7 @@ startVelY   =  0.0
 startWelX   =  25.0
 
 # --- Wheel read from OBJ file
-useOBJ = True                      # Set False -> build cylindrical wheel
+fromFile = True                    # False: build cylindrical wheel
 objFile = "lugged_wheel.stl"       # Wheel STL file
 objScale = 0.01                    # Scale STL on import
 objShift = Vector3(-50*objScale/2, startY, startZ) # Shift wheel after import
@@ -31,19 +31,14 @@ boxX = 0.5   # half width
 boxY = 2.0   # half lenght
 boxZ = 1.5   # height of box
 
-###############################################
-# MATERIALS
-###############################################
+# Materials
 matWheel = FrictMat(young=1e7, poisson=0.3, frictionAngle=0.5)
 matSphere = FrictMat(young=1e7, poisson=0.3, frictionAngle=0.6)
 
 idWheelMat = O.materials.append(matWheel)
 idSphereMat = O.materials.append(matSphere)
 
-###############################################
-# GEOMETRY HELPERS
-###############################################
-
+# Geometry helpers
 def ringPoint(axis, angle, r, h):
     """
     Universal ring point generator.
@@ -142,29 +137,28 @@ def build_cylinder(axis, radius, height, segments, material,
 
     # ---- caps ----
     # bottom = h=-height/2 : faces -axis
-    facets += triangulate_cap(axis, -height/2, segments, radius, material, offset, upward=False)
+    facets += triangulate_cap(axis, -height/2, segments, radius, material,
+                              offset, upward=False)
 
     # top = h=height/2 : faces +axis
-    facets += triangulate_cap(axis,  height/2, segments, radius, material, offset, upward=True)
+    facets += triangulate_cap(axis,  height/2, segments, radius, material,
+                              offset, upward=True)
 
     return facets
 
-############################################################
-# CHECK AND FIX INVERTED NORMALS FOR OBJ-IMPORTED FACETS
-############################################################
+# Check and fix inverted normals for facets
 def fix_normals(facetList):
     """
     Ensure all facets point outward by flipping those whose
     normals point inward based on object centroid.
     """
-    # Compute centroid of all vertices
+    # Compute centroids of all vertices
     allVerts = []
     for f in facetList:
         for v in f.shape.vertices:
             allVerts.append(v)
     if not allVerts:
         return facetList
-
     centroid = sum(allVerts, Vector3.Zero) / len(allVerts)
 
     def facet_normal(f):
@@ -172,6 +166,7 @@ def fix_normals(facetList):
         p0, p1, p2 = v[0], v[1], v[2]
         return (p1 - p0).cross(p2 - p0)
 
+    count_flipped = 0
     for f in facetList:
         v = f.shape.vertices
         fCenter = (v[0] + v[1] + v[2]) / 3.0
@@ -181,6 +176,9 @@ def fix_normals(facetList):
         # If dot < 0 -> normal points toward centroid -> needs flipping
         if n.dot(outward) < 0:
             f.shape.vertices = [v[0], v[2], v[1]]   # swap to flip orientation
+            count_flipped = count_flipped + 1
+    if count_flipped:
+        print(" Flipped ", count_flipped, " facets.")
 
     return facetList
 
@@ -194,9 +192,8 @@ def setConstantWelX(bodyID, value):
 
 # Main program
 # Import wheel from OBJ file or create it
-
 facets = []
-if useOBJ:
+if fromFile:
     #
     # YADE imports triangulated OBJ/STL-like meshes using ymport.stl
     # as shown in mesh import examples.
@@ -211,11 +208,6 @@ if useOBJ:
         fixed=False,
         noBound=False
     )
-
-    print("Checking OBJ facet normals...")
-    facets = fix_normals(facets)
-    print("OBJ facet normals validated / corrected.")
-
     print("Imported", len(facets), "facets from OBJ.")
 
 else:
@@ -232,59 +224,54 @@ else:
     print("Construct cylindical wheel aligned with 'x' axis:",
           len(facets), "facets.")
 
-###############################################
-# ASSIGN MASS BEFORE CLUMPING (required)
-# not used, overwritten by body mass later
-###############################################
+print("Checking facet normals...")
+facets = fix_normals(facets)
+print("... facet normals validated / corrected.")
+
+# Assign mass before clumping
+# (required, not used - body properties defined next are used)
 for f in facets:
     f.state.mass    = 1.0
     f.state.inertia = (1,1,1)
     f.shape.wire = False
 
-###############################################
-# CREATE RIGID CLUMP
-###############################################
+# Create body as a rigid clump, define properties
 wheelBodyId, wheelBodyPartsIds = O.bodies.appendClumped(facets)
 wheelBody = O.bodies[wheelBodyId]
-
-# Override rigid-body properties
 wheelBody.state.mass    = wheelMass
 wheelBody.state.inertia = wheelInertia
-
-
 wheelBody.state.blockedDOFs = 'xYZ'
 wheelBody.state.vel = Vector3(0,startVelY,0)
 wheelBody.state.angVel = Vector3(startWelX,0,0)
 
-###############################################
-# BUILD OPEN-TOP FACET BOX
-###############################################
-
-# ---- Bottom (two triangles) ----
-O.bodies.append(facet([(-boxX,-boxY,0),( boxX,-boxY,0),(-boxX, boxY,0)], material=idWheelMat))
-O.bodies.append(facet([( boxX,-boxY,0),( boxX, boxY,0),(-boxX, boxY,0)], material=idWheelMat))
-
-# ---- Four walls ----
+# Build open-top facet box
+# Bottom (two triangles)
+O.bodies.append(facet([(-boxX,-boxY,0),( boxX,-boxY,   0),(-boxX, boxY,   0)],
+                      material=idWheelMat))
+O.bodies.append(facet([( boxX,-boxY,0),( boxX, boxY,   0),(-boxX, boxY,   0)],
+                      material=idWheelMat))
 # Left wall
-O.bodies.append(facet([(-boxX,-boxY,0),(-boxX, boxY,0),(-boxX,-boxY,boxZ)], material=idWheelMat))
-O.bodies.append(facet([(-boxX, boxY,0),(-boxX, boxY,boxZ),(-boxX,-boxY,boxZ)], material=idWheelMat))
-
+O.bodies.append(facet([(-boxX,-boxY,0),(-boxX, boxY,   0),(-boxX,-boxY,boxZ)],
+                      material=idWheelMat))
+O.bodies.append(facet([(-boxX, boxY,0),(-boxX, boxY,boxZ),(-boxX,-boxY,boxZ)],
+                      material=idWheelMat))
 # Right wall
-O.bodies.append(facet([( boxX,-boxY,0),( boxX,-boxY,boxZ),( boxX, boxY,0)], material=idWheelMat))
-O.bodies.append(facet([( boxX, boxY,0),( boxX,-boxY,boxZ),( boxX, boxY,boxZ)], material=idWheelMat))
-
+O.bodies.append(facet([( boxX,-boxY,0),( boxX,-boxY,boxZ),( boxX, boxY,   0)],
+                      material=idWheelMat))
+O.bodies.append(facet([( boxX, boxY,0),( boxX,-boxY,boxZ),( boxX, boxY,boxZ)],
+                      material=idWheelMat))
 # Front wall
-O.bodies.append(facet([(-boxX,-boxY,0),(-boxX,-boxY,boxZ),( boxX,-boxY,0)], material=idWheelMat))
-O.bodies.append(facet([( boxX,-boxY,0),(-boxX,-boxY,boxZ),( boxX,-boxY,boxZ)], material=idWheelMat))
-
+O.bodies.append(facet([(-boxX,-boxY,0),(-boxX,-boxY,boxZ),( boxX,-boxY,   0)],
+                      material=idWheelMat))
+O.bodies.append(facet([( boxX,-boxY,0),(-boxX,-boxY,boxZ),( boxX,-boxY,boxZ)],
+                      material=idWheelMat))
 # Back wall
-O.bodies.append(facet([(-boxX, boxY,0),( boxX, boxY,0),(-boxX, boxY,boxZ)], material=idWheelMat))
-O.bodies.append(facet([( boxX, boxY,0),( boxX, boxY,boxZ),(-boxX, boxY,boxZ)], material=idWheelMat))
+O.bodies.append(facet([(-boxX, boxY,0),( boxX, boxY,   0),(-boxX, boxY,boxZ)],
+                      material=idWheelMat))
+O.bodies.append(facet([( boxX, boxY,0),( boxX, boxY,boxZ),(-boxX, boxY,boxZ)],
+                      material=idWheelMat))
 
-###############################################
-# ADD PARTICLES INSIDE THE BOX (NOT ON TOP)
-###############################################
-
+# Add particles inside the box (not on top)
 sp = pack.SpherePack()
 sp.makeCloud(
     (-boxX*0.9, -boxY*0.9, 0.05),      # slightly inside box
@@ -295,9 +282,7 @@ sp.makeCloud(
 )
 sp.toSimulation(material=idSphereMat)
 
-###############################################
-# ENGINES
-###############################################
+# Engines
 setVelYCall='setConstantVelY(' + str(wheelBodyId) + ',' + str( startVelY) + ')'
 setWelXCall='setConstantWelX(' + str(wheelBodyId) + ',' + str(-startWelX) + ')'
 O.engines = [
