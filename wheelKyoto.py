@@ -9,7 +9,7 @@ if debugSegFault:
     import faulthandler
     faulthandler.enable()
 
-plotLive=False # show live plot window during simulation
+plotLive=True # show live plot window during simulation
 # variable for timecalculator()
 timestart=time.time()
 # the unit of length is m

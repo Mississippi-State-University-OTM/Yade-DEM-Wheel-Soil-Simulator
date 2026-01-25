@@ -151,8 +151,8 @@ O.bodies.append(geom.facetBox((0, 0, boxHeight/2),
 # Add particles inside the box (not on top)
 sp = pack.SpherePack()
 sp.makeCloud(
-    (-hboxX*0.9, -hboxY*0.9, 0.05),      # slightly inside box
-    ( hboxX*0.9,  hboxY*0.9, boxHeight*0.8),  # well below top edge
+    (-hboxX, -hboxY, 0.0),            # slightly inside box
+    ( hboxX,  hboxY, boxHeight*0.8),  # well below top edge
     rMean=rMean,
     rRelFuzz=rRelFuzz,
     seed=rndSeed
@@ -179,7 +179,7 @@ if fixVelY:
 O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.3)]
 
 # record and plot data
-endIt = 12000
+endIt = 13000
 O.trackEnergy = True
 O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 5,
                        firstIterRun = 0)]
@@ -197,3 +197,4 @@ O.dt = 0.5 * utils.PWaveTimeStep()
 # save simulation to memory
 O.saveTmp()
 O.stopAtIter = endIt
+O.run()
