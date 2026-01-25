@@ -1,7 +1,9 @@
 from yade import *
+from yade import plot
 import math
 
 # Wheel properties and initial coordinates
+acc_g        = 9.81                # acceleration of gravity
 wheelMass    = 500.0               # Rigid-body mass
 wheelInertia = (1,1,1)             # Inertia tensor
 startX       =  0.0                # Starting x-coordinate
@@ -11,6 +13,7 @@ initVelY     =  0.0                # set initial value of wheel Vy
 fixVelY      = False               # True: fix the initial Vy over time
 initWelX     = 25.0                # set initial value of wheel Wx
 fixWelX      = True                # True: fix the initial Wy over time
+plotLive     = True
 
 # Wheel read from STL/OBJ file
 stlFile = "cylinder.stl"
@@ -81,6 +84,31 @@ def setWelX(bodyID, value):
     # Set x-component of body angular velocity
     O.bodies[bodyID].state.angVel[0] = value
 
+# Record wheel coords, force, torque
+def rFTrecorder(bodyID):
+    bstate= O.bodies[bodyID].state
+    posy = bstate.pos[1]
+    posz = bstate.pos[2]
+    vely = bstate.vel[1]
+    velz = bstate.vel[2]
+    welx = bstate.angVel[0]
+    fy=O.forces.f(bodyID)[1]
+    fz=O.forces.f(bodyID)[2]
+    tx=O.forces.t(bodyID)[0]
+    wheelRad = 0.5;
+    plot.addData(t = O.time,
+                 y = posy, z = posz,
+                 i=O.time,
+                 Vy = vely, Vz = velz,
+                 j=O.time,
+                 Wx = welx,
+                 Fy = fy,
+                 k=O.time,
+                 Fz = fz,
+                 mg = wheelMass*acc_g,
+                 GrossTr = -tx/wheelRad)
+
+
 # Main program
 # Import wheel from STL (or OBJ) file
 from yade import ymport
@@ -134,6 +162,7 @@ sp.toSimulation(material=idSphereMat)
 # Engines
 setVelYString='setVelY(' + str(wheelBodyId) + ',' + str( initVelY) + ')'
 setWelXString='setWelX(' + str(wheelBodyId) + ',' + str(-initWelX) + ')'
+rFTrecorderString='rFTrecorder(' + str(wheelBodyId) + ')'
 O.engines = [
     ForceResetter(),
     InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb()]),
@@ -144,12 +173,27 @@ O.engines = [
     )
 ]
 if fixWelX:
-    O.engines += [PyRunner(command=setWelXString, iterPeriod=1)]
+    O.engines += [PyRunner(command = setWelXString, iterPeriod = 1)]
 if fixVelY:
-    O.engines += [PyRunner(command=setVelYString, iterPeriod=1)]
-O.engines += [NewtonIntegrator(gravity=(0,0,-9.81), damping=0.3)]
+    O.engines += [PyRunner(command = setVelYString, iterPeriod = 1)]
+O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.3)]
+
+# record and plot data
+endIt = 12000
+O.trackEnergy = True
+O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 5,
+                       firstIterRun = 0)]
+O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
+                       firstIterRun = endIt-1, nDo = 1)]
+O.engines += [PyRunner(command = 'plot.plot(noShow=True).savefig("plot.pdf")',
+                       firstIterRun = endIt-1, nDo = 1)]
+plot.plots={
+    't':('z'), 'i':('Vy' ,'Vz'), 'j':('Fz', 'mg'), 'k':('Fy')
+}
+# show the plot on the screen, and update while the simulation runs
+if plotLive: plot.plot()
 
 O.dt = 0.5 * utils.PWaveTimeStep()
 # save simulation to memory
 O.saveTmp()
-O.stopAtIter=10000
+O.stopAtIter = endIt
