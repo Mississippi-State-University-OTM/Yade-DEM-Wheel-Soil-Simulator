@@ -2,6 +2,8 @@ from yade import *
 from yade import plot
 import math
 
+timestart=time.time()
+
 # Wheel properties and initial coordinates
 acc_g        = 9.81                # acceleration of gravity
 wheelMass    = 500.0               # Rigid-body mass
@@ -158,6 +160,8 @@ sp.makeCloud(
     seed=rndSeed
 )
 sp.toSimulation(material=idSphereMat)
+partnum = len(sp)
+print(f"Number of generated particles: {partnum}")
 
 # Engines
 setVelYString='setVelY(' + str(wheelBodyId) + ',' + str( initVelY) + ')'
@@ -192,6 +196,18 @@ plot.plots={
 }
 # show the plot on the screen, and update while the simulation runs
 if plotLive: plot.plot()
+
+# Timing info
+O.engines += [PyRunner(command='timefinish = time.time()', iterPeriod=1,
+                       firstIterRun = endIt-1, nDo = 1, dead = False)]
+O.engines += [PyRunner(command='timecalculator()', iterPeriod=1,
+                       firstIterRun = endIt-1, nDo = 1, dead = False)]
+def timecalculator():
+    time0stofinish = timefinish - timestart
+    print('0s to finish: {0} s'.format(time0stofinish))
+    f = open('exec_time.txt','w')
+    f.write('0s to finish: {0} s\n'.format(time0stofinish))
+    f.close()
 
 O.dt = 0.5 * utils.PWaveTimeStep()
 # save simulation to memory
