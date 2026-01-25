@@ -8,23 +8,25 @@ timestart=time.time()
 acc_g        = 9.81                # acceleration of gravity
 wheelMass    = 500.0               # Rigid-body mass
 wheelInertia = (1,1,1)             # Inertia tensor
-startX       =  0.0                # Starting x-coordinate
-startY       = -1.5                # Starting y-coordinate
-startZ       =  1.8                # Drop height
+initX       =  0.0                 # Initial x-coordinate
+initY       = -1.5                 # Initial y-coordinate
+initZ       =  1.8                 # Wheel waiting-for-soil-to-settle height
 initVelY     =  0.0                # set initial value of wheel Vy
 fixVelY      = False               # True: fix the initial Vy over time
-initWelX     = 25.0                # set initial value of wheel Wx
+initWelX     = 17.0                # set initial value of wheel Wx
 fixWelX      = True                # True: fix the initial Wy over time
-plotLive     = True
+plotLive     = True                # Ture: show live plot
+settleTime   = 0.5                 # Time to settle particles
+endTime      = 5.0                 # Total simulated time
 
 # Wheel read from STL/OBJ file
 stlFile = "cylinder.stl"
 if stlFile == "lugged_whel.stl":
     stlScale = 0.01
-    stlShift = Vector3(-50*stlScale/2, startY, startZ)
+    stlShift = Vector3(-50*stlScale/2 + initX, initY, initZ)
 elif stlFile == "cylinder.stl":
     stlScale = 1.0
-    stlShift = Vector3(0, startY, startZ)
+    stlShift = Vector3(initX, initY, initZ)
 
 # Particle parameters
 rMean    = 0.05
@@ -86,6 +88,21 @@ def setWelX(bodyID, value):
     # Set x-component of body angular velocity
     O.bodies[bodyID].state.angVel[0] = value
 
+# move wheel to the surface of soil
+def heightAdjuster():
+    hh = 0      # stores highest particle center
+    idx = None
+    for i in range(wheelBodyId + 1, wheelBodyId + partnum):
+        if O.bodies[i].state.pos[2] > hh:
+            hh = O.bodies[i].state.pos[2]
+            idx=i
+    r = O.bodies[idx].shape.radius
+    zmax_surface = hh + r
+    print(f"{zmax_surface=}")
+    new_wheel_center_z = zmax_surface + wheelRad + .0001
+    O.bodies[wheelBodyId].state.pos = Vector3(initX, initY, new_wheel_center_z)
+    wheelBody.state.blockedDOFs = 'xYZ'
+
 # Record wheel coords, force, torque
 def rFTrecorder(bodyID):
     bstate= O.bodies[bodyID].state
@@ -97,7 +114,6 @@ def rFTrecorder(bodyID):
     fy=O.forces.f(bodyID)[1]
     fz=O.forces.f(bodyID)[2]
     tx=O.forces.t(bodyID)[0]
-    wheelRad = 0.5;
     plot.addData(t = O.time,
                  y = posy, z = posz,
                  i=O.time,
@@ -112,6 +128,12 @@ def rFTrecorder(bodyID):
 
 
 # Main program
+#
+# Create rectangular open-top box
+O.bodies.append(geom.facetBox((0, 0, boxHeight/2),
+                              (hboxX, hboxY, boxHeight/2),
+                              wallMask=31))
+
 # Import wheel from STL (or OBJ) file
 from yade import ymport
 facets = ymport.stl(
@@ -136,19 +158,20 @@ for f in facets:
     f.state.inertia = (1,1,1)
     f.shape.wire = False
 
+# TODO: find wheelRad from facets
+wheelRad = 0.5
+
 # Create body as a rigid clump, define properties
 wheelBodyId, wheelBodyPartsIds = O.bodies.appendClumped(facets)
 wheelBody = O.bodies[wheelBodyId]
 wheelBody.state.mass    = wheelMass
 wheelBody.state.inertia = wheelInertia
-wheelBody.state.blockedDOFs = 'xYZ'
+wheelBody.state.blockedDOFs = 'xzYZ'
 wheelBody.state.vel = Vector3(0,initVelY,0)
 wheelBody.state.angVel = Vector3(initWelX,0,0)
 
-# Create rectangular open-top box
-O.bodies.append(geom.facetBox((0, 0, boxHeight/2),
-                              (hboxX, hboxY, boxHeight/2),
-                              wallMask=31))
+nb_nopart = len(O.bodies);
+print(f"number of bodies (box + wheel, no paricles): {nb_nopart}")
 
 # Add particles inside the box (not on top)
 sp = pack.SpherePack()
@@ -162,6 +185,11 @@ sp.makeCloud(
 sp.toSimulation(material=idSphereMat)
 partnum = len(sp)
 print(f"Number of generated particles: {partnum}")
+
+print(f"{wheelBodyId=}")
+
+nb=len(O.bodies);
+print(f"number of bodies {nb}")
 
 # Engines
 setVelYString='setVelY(' + str(wheelBodyId) + ',' + str( initVelY) + ')'
@@ -182,9 +210,15 @@ if fixVelY:
     O.engines += [PyRunner(command = setVelYString, iterPeriod = 1)]
 O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.3)]
 
+O.dt = 0.5 * utils.PWaveTimeStep()
+settleIt = round(settleTime / O.dt)
+endIt    = round(endTime    / O.dt)
+
+# adjust wheel height to the top of soil
+O.engines += [PyRunner(command = 'heightAdjuster()', iterPeriod = 1,
+                       firstIterRun = settleIt, nDo = 1, dead = False)]
+
 # record and plot data
-endIt = 13000
-O.trackEnergy = True
 O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 5,
                        firstIterRun = 0)]
 O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
@@ -209,7 +243,6 @@ def timecalculator():
     f.write('0s to finish: {0} s\n'.format(time0stofinish))
     f.close()
 
-O.dt = 0.5 * utils.PWaveTimeStep()
 # save simulation to memory
 O.saveTmp()
 O.stopAtIter = endIt
