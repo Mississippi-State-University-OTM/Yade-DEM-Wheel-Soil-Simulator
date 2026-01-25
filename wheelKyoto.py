@@ -4,11 +4,6 @@ from yade import pack,plot,qt
 import numpy as np
 import math,time
 
-debugSegFault=False
-if debugSegFault:
-    import faulthandler
-    faulthandler.enable()
-
 plotLive=True # show live plot window during simulation
 # variable for timecalculator()
 timestart=time.time()
