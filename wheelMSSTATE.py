@@ -1,12 +1,12 @@
-timestart=time.time()
+timestart = time.time()
 
 # Wheel properties and initial coordinates
 acc_g        = 9.81                # acceleration of gravity
 wheelMass    = 500.0               # Rigid-body mass
 wheelInertia = (1,1,1)             # Inertia tensor
-initX       =  0.0                 # Initial x-coordinate
-initY       = -1.5                 # Initial y-coordinate
-initZ       =  1.8                 # Wheel waiting-for-soil-to-settle height
+initX        =  0.0                # Initial x-coordinate
+initY        = -1.5                # Initial y-coordinate
+initZ        =  1.8                # Wheel waiting-for-soil-to-settle height
 initVelY     =  0.0                # set initial value of wheel Vy
 fixVelY      = False               # True: fix the initial Vy over time
 initWelX     = 17.0                # set initial value of wheel Wx
@@ -54,7 +54,6 @@ def fix_normals(facetList):
     if not allVerts:
         return facetList
     centroid = sum(allVerts, Vector3.Zero) / len(allVerts)
-    print(f"{centroid=}")
 
     def facet_normal(f):
         v = f.shape.vertices
@@ -172,12 +171,9 @@ wheelBody.state.inertia = wheelInertia
 wheelBody.state.blockedDOFs = 'xzYZ'
 wheelBody.state.vel = Vector3(0,initVelY,0)
 wheelBody.state.angVel = Vector3(initWelX,0,0)
-##wheelBody.state.vel = Vector3(0,0,0)
-##wheelBody.state.angVel = Vector3(0,0,0)
 
 nb = len(O.bodies);
 print(f"Number of bodies (box + wheel, no paricles): {nb}")
-print(f"{wheelBodyId=}")
 
 # Add particles inside the box (not on top)
 sp = pack.SpherePack()
@@ -224,17 +220,16 @@ settleIt = round(settleTime / O.dt)
 endIt    = round(endTime    / O.dt)
 
 # Adjust wheel height to the top of soil
-O.engines += [PyRunner(command = 'heightAdjuster()', iterPeriod = 1,
-                       firstIterRun = settleIt, nDo = 1, dead = False)]
+O.engines += [PyRunner(command = 'heightAdjuster()', firstIterRun = settleIt)]
 
 # Record and plot data
 from yade import plot
 O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 5,
                    firstIterRun = 0)]
 O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
-                   firstIterRun = endIt-1, nDo = 1)]
+                   firstIterRun = endIt-1)]
 O.engines += [PyRunner(command = 'plot.plot(noShow=True).savefig("plot.pdf")',
-                       firstIterRun = endIt-1, nDo = 1)]
+                       firstIterRun = endIt-1)]
 plot.plots={
     't':('z'), 't ':('Vy' ,'Vz'), 't  ':('Fz', 'mg'), 't   ':('Fy')
 }
@@ -242,10 +237,10 @@ plot.plots={
 plot.plot(subPlots=True)
 
 # Timing info
-O.engines += [PyRunner(command='timeend = time.time()', iterPeriod=1,
-                       firstIterRun = endIt-1, nDo = 1, dead = False)]
-O.engines += [PyRunner(command='timeCalculator()', iterPeriod=1,
-                       firstIterRun = endIt-1, nDo = 1, dead = False)]
+O.engines += [PyRunner(command='timeend = time.time()',
+                       firstIterRun = endIt-1)]
+O.engines += [PyRunner(command='timeCalculator()',
+                       firstIterRun = endIt-1)]
 
 def timeCalculator():
     time0stofinish = timeend - timestart
