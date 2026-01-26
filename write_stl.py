@@ -71,6 +71,7 @@ def create_cube():
 
     return vertices, faces
 
+# Main program
 object = "cube"
 object = "cylinder"
 
@@ -89,14 +90,28 @@ else:
     sys.exit(1)
 
 # Initialize the mesh data structure with number of triangles
-mesh = stl.mesh.Mesh(np.zeros(faces.shape[0], dtype=stl.mesh.Mesh.dtype))
+smesh = stl.mesh.Mesh(np.zeros(faces.shape[0], dtype=stl.mesh.Mesh.dtype))
 
 # Populate the mesh vectors with the vertices from our faces list
 for i, f in enumerate(faces):
     for j in range(3):
-        mesh.vectors[i][j] = vertices[f[j], :]
+        smesh.vectors[i][j] = vertices[f[j], :]
 
 # Write the mesh to an STL file
 ofile = object + '.stl'
-mesh.save(ofile, mode=stl.Mode.ASCII)
-print(f"Successfully wrote the mesh to \"{ofile}\".")
+smesh.save(ofile, mode=stl.Mode.ASCII)
+print(f"numpy-stl successfully wrote the mesh to \"{ofile}\".")
+
+"""
+# Fix normals to be outward
+import trimesh
+tmesh = trimesh.load(ofile)
+out = tmesh.fix_normals()
+print("out:", out)
+# Check if watertight (required for reliable outward normals)
+print(tmesh.is_watertight)
+# Save the repaired mesh
+ofile = object + "_fix.stl"
+tmesh.export(ofile, file_type ='stl_ascii')
+print(f"trimesh successfully wrote the mesh to \"{ofile}\".")
+"""
