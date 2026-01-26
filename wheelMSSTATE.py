@@ -7,9 +7,9 @@ wheelInertia = (1,1,1)             # Inertia tensor
 initX        =  0.0                # Initial x-coordinate
 initY        = -1.5                # Initial y-coordinate
 initZ        =  1.8                # Wheel waiting-for-soil-to-settle height
-initVelY     =  0.0                # set initial value of wheel Vy
+initVelY     =  1.0                # set initial value of wheel Vy
 fixVelY      = False               # True: fix the initial Vy over time
-initWelX     = 17.0                # set initial value of wheel Wx
+initWelX     = -17.0               # set initial value of wheel Wx
 fixWelX      = True                # True: fix the initial Wy over time
 settleTime   = 0.5                 # Time to settle particles
 endTime      = 5.0                 # Total simulated time
@@ -99,7 +99,21 @@ def heightAdjuster():
     r = O.bodies[idx].shape.radius
     new_wheel_center_z = smax  + r + wheelRad + .0001
     O.bodies[wheelBodyId].state.pos = Vector3(initX, initY, new_wheel_center_z)
-    wheelBody.state.blockedDOFs = 'xYZ'
+    if fixVelY and fixWelX: # z free
+        wheelBody.state.vel = Vector3(0,initVelY,0)
+        wheelBody.state.angVel = Vector3(initWelX,0,0)
+        O.bodies[wheelBodyId].state.blockedDOFs = 'xyXYZ'
+    elif fixWelX: # z and y free
+        O.bodies[wheelBodyId].state.blockedDOFs = 'xXYZ'
+        wheelBody.state.angVel = Vector3(initWelX,0,0)
+    elif fixVelY: # z and wx free
+        wheelBody.state.vel = Vector3(0,initVelY,0)
+        O.bodies[wheelBodyId].state.blockedDOFs = 'xyYZ'
+    else:
+        import sys
+        print(f"Error: For now, only fixVelY and/or fixWelX can be fixed.\n",
+              file = sys.stderr)
+        sys.exit(1)
 
 # Record wheel coords, force, torque
 def rFTrecorder(bodyID):
@@ -168,9 +182,9 @@ wheelBodyId, wheelBodyPartsIds = O.bodies.appendClumped(facets)
 wheelBody = O.bodies[wheelBodyId]
 wheelBody.state.mass    = wheelMass
 wheelBody.state.inertia = wheelInertia
-wheelBody.state.blockedDOFs = 'xzYZ'
-wheelBody.state.vel = Vector3(0,initVelY,0)
-wheelBody.state.angVel = Vector3(initWelX,0,0)
+wheelBody.state.blockedDOFs = 'xyzXYZ'
+wheelBody.state.vel = Vector3(0,0,0)
+wheelBody.state.angVel = Vector3(0,0,0)
 
 nb = len(O.bodies);
 print(f"Number of bodies (box + wheel, no paricles): {nb}")
@@ -192,8 +206,8 @@ nb=len(O.bodies);
 print(f"Number of bodies (box, wheel, particles) {nb}")
 
 # Engines, start with necessary
-setVelYString='setVelY(' + str(wheelBodyId) + ',' + str( initVelY) + ')'
-setWelXString='setWelX(' + str(wheelBodyId) + ',' + str(-initWelX) + ')'
+setVelYString='setVelY(' + str(wheelBodyId) + ',' + str(initVelY) + ')'
+setWelXString='setWelX(' + str(wheelBodyId) + ',' + str(initWelX) + ')'
 rFTrecorderString='rFTrecorder(' + str(wheelBodyId) + ')'
 O.engines = [
     ForceResetter(),
