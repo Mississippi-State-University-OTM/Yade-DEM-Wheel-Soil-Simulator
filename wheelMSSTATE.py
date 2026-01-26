@@ -1,9 +1,6 @@
-from yade import *
-from yade import plot
-import math
-
 timestart=time.time()
 
+plotLive     = False               # True: show live plot
 # Wheel properties and initial coordinates
 acc_g        = 9.81                # acceleration of gravity
 wheelMass    = 500.0               # Rigid-body mass
@@ -15,13 +12,13 @@ initVelY     =  0.0                # set initial value of wheel Vy
 fixVelY      = False               # True: fix the initial Vy over time
 initWelX     = 17.0                # set initial value of wheel Wx
 fixWelX      = True                # True: fix the initial Wy over time
-plotLive     = True                # Ture: show live plot
 settleTime   = 0.5                 # Time to settle particles
 endTime      = 5.0                 # Total simulated time
 
 # Wheel read from STL/OBJ file
+stlFile = "lugged_wheel.stl"
 stlFile = "cylinder.stl"
-if stlFile == "lugged_whel.stl":
+if stlFile == "lugged_wheel.stl":
     stlScale = 0.01
     stlShift = Vector3(-50*stlScale/2 + initX, initY, initZ)
 elif stlFile == "cylinder.stl":
@@ -58,6 +55,7 @@ def fix_normals(facetList):
     if not allVerts:
         return facetList
     centroid = sum(allVerts, Vector3.Zero) / len(allVerts)
+    print(f"{centroid=}")
 
     def facet_normal(f):
         v = f.shape.vertices
@@ -90,16 +88,18 @@ def setWelX(bodyID, value):
 
 # move wheel to the surface of soil
 def heightAdjuster():
-    hh = 0      # stores highest particle center
+    smax = 0      # stores highest particle surface
     idx = None
-    for i in range(wheelBodyId + 1, wheelBodyId + partnum):
-        if O.bodies[i].state.pos[2] > hh:
-            hh = O.bodies[i].state.pos[2]
-            idx=i
+    for i in range(wheelBodyId + 1, wheelBodyId + partnum): ## + 1):
+        z = O.bodies[i].state.pos[2]
+        r = O.bodies[i].shape.radius
+        top = z ## + r
+        if top > smax:
+            smax = top
+            idx = i
+    print(f"Wheel repositioned to reach the highest particle surface of {smax:.3f} m.")
     r = O.bodies[idx].shape.radius
-    zmax_surface = hh + r
-    print(f"{zmax_surface=}")
-    new_wheel_center_z = zmax_surface + wheelRad + .0001
+    new_wheel_center_z = smax  + r + wheelRad + .0001
     O.bodies[wheelBodyId].state.pos = Vector3(initX, initY, new_wheel_center_z)
     wheelBody.state.blockedDOFs = 'xYZ'
 
@@ -133,6 +133,10 @@ def rFTrecorder(bodyID):
 O.bodies.append(geom.facetBox((0, 0, boxHeight/2),
                               (hboxX, hboxY, boxHeight/2),
                               wallMask=31))
+nb = len(O.bodies)
+nf_box = nb # ! no extra body for complete box
+print(f"Created open-top box, {nf_box} facets.")
+print(f"Number of bodies (box): {nb}")
 
 # Import wheel from STL (or OBJ) file
 from yade import ymport
@@ -169,9 +173,12 @@ wheelBody.state.inertia = wheelInertia
 wheelBody.state.blockedDOFs = 'xzYZ'
 wheelBody.state.vel = Vector3(0,initVelY,0)
 wheelBody.state.angVel = Vector3(initWelX,0,0)
+##wheelBody.state.vel = Vector3(0,0,0)
+##wheelBody.state.angVel = Vector3(0,0,0)
 
-nb_nopart = len(O.bodies);
-print(f"number of bodies (box + wheel, no paricles): {nb_nopart}")
+nb = len(O.bodies);
+print(f"Number of bodies (box + wheel, no paricles): {nb}")
+print(f"{wheelBodyId=}")
 
 # Add particles inside the box (not on top)
 sp = pack.SpherePack()
@@ -186,12 +193,10 @@ sp.toSimulation(material=idSphereMat)
 partnum = len(sp)
 print(f"Number of generated particles: {partnum}")
 
-print(f"{wheelBodyId=}")
-
 nb=len(O.bodies);
-print(f"number of bodies {nb}")
+print(f"Number of bodies (box, wheel, particles) {nb}")
 
-# Engines
+# Engines, start with necessary
 setVelYString='setVelY(' + str(wheelBodyId) + ',' + str( initVelY) + ')'
 setWelXString='setWelX(' + str(wheelBodyId) + ',' + str(-initWelX) + ')'
 rFTrecorderString='rFTrecorder(' + str(wheelBodyId) + ')'
@@ -206,44 +211,55 @@ O.engines = [
 ]
 if fixWelX:
     O.engines += [PyRunner(command = setWelXString, iterPeriod = 1)]
+##                           firstIterRun = settleIt+1, nDo = 1)]
 if fixVelY:
     O.engines += [PyRunner(command = setVelYString, iterPeriod = 1)]
+##                           firstIterRun = settleIt+1, nDo = 1)]
+
+# Integrator, necessary
 O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.3)]
 
+# Fix vels if prescribed
 O.dt = 0.5 * utils.PWaveTimeStep()
 settleIt = round(settleTime / O.dt)
 endIt    = round(endTime    / O.dt)
 
-# adjust wheel height to the top of soil
+# Adjust wheel height to the top of soil
 O.engines += [PyRunner(command = 'heightAdjuster()', iterPeriod = 1,
                        firstIterRun = settleIt, nDo = 1, dead = False)]
 
-# record and plot data
-O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 5,
+if plotLive:
+    from yade import plot
+    # Record and plot data
+    O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 5,
                        firstIterRun = 0)]
-O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
+    O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
                        firstIterRun = endIt-1, nDo = 1)]
-O.engines += [PyRunner(command = 'plot.plot(noShow=True).savefig("plot.pdf")',
-                       firstIterRun = endIt-1, nDo = 1)]
-plot.plots={
-    't':('z'), 'i':('Vy' ,'Vz'), 'j':('Fz', 'mg'), 'k':('Fy')
-}
-# show the plot on the screen, and update while the simulation runs
-if plotLive: plot.plot()
+    O.engines += [PyRunner(command = 'plot.plot(noShow=True).savefig("plot.pdf")',
+                           firstIterRun = endIt-1, nDo = 1)]
+    plot.plots={
+        't':('z'), 't ':('Vy' ,'Vz'), 't  ':('Fz', 'mg'), 't   ':('Fy')
+    }
+    # show the plot on the screen, and update while the simulation runs
+    plot.plot(subPlots=True)
 
 # Timing info
-O.engines += [PyRunner(command='timefinish = time.time()', iterPeriod=1,
+O.engines += [PyRunner(command='timeend = time.time()', iterPeriod=1,
                        firstIterRun = endIt-1, nDo = 1, dead = False)]
-O.engines += [PyRunner(command='timecalculator()', iterPeriod=1,
+O.engines += [PyRunner(command='timeCalculator()', iterPeriod=1,
                        firstIterRun = endIt-1, nDo = 1, dead = False)]
-def timecalculator():
-    time0stofinish = timefinish - timestart
-    print('0s to finish: {0} s'.format(time0stofinish))
+
+def timeCalculator():
+    time0stofinish = timeend - timestart
+    print('Total execution time {0} s'.format(time0stofinish))
     f = open('exec_time.txt','w')
     f.write('0s to finish: {0} s\n'.format(time0stofinish))
     f.close()
 
 # save simulation to memory
-O.saveTmp()
 O.stopAtIter = endIt
-O.run()
+if not plotLive:
+    O.run(wait=True)
+else:
+    O.saveTmp()
+    O.run()
