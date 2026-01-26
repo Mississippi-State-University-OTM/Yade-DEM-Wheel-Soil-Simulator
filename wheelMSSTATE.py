@@ -76,14 +76,6 @@ def fix_normals(facetList):
 
     return facetList
 
-def setVelY(bodyID, value):
-    # Set y-component of body linear velocity
-    O.bodies[bodyID].state.vel[1] = value
-
-def setWelX(bodyID, value):
-    # Set x-component of body angular velocity
-    O.bodies[bodyID].state.angVel[0] = value
-
 # move wheel to the surface of soil
 def heightAdjuster():
     smax = 0      # stores highest particle surface
@@ -206,8 +198,6 @@ nb=len(O.bodies);
 print(f"Number of bodies (box, wheel, particles) {nb}")
 
 # Engines, start with necessary
-setVelYString='setVelY(' + str(wheelBodyId) + ',' + str(initVelY) + ')'
-setWelXString='setWelX(' + str(wheelBodyId) + ',' + str(initWelX) + ')'
 rFTrecorderString='rFTrecorder(' + str(wheelBodyId) + ')'
 O.engines = [
     ForceResetter(),
@@ -218,12 +208,6 @@ O.engines = [
         [Law2_ScGeom_FrictPhys_CundallStrack()]
     )
 ]
-if fixWelX:
-    O.engines += [PyRunner(command = setWelXString, iterPeriod = 1)]
-##                           firstIterRun = settleIt+1, nDo = 1)]
-if fixVelY:
-    O.engines += [PyRunner(command = setVelYString, iterPeriod = 1)]
-##                           firstIterRun = settleIt+1, nDo = 1)]
 
 # Integrator, necessary
 O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.3)]
