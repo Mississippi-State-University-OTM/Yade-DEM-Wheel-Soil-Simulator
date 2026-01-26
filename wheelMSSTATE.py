@@ -1,6 +1,5 @@
 timestart=time.time()
 
-plotLive     = False               # True: show live plot
 # Wheel properties and initial coordinates
 acc_g        = 9.81                # acceleration of gravity
 wheelMass    = 500.0               # Rigid-body mass
@@ -228,20 +227,19 @@ endIt    = round(endTime    / O.dt)
 O.engines += [PyRunner(command = 'heightAdjuster()', iterPeriod = 1,
                        firstIterRun = settleIt, nDo = 1, dead = False)]
 
-if plotLive:
-    from yade import plot
-    # Record and plot data
-    O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 5,
-                       firstIterRun = 0)]
-    O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
+# Record and plot data
+from yade import plot
+O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 5,
+                   firstIterRun = 0)]
+O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
+                   firstIterRun = endIt-1, nDo = 1)]
+O.engines += [PyRunner(command = 'plot.plot(noShow=True).savefig("plot.pdf")',
                        firstIterRun = endIt-1, nDo = 1)]
-    O.engines += [PyRunner(command = 'plot.plot(noShow=True).savefig("plot.pdf")',
-                           firstIterRun = endIt-1, nDo = 1)]
-    plot.plots={
-        't':('z'), 't ':('Vy' ,'Vz'), 't  ':('Fz', 'mg'), 't   ':('Fy')
-    }
-    # show the plot on the screen, and update while the simulation runs
-    plot.plot(subPlots=True)
+plot.plots={
+    't':('z'), 't ':('Vy' ,'Vz'), 't  ':('Fz', 'mg'), 't   ':('Fy')
+}
+# show the plot on the screen, and update while the simulation runs
+plot.plot(subPlots=True)
 
 # Timing info
 O.engines += [PyRunner(command='timeend = time.time()', iterPeriod=1,
@@ -256,10 +254,11 @@ def timeCalculator():
     f.write('0s to finish: {0} s\n'.format(time0stofinish))
     f.close()
 
-# save simulation to memory
 O.stopAtIter = endIt
-if not plotLive:
-    O.run(wait=True)
-else:
+
+GUImode = False
+if GUImode:
+    # save simulation to memory
     O.saveTmp()
-    O.run()
+else:
+    O.run(wait=True)
