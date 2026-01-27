@@ -1,18 +1,19 @@
 timestart = time.time()
 
 # Wheel properties and initial coordinates
-acc_g        = 9.81                # acceleration of gravity
+valLinVel    =  0.3                # set initial value of wheel Vy
+fixLinVel    =  True               # True: fix the initial Vy over time
+valAngVel    = -2.0                # set initial value of wheel Wx
+fixAngVel    =  False              # True: fix the initial Wy over time
+acc_g        =  9.81               # acceleration of gravity
 wheelMass    = 500.0               # Rigid-body mass
 wheelInertia = (1,1,1)             # Inertia tensor
 initX        =  0.0                # Initial x-coordinate
 initY        = -1.5                # Initial y-coordinate
 initZ        =  1.8                # Wheel waiting-for-soil-to-settle height
-initVelY     =  1.0                # set initial value of wheel Vy
-fixVelY      = False               # True: fix the initial Vy over time
-initWelX     = -17.0               # set initial value of wheel Wx
-fixWelX      = True                # True: fix the initial Wy over time
-settleTime   = 0.5                 # Time to settle particles
-endTime      = 5.0                 # Total simulated time
+settleTime   =  0.5                # Time to settle particles
+endTime      = 10.0                # Total simulated time
+wheelRad     =  0.5                # TODO: find wheelRad from facets
 
 # Wheel read from STL/OBJ file
 stlFile = "lugged_wheel.stl"
@@ -20,12 +21,12 @@ stlFile = "cylinder.stl"
 if stlFile == "lugged_wheel.stl":
     stlScale = 0.01
     stlShift = Vector3(-50*stlScale/2 + initX, initY, initZ)
-elif stlFile == "cylinder.stl":
+elif stlFile == "cylinder.stl" or stlFile == "cylinder_fix.stl":
     stlScale = 1.0
     stlShift = Vector3(initX, initY, initZ)
 
 # Particle parameters
-rMean    = 0.05
+rMean    = 0.06
 rRelFuzz = 0.3
 rndSeed  = 123
 
@@ -39,6 +40,43 @@ matWheel = FrictMat(young=1e7, poisson=0.3, frictionAngle=0.5)
 matSphere = FrictMat(young=1e7, poisson=0.3, frictionAngle=0.6)
 idWheelMat = O.materials.append(matWheel)
 idSphereMat = O.materials.append(matSphere)
+
+# Reposition the wheel to the top surface of soil and set it in motion
+def setInMotion():
+    smax = 0      # stores highest particle surface
+    idx = None
+    for i in range(wheelBodyId + 1, wheelBodyId + partnum + 1):
+        z = O.bodies[i].state.pos[2]
+        r = O.bodies[i].shape.radius
+        top = z ## + r
+        if top > smax:
+            smax = top
+            idx = i
+    print(f"Wheel repositioned to reach the highest particle surface of {smax:.3f} m.")
+    r = O.bodies[idx].shape.radius
+    new_wheel_center_z = smax  + r + wheelRad + .0001
+    wheelBody.state.pos = Vector3(initX, initY, new_wheel_center_z)
+    if fixLinVel and fixAngVel: # z free
+        wheelBody.state.vel = Vector3(0,valLinVel,0)
+        wheelBody.state.angVel = Vector3(valAngVel,0,0)
+        wheelBody.state.blockedDOFs = 'xyXYZ'
+    elif fixAngVel: # z and y free
+        wheelBody.state.blockedDOFs = 'xXYZ'
+        wheelBody.state.angVel = Vector3(valAngVel,0,0)
+    elif fixLinVel: # z and wx free
+        wheelBody.state.vel = Vector3(0,valLinVel,0)
+        wheelBody.state.blockedDOFs = 'xyYZ'
+    else:
+        wheelBody.state.blockedDOFs = 'yYZ'
+
+# Calculate execution time
+def timeCalculator():
+    calc_time_total = timeend - timestart
+    report = f"Execution time {calc_time_total:.2f} s for {O.time:.2f} s simulation."
+    print(report)
+    f = open('exec_time.txt','w')
+    f.write(report + "\n")
+    f.close()
 
 # Check and fix inverted normals for facets
 def fix_normals(facetList):
@@ -76,37 +114,6 @@ def fix_normals(facetList):
 
     return facetList
 
-# move wheel to the surface of soil
-def heightAdjuster():
-    smax = 0      # stores highest particle surface
-    idx = None
-    for i in range(wheelBodyId + 1, wheelBodyId + partnum): ## + 1):
-        z = O.bodies[i].state.pos[2]
-        r = O.bodies[i].shape.radius
-        top = z ## + r
-        if top > smax:
-            smax = top
-            idx = i
-    print(f"Wheel repositioned to reach the highest particle surface of {smax:.3f} m.")
-    r = O.bodies[idx].shape.radius
-    new_wheel_center_z = smax  + r + wheelRad + .0001
-    O.bodies[wheelBodyId].state.pos = Vector3(initX, initY, new_wheel_center_z)
-    if fixVelY and fixWelX: # z free
-        wheelBody.state.vel = Vector3(0,initVelY,0)
-        wheelBody.state.angVel = Vector3(initWelX,0,0)
-        O.bodies[wheelBodyId].state.blockedDOFs = 'xyXYZ'
-    elif fixWelX: # z and y free
-        O.bodies[wheelBodyId].state.blockedDOFs = 'xXYZ'
-        wheelBody.state.angVel = Vector3(initWelX,0,0)
-    elif fixVelY: # z and wx free
-        wheelBody.state.vel = Vector3(0,initVelY,0)
-        O.bodies[wheelBodyId].state.blockedDOFs = 'xyYZ'
-    else:
-        import sys
-        print(f"Error: For now, only fixVelY and/or fixWelX can be fixed.\n",
-              file = sys.stderr)
-        sys.exit(1)
-
 # Record wheel coords, force, torque
 def rFTrecorder(bodyID):
     bstate= O.bodies[bodyID].state
@@ -118,18 +125,29 @@ def rFTrecorder(bodyID):
     fy=O.forces.f(bodyID)[1]
     fz=O.forces.f(bodyID)[2]
     tx=O.forces.t(bodyID)[0]
+    gTr = tx / wheelRad
+    vrot = -welx*wheelRad
+    try: slip = (vrot - vely)/(vrot)
+    except: slip = 0
+    if slip < -10: slip = -10
+    if slip >  10: slip =  10
     plot.addData(t = O.time,
                  y = posy, z = posz,
-                 i=O.time,
-                 Vy = vely, Vz = velz,
-                 j=O.time,
-                 Wx = welx,
-                 Fy = fy,
-                 k=O.time,
-                 Fz = fz,
-                 mg = wheelMass*acc_g,
-                 GrossTr = -tx/wheelRad)
+                 Vy = vely, Vz = velz, Wx = welx, WxR = -welx*wheelRad,
+                 Fy = fy, Fz = fz, Tx = tx,
+                 mg = wheelMass * acc_g,
+                 GrTr = gTr,
+                 RollRes = gTr - fy,
+                 Slip = slip
+)
 
+from yade import plot
+plot.plots={
+    't':('z', None, 'y'), 't ':('Vz' ,'WxR', 'Vy'),
+    't  ':('Fz', 'mg'), 't   ':('GrTr', 'Fy', 'RollRes') #, None, 'Slip')
+}
+# show the plot on the screen, and update while the simulation runs
+plot.plot(subPlots=True)
 
 # Main program
 #
@@ -137,10 +155,8 @@ def rFTrecorder(bodyID):
 O.bodies.append(geom.facetBox((0, 0, boxHeight/2),
                               (hboxX, hboxY, boxHeight/2),
                               wallMask=31))
-nb = len(O.bodies)
-nf_box = nb # ! no extra body for complete box
+nf_box = len(O.bodies) # ! no extra body for complete box
 print(f"Created open-top box, {nf_box} facets.")
-print(f"Number of bodies (box): {nb}")
 
 # Import wheel from STL (or OBJ) file
 from yade import ymport
@@ -157,7 +173,6 @@ print(f"Imported {len(facets)} facets from \"{stlFile}\" file.")
 
 print("Checking facet normals...")
 facets = fix_normals(facets)
-print("... facet normals validated / corrected.")
 
 # Assign mass before clumping
 # (required, not used - body properties defined next are used)
@@ -165,9 +180,6 @@ for f in facets:
     f.state.mass    = 1.0
     f.state.inertia = (1,1,1)
     f.shape.wire = False
-
-# TODO: find wheelRad from facets
-wheelRad = 0.5
 
 # Create body as a rigid clump, define properties
 wheelBodyId, wheelBodyPartsIds = O.bodies.appendClumped(facets)
@@ -178,8 +190,8 @@ wheelBody.state.blockedDOFs = 'xyzXYZ'
 wheelBody.state.vel = Vector3(0,0,0)
 wheelBody.state.angVel = Vector3(0,0,0)
 
-nb = len(O.bodies);
-print(f"Number of bodies (box + wheel, no paricles): {nb}")
+nf = len(O.bodies);
+print(f"Number of facets (box and wheel): {nf}")
 
 # Add particles inside the box (not on top)
 sp = pack.SpherePack()
@@ -194,8 +206,10 @@ sp.toSimulation(material=idSphereMat)
 partnum = len(sp)
 print(f"Number of generated particles: {partnum}")
 
-nb=len(O.bodies);
-print(f"Number of bodies (box, wheel, particles) {nb}")
+# Time step & number of iterations to settle particles and to end simulation
+O.dt = 0.5 * utils.PWaveTimeStep()
+settleIt = round(settleTime / O.dt)
+endIt    = round(endTime    / O.dt)
 
 # Engines, start with necessary
 rFTrecorderString='rFTrecorder(' + str(wheelBodyId) + ')'
@@ -212,40 +226,20 @@ O.engines = [
 # Integrator, necessary
 O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.3)]
 
-# Fix vels if prescribed
-O.dt = 0.5 * utils.PWaveTimeStep()
-settleIt = round(settleTime / O.dt)
-endIt    = round(endTime    / O.dt)
-
 # Adjust wheel height to the top of soil
-O.engines += [PyRunner(command = 'heightAdjuster()', firstIterRun = settleIt)]
+O.engines += [PyRunner(command = 'setInMotion()', firstIterRun = settleIt)]
 
 # Record and plot data
-from yade import plot
 O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 5,
                    firstIterRun = 0)]
 O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
                    firstIterRun = endIt-1)]
 O.engines += [PyRunner(command = 'plot.plot(noShow=True).savefig("plot.pdf")',
                        firstIterRun = endIt-1)]
-plot.plots={
-    't':('z'), 't ':('Vy' ,'Vz'), 't  ':('Fz', 'mg'), 't   ':('Fy')
-}
-# show the plot on the screen, and update while the simulation runs
-plot.plot(subPlots=True)
 
 # Timing info
-O.engines += [PyRunner(command='timeend = time.time()',
-                       firstIterRun = endIt-1)]
-O.engines += [PyRunner(command='timeCalculator()',
-                       firstIterRun = endIt-1)]
-
-def timeCalculator():
-    time0stofinish = timeend - timestart
-    print('Total execution time {0} s'.format(time0stofinish))
-    f = open('exec_time.txt','w')
-    f.write('0s to finish: {0} s\n'.format(time0stofinish))
-    f.close()
+O.engines += [PyRunner(command='timeend = time.time()', firstIterRun = endIt-1)]
+O.engines += [PyRunner(command='timeCalculator()', firstIterRun = endIt-1)]
 
 O.stopAtIter = endIt
 

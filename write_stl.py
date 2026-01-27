@@ -77,7 +77,7 @@ object = "cylinder"
 
 if object == "cylinder":
     wheelRadius  = 0.5
-    wheelWidth   = 0.25
+    wheelWidth   = 0.8
     segments = 16     # Cylinder resolution
     myorient = 'x'
     vertices, faces = create_cylinder(radius=wheelRadius, height=wheelWidth,
@@ -102,7 +102,6 @@ ofile = object + '.stl'
 smesh.save(ofile, mode=stl.Mode.ASCII)
 print(f"numpy-stl successfully wrote the mesh to \"{ofile}\".")
 
-"""
 # Fix normals to be outward
 import trimesh
 tmesh = trimesh.load(ofile)
@@ -114,4 +113,3 @@ print(tmesh.is_watertight)
 ofile = object + "_fix.stl"
 tmesh.export(ofile, file_type ='stl_ascii')
 print(f"trimesh successfully wrote the mesh to \"{ofile}\".")
-"""
