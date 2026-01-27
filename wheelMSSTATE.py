@@ -243,9 +243,13 @@ O.engines += [PyRunner(command='timeCalculator()', firstIterRun = endIt-1)]
 
 O.stopAtIter = endIt
 
-GUImode = False
+GUImode = True
 if GUImode:
-    # save simulation to memory
-    O.saveTmp()
+    O.saveTmp()               # save simulation to memory
+    from yade import qt       # set view direction
+    v = qt.View()
+    v.lookAt = (-100, 0, 0)
+    v.upVector  = (0, 0, 1)
+    v.center()
 else:
     O.run(wait=True)
