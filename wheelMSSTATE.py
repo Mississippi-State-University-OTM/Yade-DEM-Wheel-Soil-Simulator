@@ -11,19 +11,18 @@ wheelInertia = (6.25,1,1)          # Inertia tensor
 initX        =  0.0                # Initial x-coordinate
 initY        = -1.5                # Initial y-coordinate
 initZ        =  1.8                # Wheel waiting-for-soil-to-settle height
-settleTime   =  0.5                # Time to settle particles
+settleTime   =  1.0                # Time to settle particles
 endTime      = 10.0                # Total simulated time
 wheelRad     =  0.5                # TODO: find wheelRad from facets
 
 # Wheel read from STL/OBJ file
-stlFile = "lugged_wheel.stl"
 stlFile = "cylinder.stl"
+#stlFile = "lugged_wheel_cadquery_ascii.stl"
+#stlFile = "lugged_wheel_trimesh_ascii.stl"
+stlScale = 1.0
+stlShift = Vector3(initX, initY, initZ)
 if stlFile == "lugged_wheel.stl":
-    stlScale = 0.01
-    stlShift = Vector3(-50*stlScale/2 + initX, initY, initZ)
-elif stlFile == "cylinder.stl" or stlFile == "cylinder_fix.stl":
-    stlScale = 1.0
-    stlShift = Vector3(initX, initY, initZ)
+    stlShift = Vector3(-0.4 + initX, initY, initZ)
 
 # Particle parameters
 rMean    = 0.06

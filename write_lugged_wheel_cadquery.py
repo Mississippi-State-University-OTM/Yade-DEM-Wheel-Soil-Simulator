@@ -2,13 +2,13 @@ import cadquery as cq
 import math
 
 # --- Parameters ---
-R_wheel = 50        # wheel outer radius
-W_wheel = 50        # wheel width (Z length)
-R_bore  = 10        # hub bore radius (0 = solid)
+R_wheel = 0.5       # wheel outer radius
+W_wheel = 0.8       # wheel width (Z length)
+R_bore  = 0         # hub bore radius (0 = solid)
 
-lug_count   = 12
-lug_height  = 6     # radial protrusion beyond the wheel
-lug_length  = 4     # tangential length
+lug_count   = 18
+lug_height  = 0.01     # radial protrusion beyond the wheel
+lug_length  = 0.005    # tangential length
 lug_width   = W_wheel  # axial width = wheel width
 
 # --- Wheel ---
@@ -32,12 +32,13 @@ for i in range(lug_count):
     wheel = wheel.union(lug.rotate((0, 0, 0), (1, 0, 0), angle))
 
 # --- Export ---
-# cq.exporters.export(wheel, "lugged_wheel_bin.stl")
+cq.exporters.export(wheel, "lugged_wheel_cadquery_bin.stl")
+print("Wrote lugged_wheel_cadquery_bin.stl")
+
 cq.exporters.export(
     wheel,
-    "lugged_wheel.stl",
+    "lugged_wheel_cadquery_asci.stl",
     exportType="STL",
     opt={"ascii": True}
 )
-
-print("Wrote lugged_wheel.stl")
+print("Wrote lugged_wheel_cadquery_asci.stl")

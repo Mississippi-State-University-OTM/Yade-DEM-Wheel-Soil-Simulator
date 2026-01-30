@@ -1,12 +1,12 @@
 import trimesh
 import numpy as np
 
-wheel_radius = 1.0
-wheel_width = 0.3
-num_sections = 32
-lug_width = 0.05
-lug_height = 0.5
-num_lugs = 8
+wheel_radius = 0.5
+wheel_width = 0.8
+num_sections = 18
+lug_width = 0.005
+lug_height = 0.02
+num_lugs = 18
 
 # Create the main wheel (cylinder)
 wheel = trimesh.creation.cylinder(radius=wheel_radius, height=wheel_width,
@@ -28,6 +28,8 @@ lugged_wheel.merge_vertices()
 # Apply rotation
 rot_y = trimesh.transformations.rotation_matrix(np.radians(90), [0, 1, 0])
 lugged_wheel.apply_transform(rot_y)
+rot_x = trimesh.transformations.rotation_matrix(np.radians(90), [1, 0, 0])
+lugged_wheel.apply_transform(rot_x)
 
 # Show the result
 lugged_wheel.show()

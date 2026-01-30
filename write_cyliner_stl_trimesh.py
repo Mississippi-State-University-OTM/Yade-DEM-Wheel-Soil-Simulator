@@ -78,7 +78,7 @@ object = "cylinder"
 if object == "cylinder":
     wheelRadius  = 0.5
     wheelWidth   = 0.8
-    segments = 16     # Cylinder resolution
+    segments = 18     # Cylinder resolution
     myorient = 'x'
     vertices, faces = create_cylinder(radius=wheelRadius, height=wheelWidth,
                                       nsegments=segments, orient=myorient)
