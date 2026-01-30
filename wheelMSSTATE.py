@@ -131,6 +131,7 @@ def rFTrecorder(bodyID):
     if slip < -10: slip = -10
     if slip >  10: slip =  10
     plot.addData(t = O.time,
+                 At = O.time,
                  y = posy, z = posz,
                  Vy = vely, Vz = velz, Wx = welx, WxR = -welx*wheelRad,
                  Fy = fy, Fz = fz, Tx = tx,
