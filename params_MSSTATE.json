@@ -6,17 +6,35 @@
     },
     "wheel": {
 	"radius": 0.5,
+	"radEff": 0.5,
 	"width": 0.8,
 	"num_sections": 18,
 	"lugs": {
 	    "width": 0.005,
 	    "height": 0.02,
 	    "number": 18
+	},
+	"mass": 500.0,
+	"Ixx": 6.25,
+	"initVals" : {
+	    "x": 0.0,
+	    "y": -1.5,
+	    "z": 1.8,
+	    "vy": 0.3,
+	    "wx": -2.0
+	},
+	"constrains": {
+	    "vy": true,
+	    "wx": false
 	}
     },
     "particles": {
 	"rMean": 0.06,
 	"rRelFuzz": 0.3,
 	"rndSeed": 123
+    },
+    "sim": {
+	"settleTime": 1.0,
+	"endTime": 10.0
     }
 }

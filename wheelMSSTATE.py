@@ -1,19 +1,23 @@
 timestart = time.time()
 
-# Wheel properties and initial coordinates
-valLinVel    =  0.3                # set initial value of wheel Vy
-fixLinVel    =  True               # True: fix the initial Vy over time
-valAngVel    = -2.0                # set initial value of wheel Wx
-fixAngVel    =  False              # True: fix the initial Wy over time
-acc_g        =  9.81               # acceleration of gravity
-wheelMass    = 500.0               # Rigid-body mass
-wheelInertia = (6.25,1,1)          # Inertia tensor
-initX        =  0.0                # Initial x-coordinate
-initY        = -1.5                # Initial y-coordinate
-initZ        =  1.8                # Wheel waiting-for-soil-to-settle height
-settleTime   =  1.0                # Time to settle particles
-endTime      = 10.0                # Total simulated time
-wheelRad     =  0.5                # TODO: find wheelRad from facets
+import json
+with open('params_MSSTATE.json', 'r') as f:
+    data = json.load(f)
+
+# Wheel properties and initial coordinates from JSON
+valLinVel    = data['wheel']['initVals']['vy']   # set initial value of wheel Vy
+fixLinVel    = data['wheel']['constrains']['vy'] # True: fix the initial Vy over time
+valAngVel    = data['wheel']['initVals']['wx']   # set initial value of wheel Wx
+fixAngVel    = data['wheel']['constrains']['wx'] # True: fix the initial Wy over time
+wheelRadEff  = data['wheel']['radEff']           # for Gross Traction, Slip, & height above settled soil
+acc_g        = 9.81                              # acceleration of gravity
+wheelMass    = data['wheel']['mass']             # Rigid-body mass
+wheelInertia = (data['wheel']['Ixx'], 1, 1)      # Inertia tensor
+initX        = data['wheel']['initVals']['x']    # Initial x-coordinate
+initY        = data['wheel']['initVals']['y']    # Initial y-coordinate
+initZ        = data['wheel']['initVals']['z']    # Wheel waiting-for-soil-to-settle height
+settleTime   = data['sim']['settleTime']         # Time to settle particles
+endTime      = data['sim']['endTime']            # Total simulated time
 
 # Wheel read from STL/OBJ file
 stlFile = "cylinder.stl"
@@ -23,10 +27,6 @@ stlScale = 1.0
 stlShift = Vector3(initX, initY, initZ)
 if stlFile == "lugged_wheel.stl":
     stlShift = Vector3(-0.4 + initX, initY, initZ)
-
-import json
-with open('params_MSSTATE.json', 'r') as f:
-    data = json.load(f)
 
 # Particle parameters
 rMean    = data['particles']['rMean']
@@ -59,7 +59,7 @@ def setInMotion():
             idx = i
     print(f"Wheel repositioned to reach the highest particle surface of {smax:.3f} m.")
     r = O.bodies[idx].shape.radius
-    new_wheel_center_z = smax  + r + wheelRad + .0001
+    new_wheel_center_z = smax  + r + wheelRadEff + .0001
     wheelBody.state.pos = Vector3(initX, initY, new_wheel_center_z)
     if fixLinVel and fixAngVel: # z free
         wheelBody.state.vel = Vector3(0,valLinVel,0)
@@ -130,8 +130,8 @@ def rFTrecorder(bodyID):
     fy=O.forces.f(bodyID)[1]
     fz=O.forces.f(bodyID)[2]
     tx=O.forces.t(bodyID)[0]
-    gTr = tx / wheelRad
-    vrot = -welx*wheelRad
+    gTr = tx / wheelRadEff
+    vrot = -welx*wheelRadEff
     try: slip = (vrot - vely)/(vrot)
     except: slip = 0
     if slip < -10: slip = -10
@@ -139,7 +139,7 @@ def rFTrecorder(bodyID):
     plot.addData(t = O.time,
                  At = O.time,
                  y = posy, z = posz,
-                 Vy = vely, Vz = velz, Wx = welx, WxR = -welx*wheelRad,
+                 Vy = vely, Vz = velz, Wx = welx, WxR = -welx*wheelRadEff,
                  Fy = fy, Fz = fz, Tx = tx,
                  mg = wheelMass * acc_g,
                  GrTr = gTr,
