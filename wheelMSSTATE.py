@@ -24,16 +24,17 @@ stlShift = Vector3(initX, initY, initZ)
 if stlFile == "lugged_wheel.stl":
     stlShift = Vector3(-0.4 + initX, initY, initZ)
 
-# Particle parameters
-rMean    = 0.06
-rRelFuzz = 0.3
-rndSeed  = 123
-
-# Box interior region (open top)
 import json
 with open('params_MSSTATE.json', 'r') as f:
     data = json.load(f)
 
+# Particle parameters
+rMean    = data['particles']['rMean']
+rRelFuzz = data['particles']['rRelFuzz']
+rndSeed  = data['particles']['rndSeed']
+print(f"Particles: Mean Radius: {rMean} m, {rRelFuzz=}, {rndSeed=}")
+
+# Box interior region (open top)
 hboxX     = data['box']['width']  / 2 # half width
 hboxY     = data['box']['length'] / 2 # half lenght
 boxHeight = data['box']['height']     # height of box
@@ -249,6 +250,7 @@ O.engines += [PyRunner(command='timeCalculator()', firstIterRun = endIt-1)]
 O.stopAtIter = endIt
 
 GUImode = True
+GUImode = False
 if GUImode:
     O.saveTmp()               # save simulation to memory
     from yade import qt       # set view direction

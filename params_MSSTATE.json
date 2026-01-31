@@ -13,5 +13,10 @@
 	    "height": 0.02,
 	    "number": 18
 	}
+    },
+    "particles": {
+	"rMean": 0.06,
+	"rRelFuzz": 0.3,
+	"rndSeed": 123
     }
 }
