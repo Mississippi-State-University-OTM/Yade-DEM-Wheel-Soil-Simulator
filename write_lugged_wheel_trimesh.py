@@ -1,24 +1,32 @@
 import trimesh
 import numpy as np
 
-wheel_radius = 0.5
-wheel_width = 0.8
-num_sections = 18
-lug_width = 0.005
-lug_height = 0.02
-num_lugs = 18
+import json
+with open('params_MSSTATE.json', 'r') as f:
+    data = json.load(f)
+
+wheel_radius    = data['wheel']['radius']
+wheel_width     = data['wheel']['width']
+wheel_nSections = data['wheel']['num_sections']
+lugs_width    = data['wheel']['lugs']['width']
+lugs_height   = data['wheel']['lugs']['height']
+lugs_number   = data['wheel']['lugs']['number']
+print(f"Wheel dimensions: radius {wheel_radius} width {wheel_width} m ")
+print(f" {lugs_width=}")
+print(f" {lugs_height=}")
+print(f" {lugs_number=}")
 
 # Create the main wheel (cylinder)
 wheel = trimesh.creation.cylinder(radius=wheel_radius, height=wheel_width,
-                                  sections=num_sections)
+                                  sections=wheel_nSections)
 
 # Create a single lug (small box)
-lug = trimesh.creation.box(extents=[lug_height, lug_width, wheel_width])
+lug = trimesh.creation.box(extents=[lugs_height, lugs_width, wheel_width])
 lug.apply_translation([wheel_radius, 0, 0])  # Place on the circumfernce
 
 # Create multiple lugs by rotating the first one
 lugged_wheel = wheel
-for angle in np.linspace(0, 2 * np.pi, num_lugs, endpoint=False):
+for angle in np.linspace(0, 2 * np.pi, lugs_number, endpoint=False):
     matrix = trimesh.transformations.rotation_matrix(angle, [0, 0, 1])
     lugged_wheel = trimesh.util.concatenate([lugged_wheel, lug.copy().apply_transform(matrix)])
 
