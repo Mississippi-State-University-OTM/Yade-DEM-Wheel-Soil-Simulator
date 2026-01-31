@@ -1,4 +1,9 @@
 {
+    "box": {
+	"length": 4.0,
+	"width":  1.0,
+	"height": 1.5
+    },
     "wheel": {
 	"radius": 0.5,
 	"width": 0.8,

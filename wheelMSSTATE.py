@@ -30,9 +30,14 @@ rRelFuzz = 0.3
 rndSeed  = 123
 
 # Box interior region (open top)
-hboxX     = 0.5   # half width
-hboxY     = 2.0   # half lenght
-boxHeight = 1.5   # height of box
+import json
+with open('params_MSSTATE.json', 'r') as f:
+    data = json.load(f)
+
+hboxX     = data['box']['width']  / 2 # half width
+hboxY     = data['box']['length'] / 2 # half lenght
+boxHeight = data['box']['height']     # height of box
+print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (width x lenght x height)")
 
 # Materials
 matWheel = FrictMat(young=1e7, poisson=0.3, frictionAngle=0.5)
@@ -72,7 +77,7 @@ def setInMotion():
 def timeCalculator():
     calc_time_total = timeend - timestart
     report = f"Execution time {calc_time_total:.2f} s for {O.time:.2f} s simulation."
-    print(report)
+    print(report, file = sys.stderr)
     f = open('exec_time.txt','w')
     f.write(report + "\n")
     f.close()
