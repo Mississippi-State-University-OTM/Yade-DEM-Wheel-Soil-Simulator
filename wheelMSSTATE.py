@@ -1,7 +1,7 @@
 timestart = time.time()
 
 import json
-with open('params_MSSTATE.json', 'r') as f:
+with open('paramsMSSTATE.json', 'r') as f:
     data = json.load(f)
 
 # Wheel properties and initial coordinates from JSON
