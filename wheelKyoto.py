@@ -209,7 +209,7 @@ def xyzforce():
     except:sl=1-(O.bodies[o+1].state.vel[1]/((radius+lugh)*(angvel)))
     plot.addData(t=O.time,Fx=x2,Fy=y2,Fz=z2,grosstraction=gt,motionresistance=mr,
         i=O.time,height=pos* 1000,velocity=vel,slip=sl*100, angveln=clump.state.
-        angVel[0],h=pos)
+        angVel[0],h=pos,At=O.time)
 
 globals()['xyzforce']=locals()['xyzforce']
 globals()['plot']=locals()['plot']
