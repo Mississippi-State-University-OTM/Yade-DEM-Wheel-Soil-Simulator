@@ -26,12 +26,26 @@
 	"constrains": {
 	    "vy": true,
 	    "wx": false
-	}
+	},
+	"material" : "matWheel"
     },
     "particles": {
 	"rMean": 0.06,
 	"rRelFuzz": 0.3,
-	"rndSeed": 123
+	"rndSeed": 123,
+	"material" : "matSphere"
+    },
+    "materials": {
+	"matWheel": {
+	    "young": 1e7,
+	    "poisson": 0.3,
+	    "frictionAngle": 0.5
+	},
+	"matSphere": {
+	    "young": 1e7,
+	    "poisson": 0.3,
+	    "frictionAngle": 0.6
+	}
     },
     "sim": {
 	"settleTime": 1.0,

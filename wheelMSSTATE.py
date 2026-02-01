@@ -41,9 +41,15 @@ boxHeight = data['box']['height']     # height of box
 print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (width x lenght x height)")
 
 # Materials
-matWheel = FrictMat(young=1e7, poisson=0.3, frictionAngle=0.5)
-matSphere = FrictMat(young=1e7, poisson=0.3, frictionAngle=0.6)
-idWheelMat = O.materials.append(matWheel)
+matWheelParams  = data['materials'][data['wheel']    ['material']]
+matSphereParams = data['materials'][data['particles']['material']]
+def createFrictMaterial(params):
+    return FrictMat(young         = params['young'],
+                    poisson       = params['poisson'],
+                    frictionAngle = params['frictionAngle'])
+matWheel  = createFrictMaterial(matWheelParams)
+matSphere = createFrictMaterial(matSphereParams)
+idWheelMat  = O.materials.append(matWheel)
 idSphereMat = O.materials.append(matSphere)
 
 # Reposition the wheel to the top surface of soil and set it in motion
