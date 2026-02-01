@@ -38,16 +38,19 @@
     },
     "materials": {
 	"matWheel": {
+	    "density": 1000,
 	    "young": 1e7,
 	    "poisson": 0.3,
 	    "frictionAngle": 0.5
 	},
 	"matSphere": {
+	    "density": 1000,
 	    "young": 1e7,
 	    "poisson": 0.3,
 	    "frictionAngle": 0.6
 	},
 	"matBox": {
+	    "density": 1000,
 	    "young": 1e7,
 	    "poisson": 0.3,
 	    "frictionAngle": 0.6

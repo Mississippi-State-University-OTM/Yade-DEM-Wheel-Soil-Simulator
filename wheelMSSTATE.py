@@ -45,7 +45,8 @@ matWheelParams  = data['materials'][data['wheel']    ['material']]
 matSphereParams = data['materials'][data['particles']['material']]
 matBoxParams    = data['materials'][data['box'      ]['material']]
 def createFrictMaterial(params):
-    return FrictMat(young         = params['young'],
+    return FrictMat(density       = params['density'],
+                    young         = params['young'],
                     poisson       = params['poisson'],
                     frictionAngle = params['frictionAngle'])
 matWheel  = createFrictMaterial(matWheelParams)
