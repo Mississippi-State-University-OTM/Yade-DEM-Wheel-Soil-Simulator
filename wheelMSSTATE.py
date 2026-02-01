@@ -43,14 +43,17 @@ print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (width x lenght x 
 # Materials
 matWheelParams  = data['materials'][data['wheel']    ['material']]
 matSphereParams = data['materials'][data['particles']['material']]
+matBoxParams    = data['materials'][data['box'      ]['material']]
 def createFrictMaterial(params):
     return FrictMat(young         = params['young'],
                     poisson       = params['poisson'],
                     frictionAngle = params['frictionAngle'])
 matWheel  = createFrictMaterial(matWheelParams)
 matSphere = createFrictMaterial(matSphereParams)
+matBox = createFrictMaterial(matBoxParams)
 idWheelMat  = O.materials.append(matWheel)
 idSphereMat = O.materials.append(matSphere)
+idBoxMat = O.materials.append(matBox)
 
 # Reposition the wheel to the top surface of soil and set it in motion
 def setInMotion():
@@ -166,7 +169,7 @@ plot.plot(subPlots=True)
 # Create rectangular open-top box
 O.bodies.append(geom.facetBox((0, 0, boxHeight/2),
                               (hboxX, hboxY, boxHeight/2),
-                              wallMask=31))
+                              wallMask=31, material=idBoxMat),)
 nf_box = len(O.bodies) # ! no extra body for complete box
 print(f"Created open-top box, {nf_box} facets.")
 

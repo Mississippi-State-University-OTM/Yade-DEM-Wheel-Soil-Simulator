@@ -2,7 +2,8 @@
     "box": {
 	"length": 4.0,
 	"width":  1.0,
-	"height": 1.5
+	"height": 1.5,
+	"material": "matBox"
     },
     "wheel": {
 	"radius": 0.5,
@@ -42,6 +43,11 @@
 	    "frictionAngle": 0.5
 	},
 	"matSphere": {
+	    "young": 1e7,
+	    "poisson": 0.3,
+	    "frictionAngle": 0.6
+	},
+	"matBox": {
 	    "young": 1e7,
 	    "poisson": 0.3,
 	    "frictionAngle": 0.6
