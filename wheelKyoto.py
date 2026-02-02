@@ -108,7 +108,6 @@ O.engines = [
 # specify time increments
 O.dt=timestep
 initori=clump.state.ori
-globals()['initori']=locals()['initori']
 # enable energy tracking; any simulation parts supporting it
 # can create and update arbitrary energy types, which can be
 # accessed as O.energy['energyName'] subsequently
@@ -120,12 +119,10 @@ def addforce():
     clump.state.angMom[1]=0
     clump.state.angMom[2]=0
 
-globals()['addforce']=locals()['addforce']
 # give vertical force on wheel
 def addvforce():
     O.forces.addF(o+1,(0,0,-14.695)) # 19.6 N for 1g
 
-globals()['addvforce']=locals()['addvforce']
 # used to fix wheel while wheel driving
 def tirepos():
     clump.state.pos=(0,clump.state.pos[1],clump.state.pos[2]) # constant drawbar load
@@ -160,9 +157,6 @@ def PIDcontroller():
     diff0=diff
 
 O.engines+=[PyRunner(command='PIDcontroller()',iterPeriod=1,firstIterRun=waitfor+1)]
-globals()['diff0']=locals()['diff0']
-globals()['integral']=locals()['integral']
-globals()['PIDcontroller']=locals()['PIDcontroller']
 
 # move wheel to the surface of soil
 def heightadjuster():
@@ -176,7 +170,6 @@ def heightadjuster():
         r=O.bodies[idx].shape.radius
         O.bodies[o+1].state.pos=Vector3(0,-0.35,hh+r+radius+lugh+.0001)
 
-globals()['heightadjuster']=locals()['heightadjuster']
 def timecalculator():
     time0sto1s=time1s-timestart
     time0sto2s=time2s-timestart
@@ -197,7 +190,6 @@ def timecalculator():
     f.write('2s to finish: {0} s\n'.format(time2stofinish))
     f.close()
 
-globals()['timecalculator']=locals()['timecalculator']
 # record forces, torque and so on.
 def xyzforce():
     x2=sum(O.forces.f(k)[0] for k in range(10,o+1))
@@ -213,22 +205,6 @@ def xyzforce():
         i=O.time,height=pos* 1000,velocity=vel,slip=sl*100, angveln=clump.state.
         angVel[0],h=pos,At=O.time)
 
-globals()['xyzforce']=locals()['xyzforce']
-globals()['plot']=locals()['plot']
-globals()['np']=locals()['np']
-globals()['o']=locals()['o']
-globals()['segnum']=locals()['segnum']
-globals()['tirepos']=locals()['tirepos']
-globals()['tirepos0']=locals()['tirepos0']
-globals()['clump']=locals()['clump']
-globals()['waitfor']=locals()['waitfor']
-globals()['savefile1s']=locals()['savefile1s']
-globals()['savefile2s']=locals()['savefile2s']
-globals()['lugh']=locals()['lugh']
-globals()['timestart']=locals()['timestart']
-globals()['fileName']=locals()['fileName']
-globals()['tractionf']=locals()['tractionf']
-globals()['savefileName']=locals()['savefileName']
 O.engines+=[PyRunner(command='xyzforce()',iterPeriod=500,firstIterRun=waitfor//2)]
 # define how to plot data: 'i' (step number) on the x-axis, unbalanced force
 # on the left y-axis, all energies on the right y-axis
