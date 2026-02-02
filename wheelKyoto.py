@@ -16,7 +16,7 @@ lugt=.005 # lug thickness
 angvel =.138*20 # (rad/s)
 tractionf=4.9 # traction load: 0.0, 4.9, 9.8, 12.5, 14.7 N
 segnum=18 # the number of partitions of wheel (the number of lugs)
-pscale=1.0 # particle scale
+pscale=10.0 # particle scale ###
 partnum=round(80000/pscale**3) # the number of particles
 print(f"number of particles, requested {partnum}")
 wheelweight=.5 # the weight of wheel
@@ -93,6 +93,8 @@ O.engines = [
     RotationEngine(ids = [o+1], angularVelocity = 0,dead=False), # used to fix wheel at consolidation step
     PyRunner(command='tirepos0()',iterPeriod=1,nDo=waitfor -1,dead=False),
     PyRunner(command='tirepos()',iterPeriod=1,firstIterRun=waitfor),
+    # Print simulations and interaction parameter details ###
+    PyRunner(command='printIntDetails()', iterPeriod=1,firstIterRun=2,nDo=1,dead=False),
     PyRunner(command='savefile1s()', iterPeriod=1,firstIterRun=waitfor//2,nDo=1,dead=False),
     PyRunner(command='savefile2s()', iterPeriod=1,firstIterRun=waitfor  ,nDo=1,dead=False),
     PyRunner(command='O.bodies[100].material.frictionAngle=2*math.pi*36.7/360',iterPeriod=1,firstIterRun=waitfor//2,nDo=1,dead=False),
@@ -131,6 +133,24 @@ def tirepos():
 def tirepos0():
     clump.state.ori=initori
     clump.state.pos=(0,-.35,clump.state.pos[2])
+
+def printIntDetails(): ###
+    import sys
+    import os
+    # Get the directory where your current simulation script is located
+    # os.getcwd() returns the folder you were in when you typed 'yade my_script.py'
+    script_dir = os.getcwd()
+
+    # Add that directory to the search path
+    if script_dir not in sys.path:
+        sys.path.append(script_dir)
+
+    from libFunctors import print_functor_details, print_material_report
+    from libFunctors import export_sim_state_json
+
+    print_material_report()
+    print_functor_details()
+    export_sim_state_json()
 
 def savefile1s():
     O.save(savefileName+'_1s.bz2')
@@ -218,7 +238,8 @@ plot.plot()
 
 # stop the simulation after 450001 time steps
 O.stopAtIter=450001
-GUImode = True
+O.stopAtIter=4 ###
+GUImode = False ###
 if GUImode:
     # save simulation to memory for optional restart
     O.saveTmp()

@@ -56,6 +56,24 @@ idWheelMat  = O.materials.append(matWheel)
 idSphereMat = O.materials.append(matSphere)
 idBoxMat = O.materials.append(matBox)
 
+def printIntDetails(): ###
+    import sys
+    import os
+    # Get the directory where your current simulation script is located
+    # os.getcwd() returns the folder you were in when you typed 'yade my_script.py'
+    script_dir = os.getcwd()
+
+    # Add that directory to the search path
+    if script_dir not in sys.path:
+        sys.path.append(script_dir)
+
+    from libFunctors import print_functor_details, print_material_report
+    from libFunctors import export_sim_state_json
+
+    print_material_report()
+    print_functor_details()
+    export_sim_state_json()
+
 # Reposition the wheel to the top surface of soil and set it in motion
 def setInMotion():
     smax = 0      # stores highest particle surface
@@ -242,6 +260,9 @@ O.engines = [
 # Integrator, necessary
 O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.3)]
 
+# Print simulations and interaction parameter details ###
+O.engines += [PyRunner(command = 'printIntDetails()', firstIterRun=2)]
+
 # Adjust wheel height to the top of soil
 O.engines += [PyRunner(command = 'setInMotion()', firstIterRun = settleIt)]
 
@@ -258,9 +279,10 @@ O.engines += [PyRunner(command='timeend = time.time()', firstIterRun = endIt-1)]
 O.engines += [PyRunner(command='timeCalculator()', firstIterRun = endIt-1)]
 
 O.stopAtIter = endIt
+O.stopAtIter = 4 ###
 
 GUImode = True
-GUImode = False
+GUImode = False ###
 if GUImode:
     O.saveTmp()               # save simulation to memory
     from yade import qt       # set view direction
