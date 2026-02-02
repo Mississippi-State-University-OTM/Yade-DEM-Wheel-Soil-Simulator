@@ -152,6 +152,22 @@ def printIntDetails(): ###
     print_functor_details()
     export_sim_state_json()
 
+    ####
+    from libInteractions import (
+        print_insertion_sort_colliders_first,
+        print_contact_functors,
+        print_contact_types_from_interactions,
+        print_materials_summary,
+        write_simulation_summary_json,
+    )
+    # Before first sim. step
+    print_insertion_sort_colliders_first()
+    print_contact_functors()
+    print_materials_summary()
+    # After first sim. step
+    print_contact_types_from_interactions()
+    write_simulation_summary_json('sim_summary.json')
+
 def savefile1s():
     O.save(savefileName+'_1s.bz2')
 

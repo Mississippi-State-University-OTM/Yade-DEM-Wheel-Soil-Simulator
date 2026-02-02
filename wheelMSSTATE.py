@@ -44,17 +44,18 @@ print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (width x lenght x 
 matWheelParams  = data['materials'][data['wheel']    ['material']]
 matSphereParams = data['materials'][data['particles']['material']]
 matBoxParams    = data['materials'][data['box'      ]['material']]
-def createFrictMaterial(params):
+def createFrictMaterial(params, labelarg):
     return FrictMat(density       = params['density'],
                     young         = params['young'],
                     poisson       = params['poisson'],
-                    frictionAngle = params['frictionAngle'])
-matWheel  = createFrictMaterial(matWheelParams)
-matSphere = createFrictMaterial(matSphereParams)
-matBox = createFrictMaterial(matBoxParams)
+                    frictionAngle = params['frictionAngle'],
+                    label = labelarg)
+matWheel  = createFrictMaterial(matWheelParams, "wheelmat")
+matSphere = createFrictMaterial(matSphereParams, "mat1")
+matBox = createFrictMaterial(matBoxParams, "wallmat")
 idWheelMat  = O.materials.append(matWheel)
-idSphereMat = O.materials.append(matSphere)
 idBoxMat = O.materials.append(matBox)
+idSphereMat = O.materials.append(matSphere)
 
 def printIntDetails(): ###
     import sys
@@ -73,6 +74,22 @@ def printIntDetails(): ###
     print_material_report()
     print_functor_details()
     export_sim_state_json()
+
+    ####
+    from libInteractions import (
+        print_insertion_sort_colliders_first,
+        print_contact_functors,
+        print_contact_types_from_interactions,
+        print_materials_summary,
+        write_simulation_summary_json,
+    )
+    # Before first sim. step
+    print_insertion_sort_colliders_first()
+    print_contact_functors()
+    print_materials_summary()
+    # After first sim. step
+    print_contact_types_from_interactions()
+    write_simulation_summary_json('sim_summary.json')
 
 # Reposition the wheel to the top surface of soil and set it in motion
 def setInMotion():
@@ -247,15 +264,29 @@ endIt    = round(endTime    / O.dt)
 
 # Engines, start with necessary
 rFTrecorderString='rFTrecorder(' + str(wheelBodyId) + ')'
-O.engines = [
-    ForceResetter(),
-    InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb()]),
-    InteractionLoop(
-        [Ig2_Sphere_Sphere_ScGeom(), Ig2_Facet_Sphere_ScGeom()],
-        [Ip2_FrictMat_FrictMat_FrictPhys()],
-        [Law2_ScGeom_FrictPhys_CundallStrack()]
-    )
-]
+phys = "Frictional"
+phys = "Mindlin"
+if phys == "Mindlin":
+    O.engines = [
+        ForceResetter(),
+        InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb()]),
+        InteractionLoop(
+            [Ig2_Sphere_Sphere_ScGeom(), Ig2_Facet_Sphere_ScGeom()],
+            [Ip2_FrictMat_FrictMat_MindlinPhys(en=.3, krot=.00005,
+                                               label='ContactModel')],
+            [Law2_ScGeom_MindlinPhys_Mindlin(label='Mindlin',includeMoment=True)]
+        )
+    ]
+else:
+    O.engines = [
+        ForceResetter(),
+        InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb()]),
+        InteractionLoop(
+            [Ig2_Sphere_Sphere_ScGeom(), Ig2_Facet_Sphere_ScGeom()],
+            [Ip2_FrictMat_FrictMat_FrictPhys()],
+            [Law2_ScGeom_FrictPhys_CundallStrack()]
+        )
+    ]
 
 # Integrator, necessary
 O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.3)]
