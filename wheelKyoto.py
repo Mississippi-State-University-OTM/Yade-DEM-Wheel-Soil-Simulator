@@ -1,10 +1,9 @@
 # coding: utf-8
 # import yade modules that we will use below
-from yade import pack,plot,qt
+from yade import pack,plot
 import numpy as np
 import math,time
 
-plotLive=True # show live plot window during simulation
 # variable for timecalculator()
 timestart=time.time()
 # the unit of length is m
@@ -71,6 +70,9 @@ sp.makeClumpCloud((-.15/2, -1./2, -.5/2),
                   num=partnum, seed=12345)
 # add the sphere pack to the simulation
 sp.toSimulation(color=(.6,.57,.53))
+partnum = len(sp)
+print(f"Number of generated particles: {partnum}")
+
 nb=len(O.bodies);
 print(f"number of bodies {nb}")
 
@@ -236,15 +238,14 @@ plot.plots={
     't':('Fx','Fy','Fz','grosstraction','motionresistance'),'i':('h','slip')
 }
 # show the plot on the screen, and update while the simulation runs
-if plotLive:
-    plot.plot()
-# save simulation to memory
-O.saveTmp()
-# display GUI controller
-yade.qt.Controller()
-# qt.Controller() ## for new version of YADE, says copilot
-# run the simulation
+plot.plot()
+
 # stop the simulation after 450001 time steps
-O.stopAtIter=450001 ## set stopAfter before run, says copilot
-O.run()
-## O.stopAtIter=450001
+O.stopAtIter=450001
+GUImode = True
+if GUImode:
+    # save simulation to memory for optional restart
+    O.saveTmp()
+else:
+    # run the simulation
+    O.run(wait=True)
