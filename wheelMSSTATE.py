@@ -348,7 +348,7 @@ O.engines += [PyRunner(command = 'printIntDetails()', firstIterRun=2)]
 O.engines += [PyRunner(command = 'setInMotion()', firstIterRun = settleIt)]
 
 # Record and plot data
-O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 5,
+O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 500,
                    firstIterRun = 0)]
 O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
                    firstIterRun = endIt-1)]

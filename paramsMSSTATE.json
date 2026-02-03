@@ -35,7 +35,7 @@
 	"generation": "meanFuzz",
 	"rMean": 0.06,
 	"rRelFuzz": 0.3,
-	"scale": 1.0
+	"scale": 10.0
     },
     "materials": {
 	"matWheel": {
