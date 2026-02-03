@@ -71,7 +71,7 @@ sp.makeClumpCloud((-.15/2, -1./2, -.5/2),
 # add the sphere pack to the simulation
 sp.toSimulation(color=(.6,.57,.53))
 partnum = len(sp)
-print(f"Number of generated particles: {partnum}")
+print(f"Number of particles generated: {partnum}")
 
 nb=len(O.bodies);
 print(f"number of bodies {nb}")
@@ -254,8 +254,9 @@ plot.plot()
 
 # stop the simulation after 450001 time steps
 O.stopAtIter=450001
-O.stopAtIter=4 ###
-GUImode = False ###
+#O.stopAtIter=4 ###
+GUImode = True
+#GUImode = False ###
 if GUImode:
     # save simulation to memory for optional restart
     O.saveTmp()

@@ -2,15 +2,15 @@ import trimesh
 import numpy as np
 
 import json
-with open('params_MSSTATE.json', 'r') as f:
-    data = json.load(f)
+with open('dims_lugged_wheel_Kyoto.json', 'r') as f:
+    wheel_dims = json.load(f)
 
-wheel_radius    = data['wheel']['radius']
-wheel_width     = data['wheel']['width']
-wheel_nSections = data['wheel']['num_sections']
-lugs_width    = data['wheel']['lugs']['width']
-lugs_height   = data['wheel']['lugs']['height']
-lugs_number   = data['wheel']['lugs']['number']
+wheel_radius    = wheel_dims['radius']
+wheel_width     = wheel_dims['width']
+wheel_nSections = wheel_dims['num_sections']
+lugs_width      = wheel_dims['lugs']['width']
+lugs_height     = wheel_dims['lugs']['height']
+lugs_number     = wheel_dims['lugs']['number']
 print(f"Wheel dimensions: radius {wheel_radius} width {wheel_width} m ")
 print(f" {lugs_width=}")
 print(f" {lugs_height=}")

@@ -1,26 +1,24 @@
 {
     "box": {
-	"length": 0.25,
-	"width": 0.075,
-	"height": 0.25
+	"length": 1.0,
+	"width": 0.15,
+	"height": 0.5,
+	"center": {
+	    "x": 0.0,
+	    "y": 0.0,
+	    "z": 0.0
+	},
 	"material": "matBox"
     },
     "wheel": {
-	"radius": 0.5,
-	"radEff": 0.5,
-	"width": 0.8,
-	"num_sections": 18,
-	"lugs": {
-	    "width": 0.005,
-	    "height": 0.02,
-	    "number": 18
-	},
-	"mass": 500.0,
-	"Ixx": 6.25,
+	"stlFile": "lugged_wheel_Kyoto_ascii.stl",
+	"radEff": 0.11,
+	"mass": 0.5,
+	"Ixx": 0.0025,
 	"initVals" : {
 	    "x": 0.0,
-	    "y": -1.5,
-	    "z": 1.8,
+	    "y": -0.35,
+	    "z": 0.6,
 	    "vy": 0.3,
 	    "wx": -2.0
 	},
@@ -31,10 +29,15 @@
 	"material" : "matWheel"
     },
     "particles": {
-	"rMean": 0.06,
-	"rRelFuzz": 0.3,
-	"rndSeed": 123,
-	"material" : "matSphere"
+	"material" : "matSphere",
+	"pck": 1.451026,
+	"rndSeed": 12345,
+	"generation": "clumpCloud",
+	"num": 80000,
+	"rmin": 0.00225,
+	"rmed": 0.0025,
+	"rmax": 0.00275,
+	"scale": 10.0
     },
     "materials": {
 	"matWheel": {
@@ -44,10 +47,10 @@
 	    "frictionAngle": 0.4636476090008061
 	},
 	"matSphere": {
-	    "density": 1000,
-	    "young": 1e7,
+	    "density": 2830,
+	    "young": 5e5,
 	    "poisson": 0.3,
-	    "frictionAngle": 0.6
+	    "frictionAngle": 0.0
 	},
 	"matBox": {
 	    "density": 2830,
@@ -59,10 +62,13 @@
     "matPairs": {
 	"pp": {
 	    "en": 0.3,
-	    "krot": .00005
-	},
+	    "krot": 0.00005
+	}
+    },
     "sim": {
 	"settleTime": 1.0,
-	"endTime": 10.0
+	"endTime": 4.25,
+	"timeStep": 0.00001,
+	"GUImode": true
     }
 }

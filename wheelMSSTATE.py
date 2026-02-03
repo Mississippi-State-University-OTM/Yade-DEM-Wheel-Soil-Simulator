@@ -1,7 +1,8 @@
 timestart = time.time()
 
 import json
-with open('paramsMSSTATE.json', 'r') as f:
+with open('paramsKyoto.json', 'r') as f:
+#with open('paramsMSSTATE.json', 'r') as f:
     data = json.load(f)
 
 # Wheel properties and initial coordinates from JSON
@@ -18,29 +19,45 @@ initY        = data['wheel']['initVals']['y']    # Initial y-coordinate
 initZ        = data['wheel']['initVals']['z']    # Wheel waiting-for-soil-to-settle height
 settleTime   = data['sim']['settleTime']         # Time to settle particles
 endTime      = data['sim']['endTime']            # Total simulated time
+GUImode      = data['sim']['GUImode']            # True: run with GUI
+stlFile      = data['wheel']['stlFile']          # Wheel STL/OBJ file
 
-# Wheel read from STL/OBJ file
-stlFile = "cylinder.stl"
-#stlFile = "lugged_wheel_cadquery_ascii.stl"
-#stlFile = "lugged_wheel_trimesh_ascii.stl"
 stlScale = 1.0
 stlShift = Vector3(initX, initY, initZ)
 if stlFile == "lugged_wheel.stl":
     stlShift = Vector3(-0.4 + initX, initY, initZ)
 
 # Particle parameters
-rMean    = data['particles']['rMean']
-rRelFuzz = data['particles']['rRelFuzz']
+# initial placement of particles up to 0.8 (= 80%) of box' height
+pck      = data['particles']['pck']
 rndSeed  = data['particles']['rndSeed']
-print(f"Particles: Mean Radius: {rMean} m, {rRelFuzz=}, {rndSeed=}")
+part_gen = data['particles']['generation']
+pscale   = data['particles']['scale']
+print(f"Particles: packing level: {pck}, generation: {part_gen}, {pscale=}, {rndSeed=}")
+if part_gen == "meanFuzz":
+    rMean    = data['particles']['rMean']
+    rRelFuzz = data['particles']['rRelFuzz']
+    rndSeed  = data['particles']['rndSeed']
+    print(f"meanFuzz Particles: Mean Radius: {rMean} m, {rRelFuzz=}")
+elif part_gen == "clumpCloud":
+    rmin     = data['particles']['rmin']
+    rmed     = data['particles']['rmed']
+    rmax     = data['particles']['rmax']
+    partnum  = data['particles']['num' ]
+    print(f"clumpCloud Particles: Radius: {rmin}, {rmed}, {rmax}, number: {partnum}")
 
 # Box interior region (open top)
-hboxX     = data['box']['width']  / 2 # half width
-hboxY     = data['box']['length'] / 2 # half lenght
-boxHeight = data['box']['height']     # height of box
+hboxX     = data['box']['width']  / 2  # half width
+hboxY     = data['box']['length'] / 2  # half lenght
+boxHeight = data['box']['height']      # height of box
+hboxZ     = boxHeight / 2              # half of height
+boxCenterX = data['box']['center']['x'] # x,y,z coordinates of the box center
+boxCenterY = data['box']['center']['y']
+boxCenterZ = data['box']['center']['z']
 print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (width x lenght x height)")
+print(f"Box center: {boxCenterX} {boxCenterY} {boxCenterZ}")
 
-# Materials
+# Material parameters obtrained using material names argument
 matWheelParams  = data['materials'][data['wheel']    ['material']]
 matSphereParams = data['materials'][data['particles']['material']]
 matBoxParams    = data['materials'][data['box'      ]['material']]
@@ -50,12 +67,18 @@ def createFrictMaterial(params, labelarg):
                     poisson       = params['poisson'],
                     frictionAngle = params['frictionAngle'],
                     label = labelarg)
+# create materials, mark them with labels
 matWheel  = createFrictMaterial(matWheelParams, "wheelmat")
 matSphere = createFrictMaterial(matSphereParams, "mat1")
 matBox = createFrictMaterial(matBoxParams, "wallmat")
 idWheelMat  = O.materials.append(matWheel)
 idBoxMat = O.materials.append(matBox)
-idSphereMat = O.materials.append(matSphere)
+idSphereMat = O.materials.append(matSphere) # last
+
+# Particle-particld pair interaction parameters
+intPPparams     = data['matPairs']['pp']
+pp_en           = intPPparams['en']
+pp_krot         = intPPparams['krot']
 
 def printIntDetails(): ###
     import sys
@@ -93,8 +116,9 @@ def printIntDetails(): ###
 
 # Reposition the wheel to the top surface of soil and set it in motion
 def setInMotion():
-    smax = 0      # stores highest particle surface
+    smax = boxCenterZ - hboxZ      # stores highest particle surface
     idx = None
+    print(f'{wheelBodyId=} {partnum=}')
     for i in range(wheelBodyId + 1, wheelBodyId + partnum + 1):
         z = O.bodies[i].state.pos[2]
         r = O.bodies[i].shape.radius
@@ -203,7 +227,7 @@ plot.plot(subPlots=True)
 # Main program
 #
 # Create rectangular open-top box
-O.bodies.append(geom.facetBox((0, 0, boxHeight/2),
+O.bodies.append(geom.facetBox((boxCenterX, boxCenterY, boxCenterZ),
                               (hboxX, hboxY, boxHeight/2),
                               wallMask=31, material=idBoxMat),)
 nf_box = len(O.bodies) # ! no extra body for complete box
@@ -242,23 +266,48 @@ wheelBody.state.vel = Vector3(0,0,0)
 wheelBody.state.angVel = Vector3(0,0,0)
 
 nf = len(O.bodies);
-print(f"Number of facets (box and wheel): {nf}")
+print(f"Number of facets (box and wheel): {nf-1}") # there is one extra body for wheel
 
-# Add particles inside the box (not on top)
 sp = pack.SpherePack()
-sp.makeCloud(
-    (-hboxX, -hboxY, 0.0),            # slightly inside box
-    ( hboxX,  hboxY, boxHeight*0.8),  # well below top edge
-    rMean=rMean,
-    rRelFuzz=rRelFuzz,
-    seed=rndSeed
-)
-sp.toSimulation(material=idSphereMat)
-partnum = len(sp)
-print(f"Number of generated particles: {partnum}")
+if part_gen == "meanFuzz":
+    # Add particles inside the box (not on top)
+    sp.makeCloud(
+        # bottom left corner
+        (boxCenterX - hboxX, boxCenterY - hboxY, boxCenterZ - hboxZ),
+        # top right corner
+        (boxCenterX + hboxX, boxCenterY + hboxY, boxCenterZ - hboxZ + boxHeight*pck),
+        rMean=rMean,
+        rRelFuzz=rRelFuzz,
+        seed=rndSeed
+    )
+    sp.toSimulation(material=idSphereMat)
+    partnum = len(sp)
+elif part_gen == "clumpCloud":
+    # generate randomly spheres with uniform radius distribution
+    S1r = pack.SpherePack([((0,0,0),pscale*rmin)])
+    S1  = pack.SpherePack([((0,0,0),pscale*rmed)])
+    S1R = pack.SpherePack([((0,0,0),pscale*rmax)])
+    sp.makeClumpCloud(
+        # bottom left corner
+        (boxCenterX - hboxX, boxCenterY - hboxY, boxCenterZ - hboxZ),
+        # top right corner
+        (boxCenterX + hboxX, boxCenterY + hboxY, boxCenterZ - hboxZ + boxHeight*pck),
+        [S1, S1r, S1R],
+        num = round(80000/pscale**3), seed = rndSeed)
+    sp.toSimulation(color=(.6,.57,.53))
+    partnum = len(sp)
+
+print(f"Number of particles generated: {partnum}")
 
 # Time step & number of iterations to settle particles and to end simulation
-O.dt = 0.5 * utils.PWaveTimeStep()
+recDt = 0.5 * utils.PWaveTimeStep()
+print(f"Recommened time step: {recDt}")
+if 'timeStep' in data['sim']:
+    O.dt =  data['sim']['timeStep']
+else:
+    O.dt = recDt
+print(f"Actual time step: {O.dt}")
+
 settleIt = round(settleTime / O.dt)
 endIt    = round(endTime    / O.dt)
 
@@ -269,10 +318,11 @@ phys = "Mindlin"
 if phys == "Mindlin":
     O.engines = [
         ForceResetter(),
-        InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb()]),
+        InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb(), Bo1_Box_Aabb()]),
         InteractionLoop(
-            [Ig2_Sphere_Sphere_ScGeom(), Ig2_Facet_Sphere_ScGeom()],
-            [Ip2_FrictMat_FrictMat_MindlinPhys(en=.3, krot=.00005,
+            [Ig2_Sphere_Sphere_ScGeom(), Ig2_Facet_Sphere_ScGeom(),
+             Ig2_Box_Sphere_ScGeom(), Ig2_Box_Sphere_ScGeom6D()],
+            [Ip2_FrictMat_FrictMat_MindlinPhys(en=pp_en, krot = pp_krot,
                                                label='ContactModel')],
             [Law2_ScGeom_MindlinPhys_Mindlin(label='Mindlin',includeMoment=True)]
         )
@@ -289,7 +339,7 @@ else:
     ]
 
 # Integrator, necessary
-O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.3)]
+O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.0)]
 
 # Print simulations and interaction parameter details ###
 O.engines += [PyRunner(command = 'printIntDetails()', firstIterRun=2)]
@@ -310,10 +360,8 @@ O.engines += [PyRunner(command='timeend = time.time()', firstIterRun = endIt-1)]
 O.engines += [PyRunner(command='timeCalculator()', firstIterRun = endIt-1)]
 
 O.stopAtIter = endIt
-O.stopAtIter = 4 ###
+#O.stopAtIter = 4 ###
 
-GUImode = True
-GUImode = False ###
 if GUImode:
     O.saveTmp()               # save simulation to memory
     from yade import qt       # set view direction

@@ -3,18 +3,16 @@
 	"length": 4.0,
 	"width":  1.0,
 	"height": 1.5,
+	"center": {
+	    "x": 0.0,
+	    "y": 0.0,
+	    "z": 0.75
+	},
 	"material": "matBox"
     },
     "wheel": {
-	"radius": 0.5,
+	"stlFile": "cylinder.stl",
 	"radEff": 0.5,
-	"width": 0.8,
-	"num_sections": 18,
-	"lugs": {
-	    "width": 0.005,
-	    "height": 0.02,
-	    "number": 18
-	},
 	"mass": 500.0,
 	"Ixx": 6.25,
 	"initVals" : {
@@ -31,10 +29,13 @@
 	"material" : "matWheel"
     },
     "particles": {
+	"material" : "matSphere",
+	"pck": 0.8,
+	"rndSeed": 123,
+	"generation": "meanFuzz",
 	"rMean": 0.06,
 	"rRelFuzz": 0.3,
-	"rndSeed": 123,
-	"material" : "matSphere"
+	"scale": 1.0
     },
     "materials": {
 	"matWheel": {
@@ -56,8 +57,15 @@
 	    "frictionAngle": 0.6
 	}
     },
+    "matPairs": {
+	"pp": {
+	    "en": 0.3,
+	    "krot": 0.00005
+	}
+    },
     "sim": {
 	"settleTime": 1.0,
-	"endTime": 10.0
+	"endTime": 4.25,
+	"GUImode": true
     }
 }
