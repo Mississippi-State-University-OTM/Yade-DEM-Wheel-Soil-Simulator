@@ -149,10 +149,30 @@ def setInMotion():
     else:
         wheelBody.state.blockedDOFs = 'yYZ'
 
+firstPrint = True
+prevTime = timestart
+prev = 0
 def printVirtTime():
     curr = O.iter * O.dt
     end = O.stopAtIter * O.dt
-    print(f"Simulated time: {curr:.2f}s / {end:.2f}s = {curr/end*100:.2f}%")
+    simperc = f"Simulated time: {curr:.3f}s / {end:.3f}s = {curr/end*100:.2f}%"
+
+    global firstPrint, prevTime, prev
+    if firstPrint:
+        print(simperc, file = sys.stderr)
+        firstPrint = False
+    else:
+        currTime = time.time()
+        from_last_time = currTime - prevTime
+        from_last_sim = curr - prev
+        rem = end - curr
+        est = from_last_time/from_last_sim * rem
+        from datetime import timedelta
+        delta = timedelta(seconds=round(est))
+        print(f"{simperc}          Est. remaining: {delta}", file = sys.stderr)
+
+    prev = curr
+    prevTime = time.time()
 
 # Calculate execution time
 def timeCalculator():
