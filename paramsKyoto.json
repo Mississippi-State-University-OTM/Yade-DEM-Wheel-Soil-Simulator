@@ -70,6 +70,6 @@
         "endTime": 4.25,
         "timeStep": 0.00001,
         "progRepInterval": 0.01,
-        "GUImode": false
+        "GUImode": true
     }
 }
