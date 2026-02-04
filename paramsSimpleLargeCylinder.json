@@ -11,7 +11,7 @@
 	"material": "matBox"
     },
     "wheel": {
-	"stlFile": "cylinder.stl",
+	"stlFile": "wheelLargeCylinder.stl",
 	"radEff": 0.5,
 	"mass": 500.0,
 	"Ixx": 6.25,
