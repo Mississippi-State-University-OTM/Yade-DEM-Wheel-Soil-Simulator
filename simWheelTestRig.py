@@ -22,6 +22,7 @@ initZ        = data['wheel']['initVals']['z']    # Wheel waiting-for-soil-to-set
 settleTime   = data['sim']['settleTime']         # Time to settle particles
 endTime      = data['sim']['endTime']            # Total simulated time
 progRepInt   = data['sim']['progRepInterval']    # Print simulated time and % done each this simulated interval
+dataSaveInt  = data['sim']['dataSaveInterval']   # Sim. time interval to save data
 GUImode      = data['sim']['GUImode']            # True: run with GUI
 stlFile      = data['wheel']['stlFile']          # Wheel STL/OBJ file
 
@@ -343,8 +344,9 @@ O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.0)]
 O.engines += [PyRunner(command = 'setInMotion()', firstIterRun = settleIt)]
 
 # Record and plot data
-O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = 500,
-                   firstIterRun = 0)]
+dataSaveIter = round(dataSaveInt/O.dt)
+O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = dataSaveIter,
+                       firstIterRun = 0)]
 O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
                    firstIterRun = endIt-1)]
 O.engines += [PyRunner(command = 'plot.plot(noShow=True).savefig("plot.pdf")',
