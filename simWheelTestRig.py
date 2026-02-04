@@ -1,8 +1,10 @@
 timestart = time.time()
 
+param_file = sys.argv[1] if len(sys.argv) > 1 else 'paramsKyoto.json'
+print(f'Parameter file:\n "{param_file}"')
+
 import json
-with open('paramsKyoto.json', 'r') as f:
-#with open('paramsMSSTATE.json', 'r') as f:
+with open(param_file, 'r') as f:
     data = json.load(f)
 
 # Wheel properties and initial coordinates from JSON
@@ -19,6 +21,7 @@ initY        = data['wheel']['initVals']['y']    # Initial y-coordinate
 initZ        = data['wheel']['initVals']['z']    # Wheel waiting-for-soil-to-settle height
 settleTime   = data['sim']['settleTime']         # Time to settle particles
 endTime      = data['sim']['endTime']            # Total simulated time
+progRepInt   = data['sim']['progRepInterval']    # Print simulated time and % done each this simulated interval
 GUImode      = data['sim']['GUImode']            # True: run with GUI
 stlFile      = data['wheel']['stlFile']          # Wheel STL/OBJ file
 
@@ -33,18 +36,21 @@ pck      = data['particles']['pck']
 rndSeed  = data['particles']['rndSeed']
 part_gen = data['particles']['generation']
 pscale   = data['particles']['scale']
-print(f"Particles: packing level: {pck}, generation: {part_gen}, {pscale=}, {rndSeed=}")
+print(f"Particles:")
+print(f" Packing level up to z = {pck} m")
+print(f" Generation method: {part_gen}, random seed: {rndSeed=}")
+print(f" Scale-up particle sizes: {pscale} X original size (to speed up simulation")
 if part_gen == "meanFuzz":
     rMean    = data['particles']['rMean']
     rRelFuzz = data['particles']['rRelFuzz']
     rndSeed  = data['particles']['rndSeed']
-    print(f"meanFuzz Particles: Mean Radius: {rMean} m, {rRelFuzz=}")
+    print(f" MeanFuzz generation method: mean radius: {rMean} m, radius relative fuzz: {rRelFuzz=}")
 elif part_gen == "clumpCloud":
     rmin     = data['particles']['rmin']
     rmed     = data['particles']['rmed']
     rmax     = data['particles']['rmax']
     partnum  = data['particles']['num' ]
-    print(f"clumpCloud Particles: Radius: {rmin}, {rmed}, {rmax}, number: {partnum}")
+    print(f" ClumpCloud generation method: Radii: {rmin}, {rmed}, {rmax}, requsted # of particles: {partnum}")
 
 # Box interior region (open top)
 hboxX     = data['box']['width']  / 2  # half width
@@ -143,6 +149,11 @@ def setInMotion():
     else:
         wheelBody.state.blockedDOFs = 'yYZ'
 
+def printVirtTime():
+    curr = O.iter * O.dt
+    end = O.stopAtIter * O.dt
+    print(f"Simulated time: {curr:.2f}s / {end:.2f}s = {curr/end*100:.2f}%")
+
 # Calculate execution time
 def timeCalculator():
     calc_time_total = timeend - timestart
@@ -184,7 +195,7 @@ def fix_normals(facetList):
             f.shape.vertices = [v[0], v[2], v[1]]   # swap to flip orientation
             count_flipped = count_flipped + 1
     if count_flipped:
-        print(" Flipped ", count_flipped, " facets.")
+        print(f" Flipped {count_flipped} facets.")
 
     return facetList
 
@@ -301,9 +312,9 @@ print(f"Number of particles generated: {partnum}")
 
 # Time step & number of iterations to settle particles and to end simulation
 recDt = 0.5 * utils.PWaveTimeStep()
-print(f"Recommened time step: {recDt}")
+print(f"Recommened half PWave time step: {recDt:.3g}")
 if 'timeStep' in data['sim']:
-    O.dt =  data['sim']['timeStep']
+    O.dt = data['sim']['timeStep']
 else:
     O.dt = recDt
 print(f"Actual time step: {O.dt}")
@@ -356,6 +367,8 @@ O.engines += [PyRunner(command = 'plot.plot(noShow=True).savefig("plot.pdf")',
                        firstIterRun = endIt-1)]
 
 # Timing info
+progReportIter = round(progRepInt/O.dt)
+O.engines += [PyRunner(command='printVirtTime()', iterPeriod = progReportIter)]
 O.engines += [PyRunner(command='timeend = time.time()', firstIterRun = endIt-1)]
 O.engines += [PyRunner(command='timeCalculator()', firstIterRun = endIt-1)]
 
