@@ -86,39 +86,6 @@ intPPparams     = data['matPairs']['pp']
 pp_en           = intPPparams['en']
 pp_krot         = intPPparams['krot']
 
-def printIntDetails(): ###
-    import sys
-    import os
-    # Get the directory where your current simulation script is located
-    # os.getcwd() returns the folder you were in when you typed 'yade my_script.py'
-    script_dir = os.getcwd()
-
-    # Add that directory to the search path
-    if script_dir not in sys.path:
-        sys.path.append(script_dir)
-
-    from libFunctors import print_functor_details, print_material_report
-    from libFunctors import export_sim_state_json
-
-    print_material_report()
-    print_functor_details()
-    export_sim_state_json()
-
-    ####
-    from libInteractions import (
-        print_insertion_sort_colliders_first,
-        print_contact_functors,
-        print_contact_types_from_interactions,
-        print_materials_summary,
-        write_simulation_summary_json,
-    )
-    # Before first sim. step
-    print_insertion_sort_colliders_first()
-    print_contact_functors()
-    print_materials_summary()
-    # After first sim. step
-    print_contact_types_from_interactions()
-    write_simulation_summary_json('sim_summary.json')
 
 # Reposition the wheel to the top surface of soil and set it in motion
 def setInMotion():
@@ -371,9 +338,6 @@ else:
 
 # Integrator, necessary
 O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.0)]
-
-# Print simulations and interaction parameter details ###
-O.engines += [PyRunner(command = 'printIntDetails()', firstIterRun=2)]
 
 # Adjust wheel height to the top of soil
 O.engines += [PyRunner(command = 'setInMotion()', firstIterRun = settleIt)]
