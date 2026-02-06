@@ -1,0 +1,22 @@
+Welcome to Yade 2022.01a 
+Using python version: 3.10.12 (main, Jan  8 2026, 06:52:19) [GCC 11.4.0]
+XMLRPC info provider on http://localhost:21000
+Parameter file:
+ "paramsSimpleLargeCylinder.json"
+Particles:
+ Packing level up to z = 0.8 m
+ Generation method: meanFuzz, random seed: rndSeed=123
+ Scale-up particle sizes: 10.0 X original size (to speed up simulation
+ MeanFuzz generation method: mean radius: 0.06 m, radius relative fuzz: rRelFuzz=0.3
+Box dimensions: 1.0 x 4.0 x 1.5 m (width x lenght x height)
+Box center: 0.0 0.0 0.75
+Created open-top box, 10 facets.
+Imported 72 facets from "wheelLargeCylinder.stl" file.
+Checking facet normals...
+ Flipped 36 facets.
+Number of facets (box and wheel): 82
+Number of particles generated: 1087
+Recommened half PWave time step: 0.00021
+Actual time step: 0.00021011622323658806
+wheelBodyId=82 partnum=1087
+Wheel repositioned to reach the highest particle surface of 0.523 m.

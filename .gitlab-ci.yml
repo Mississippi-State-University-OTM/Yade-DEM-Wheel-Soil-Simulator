@@ -1,0 +1,25 @@
+# Use the official YADE production image
+image: registry.gitlab.com/bohumir1/test:2022.01a
+
+test_yade_simulation:
+  script:
+    # 1. Verify YADE is installed and check version
+    - yade --version
+
+    # 2. Run your simulation script
+    # -x: exit when finished
+    # --tests: runs in test mode (useful for internal checks)
+    # > pipeline.log: captures all standard output
+    - yade -j1 -x -n simWheelTestRig.py paramsSimpleLargeCylinder.json > test_default.log
+
+    # 3. Compare the generated log against your sample
+    - diff <(sed '2d' test_default.log) <(sed '2d' test_default_expected.log)
+    - diff -w plot.txt plot_default_expected.txt
+
+  artifacts:
+    when: always
+    # This saves the log so you can download it from the GitLab UI
+    paths:
+      - test_default.log
+      - plot.txt
+    expire_in: 1 week
