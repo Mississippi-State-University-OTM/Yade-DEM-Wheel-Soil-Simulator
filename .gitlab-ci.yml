@@ -10,7 +10,7 @@ test_yade_simulation:
     # -x: exit when finished
     # --tests: runs in test mode (useful for internal checks)
     # > pipeline.log: captures all standard output
-    - yade -j1 -x -n simWheelTestRig.py paramsSimpleLargeCylinder.json > test_default.log
+    - yade -j1 -x -n simWheelTestRigMSSTATE.py paramsSimpleLargeCylinder.json > test_default.log
 
     # 3. Compare the generated log against your sample
     - diff <(sed '2d' test_default.log) <(sed '2d' test_default_expected.log)
