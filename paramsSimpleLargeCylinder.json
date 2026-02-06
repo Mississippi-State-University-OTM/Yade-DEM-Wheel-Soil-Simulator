@@ -67,6 +67,7 @@
         "settleTime": 1.0,
         "endTime": 4.25,
         "progRepInterval": 0.1,
-        "GUImode": true
+        "dataSaveInterval": 0.005,
+        "GUImode": false
     }
 }
