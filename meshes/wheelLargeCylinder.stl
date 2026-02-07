@@ -1,4 +1,4 @@
-solid cylinder.stl
+solid wheelLargeCylinder.stl
 facet normal -0.085505 0.000000 0.000000
   outer loop
     vertex -0.400000 0.000000 0.000000
@@ -503,4 +503,4 @@ facet normal 0.000000 0.136808 -0.024123
     vertex 0.400000 0.469846 -0.171010
   endloop
 endfacet
-endsolid cylinder.stl
+endsolid wheelLargeCylinder.stl

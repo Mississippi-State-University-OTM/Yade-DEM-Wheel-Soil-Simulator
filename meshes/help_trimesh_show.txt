@@ -1,0 +1,19 @@
+# SceneViewer Controls for trimesh wiewer
+
+| Input                      | Action                                        |
+|----------------------------|-----------------------------------------------|
+| `mouse click + drag`       | Rotates the view                              |
+| `ctl + mouse click + drag` | Pans the view                                 |
+| `mouse wheel`              | Zooms the view                                |
+| `z`                        | Resets to the initial view                    |
+| `w`                        | Toggles wireframe mode                        |
+| `c`                        | Toggles backface culling                      |
+| `g`                        | Toggles an XY grid with Z set to lowest point |
+| `a`                        | Toggles an XYZ-RGB axis marker between: off,  |
+|                            | at world frame, or at every frame and world,  |
+|                            | and at every frame                            |
+| `f`                        | Toggles between fullscreen and windowed mode  |
+| `h`                        | Prints this help message                      |
+| `m`                        | Maximizes the window                          |
+| `q`                        | Closes the window                             |
+|----------------------------|-----------------------------------------------|

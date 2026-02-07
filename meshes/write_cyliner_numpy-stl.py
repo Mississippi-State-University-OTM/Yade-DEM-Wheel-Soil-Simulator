@@ -72,17 +72,17 @@ def create_cube():
     return vertices, faces
 
 # Main program
-object = "cube"
-object = "cylinder"
+object = "Cube"
+object = "Cylinder"
 
-if object == "cylinder":
+if object == "Cylinder":
     wheelRadius  = 0.5
     wheelWidth   = 0.8
     segments = 18     # Cylinder resolution
     myorient = 'x'
     vertices, faces = create_cylinder(radius=wheelRadius, height=wheelWidth,
                                       nsegments=segments, orient=myorient)
-elif object == "cube":
+elif object == "Cube":
     vertices, faces = create_cube()
 else:
     import sys
@@ -98,18 +98,6 @@ for i, f in enumerate(faces):
         smesh.vectors[i][j] = vertices[f[j], :]
 
 # Write the mesh to an STL file
-ofile = object + '.stl'
+ofile = "wheelLarge" + object + ".stl"
 smesh.save(ofile, mode=stl.Mode.ASCII)
-print(f"numpy-stl successfully wrote the mesh to \"{ofile}\".")
-
-# Fix normals to be outward
-import trimesh
-tmesh = trimesh.load(ofile)
-out = tmesh.fix_normals()
-print("out:", out)
-# Check if watertight (required for reliable outward normals)
-print(tmesh.is_watertight)
-# Save the repaired mesh
-ofile = object + "_fix.stl"
-tmesh.export(ofile, file_type ='stl_ascii')
-print(f"trimesh successfully wrote the mesh to \"{ofile}\".")
+print(f"Numpy-stl successfully wrote the mesh to \"{ofile}\".")
