@@ -2,7 +2,11 @@ import trimesh
 import numpy as np
 
 import json
-with open('dims_lugged_wheel_Kyoto.json', 'r') as f:
+basename = "dims_lugged_wheel_"
+mywheel="Kyoto"
+#mywheel="KyotoLarger"
+ifile = basename + mywheel + ".json"
+with open(ifile, 'r') as f:
     wheel_dims = json.load(f)
 
 wheel_radius    = wheel_dims['radius']
@@ -13,7 +17,7 @@ lugs_height     = wheel_dims['lugs']['height']
 lugs_number     = wheel_dims['lugs']['number']
 print(f"Wheel dimensions: radius {wheel_radius} width {wheel_width} m ")
 print(f" {lugs_width=}")
-print(f" {lugs_height=}")
+print(f" {lugs_height=} half in/out, actual lug height={lugs_height/2}")
 print(f" {lugs_number=}")
 
 # Create the main wheel (cylinder)
@@ -42,12 +46,28 @@ lugged_wheel.apply_transform(rot_x)
 # Show the result
 lugged_wheel.show()
 
-bname = "lugged_wheel_trimesh"
-
-ofile = bname + "_ascii.stl"
+bname = "wheel" + mywheel
+ofile = bname + ".stl"
 lugged_wheel.export(ofile, file_type ='stl_ascii')
-print(f"trimesh successfully wrote the mesh to \"{ofile}\".")
+print(f"Trimesh successfully wrote the mesh to \"{ofile}\".")
 
 ofile = bname + "_binary.stl"
 lugged_wheel.export(ofile, file_type ='stl')
-print(f"trimesh successfully wrote the mesh to \"{ofile}\".")
+print(f"Trimesh successfully wrote the mesh to \"{ofile}\".")
+
+fix = False
+if fix:
+    # Fix ascii version
+    ifile_bname = bname + "_ascii"
+    ifile = ifile_bname + ".stl"
+    tmesh = trimesh.load(ifile)
+
+    # Check if watertight (required for reliable outward normals)
+    print(" Is watergight? (check required for reliable outward normals)",
+          tmesh.is_watertight)
+    out = tmesh.fix_normals()
+
+    # Save the repaired mesh
+    ofile = ifile_bname + "_fix.stl"
+    tmesh.export(ofile, file_type ='stl_ascii')
+    print(f"Trimesh successfully wrote fixed mesh to \"{ofile}\".")
