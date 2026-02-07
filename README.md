@@ -1,10 +1,10 @@
 # Yade DEM Soil-Wheel Simulators
 
-Two soil-wheel simulators are provided. The first is `simWheelTestRigKyoto.py`, developed at Kyoto University and published as Nakanishi (2020), Journal of Terramechanics (DOI: <https://doi.org/10.1016/j.jterra.2020.10.001>). The published code was adapted here to work with Python 3. The second, `simWheelTestRigMSSTATE.py`, was inspired by `simWheelTestRigKyoto` and developed at Mississippi State University to assist students in the Wheel and Track Design Competition of the International Society of Terrain-Vehicle Systems.
+Two soil-wheel simulators are provided. The first is `simWheelTestRigKyoto.py`, developed at Kyoto University and published by [Nakanishi (2020)](https://doi.org/10.1016/j.jterra.2020.10.001). It sets the tractive load and uses PID controller to keep angular velocity constant. The published code was adapted here to work with Python 3. The second, `simWheelTestRigMSSTATE.py`, was inspired by `simWheelTestRigKyoto` and developed at the Center for Advanced Vehicular Systems, Mississippi State University by [Bohumir Jelinek](https://www.cavs.msstate.edu/directory/information.php?d=69) to assist students in the [Wheel and Track Design Competition](https://doi.org/10.1016/j.jterra.2025.101117) of the [International Society of Terrain-Vehicle Systems](https://www.istvs.org/). It simulates the wheel motion in towed, self-propelled, and prescribed slip conditions.
 
 ## Installation of Yade DEM Simulation Environment
 
-Yade DEM simulation environment can be installed according to the instructions at the Yade website, <https://yade-dem.org/doc/>, which provides an introduction to Linux, Python, and detailed documentation.
+Yade DEM simulation environment can be installed according to the instructions at the [Yade DEM website](https://yade-dem.org/doc/), which provides an introduction to Linux, Python, and detailed documentation.
 
 ## Requirements
 
@@ -16,7 +16,7 @@ Yade DEM simulation environment can be installed according to the instructions a
 
 ## Running the Simulators with GUI
 
-Start the simulators using Yade from the command line:
+Start the simulators using Yade from the command line. Use `yade` for stable releases or `yadedaily` if you have a daily build installed. Check your installed version with `yade --version` or `yadedaily --version`.
 
 **Kyoto simulator:**
 
@@ -24,13 +24,13 @@ Start the simulators using Yade from the command line:
 yade simWheelTestRigKyoto.py
 ```
 
-**MSSTATE simulator:**
+**MSSTATE simulator with stable release:**
 
 ```bash
 yade simWheelTestRigMSSTATE.py
 ```
 
-**MSSTATE simulator with daily build** (if only a daily build is available):
+**MSSTATE simulator with daily build:**
 
 ```bash
 yadedaily simWheelTestRigMSSTATE.py
@@ -38,7 +38,7 @@ yadedaily simWheelTestRigMSSTATE.py
 
 Each command will open a GUI controller window, a plotting window, and a 3D display window. Press the "Play" button in the controller window to start the simulation.
 
-By default, the MSSTATE simulator `simWheelTestRigMSSTATE.py` reads the parameter file `paramsKyoto.json` from the working directory. This file contains the wheel and soil parameters used in Nakanishi (2020) — DOI: <https://doi.org/10.1016/j.jterra.2020.10.001>. The Kyoto simulator `simWheelTestRigKyoto.py` uses hard-coded parameters and does not read a parameter file.
+By default, the MSSTATE simulator `simWheelTestRigMSSTATE.py` reads the parameter file `paramsKyoto.json` from the working directory. This file contains the wheel and soil parameters used in [Nakanishi (2020)](https://doi.org/10.1016/j.jterra.2020.10.001). The Kyoto simulator `simWheelTestRigKyoto.py` uses hard-coded parameters and does not read a parameter file.
 
 To run the MSSTATE simulator with a different parameter file, pass the filename or path as the first command-line argument. Examples:
 
@@ -80,7 +80,7 @@ Or explicitly pass a parameter file (example):
 yade -n -x simWheelTestRigMSSTATE.py paramsCustom.json
 ```
 
-Note: `simWheelTestRigKyoto.py` uses hard-coded parameters and does not read `paramsKyoto.json`. To run the Kyoto script without a GUI, set the _GUImode=False_ near the end of `simWheelTestRigKyoto.py` and use Yade's CLI flags:
+Note: `simWheelTestRigKyoto.py` uses hard-coded parameters and does not read `paramsKyoto.json`. To run the Kyoto script without a GUI, set the `GUImode = False` near the end of `simWheelTestRigKyoto.py` and use Yade's CLI flags:
 
 ```bash
 yade -n -x simWheelTestRigKyoto.py
