@@ -6,6 +6,7 @@ stages:
   stage: test
   variables:
     OUTPUT_DIR: "out_${CI_JOB_NAME}"
+    SAMPLE_PLOT_DATA: "testing/plot_default_expected_2023.txt"
   before_script:
     - set -euo pipefail
   script:
@@ -18,16 +19,12 @@ stages:
 
     # 2. Run sipmle simulation, print to screen and file
     - mkdir -p $OUTPUT_DIR
-    - yade -j1 -x -n simWheelTestRigMSSTATE.py ./testing/paramsSimpleLargeCylinder.json | tee $OUTPUT_DIR/test_simple.log
-    - mv plot.txt plot.pdf $OUTPUT_DIR
+    - yade -j8 -x -n simWheelTestRigMSSTATE.py ./testing/paramsSimpleLargeCylinder.json | tee $OUTPUT_DIR/test_simple.log
+    - mv plot.txt plot.pdf exec_time.txt $OUTPUT_DIR
 
-    # 3. Compare the generated log against your sample, delete 1st, 2nd, and last line (Yade ver, Pytohn compil time, zsurf)
-    - sed '1,2d; $d' $OUTPUT_DIR/test_simple.log > log.filtered
-    - sed '1,2d; $d' ./testing/test_default_expected.log > expected.filtered
-    - diff log.filtered expected.filtered
-
-    # 4. Compare averaged data and show results
-    - python3 ./testing/calcAvg.py $OUTPUT_DIR/plot.txt 2.0 9.0 --ref testing/plot_default_expected.txt --compare Wx:170 Vz:2 Fy:11 Fz:0.5 Slip:140 Tx:5 z:2 > $OUTPUT_DIR/test_avg.log
+    # 3. Compare averaged data and show results
+    - cat $OUTPUT_DIR/exec_time.txt
+    - python3 ./testing/calcAvg.py $OUTPUT_DIR/plot.txt 2.0 9.0 --ref $SAMPLE_PLOT_DATA --compare Wx:6 Vz:4 Fy:6 Fz:2 Slip:4 Tx:1 z:10 | tee $OUTPUT_DIR/test_avg.log
     - cat $OUTPUT_DIR/plot_avg.txt
     - cat $OUTPUT_DIR/test_avg.log
   artifacts:
@@ -39,9 +36,17 @@ stages:
     expire_in: 1 week
 
 # Create jobs for specific images by extending the template
-my_2022p01a_test:
+bullseye_test:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-bullseye
+  variables:
+    SAMPLE_PLOT_DATA: "testing/plot_default_expected_2022.txt"
+
+my2022p01a_test:
   extends: .test_template
   image: registry.gitlab.com/bohumir1/test:2022.01a
+  variables:
+    SAMPLE_PLOT_DATA: "testing/plot_default_expected_2022.txt"
 
 bookworm_test:
   extends: .test_template

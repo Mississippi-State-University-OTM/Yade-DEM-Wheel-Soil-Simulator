@@ -76,7 +76,7 @@ def main():
         print("No data processed for main file.")
         sys.exit(1)
 
-    # 2. Write Results to File (Transposed: one variable per row)
+    # 2. Write New Results to File (Transposed: one variable per row)
     base, ext = os.path.splitext(args.file)
     output_name = f"{base}_avg{ext}"
     try:
@@ -96,9 +96,9 @@ def main():
         
         if ref_avgs:
             # Updated Table Header with Target % column
-            fmt = "{:<12} | {:<10} | {:<10} | {:<10} | {:<10} | {:<10} | {:<8}"
-            print(fmt.format("Variable", "New Avg", "Ref Avg", "+/- Tol", "Actual %", "Target %", "Status"))
-            print("-" * 95)
+            fmt = "{:<8} | {:>10} | {:>10} | {:>10} | {:>8} | {:>8} | {:<8}"
+            print(fmt.format("Variable", "New Avg", "Ref Avg", "+/- StDev", "Actual %", "Target %", "Status"))
+            print("-" * 79)
             
             for col_name, tol_percent in comp_map.items():
                 if col_name in headers and col_name in ref_headers:
@@ -124,7 +124,7 @@ def main():
                         col_name, 
                         f"{new_val:.4f}", 
                         f"{ref_val:.4f}", 
-                        f"{tolerance_val:.4f}", 
+                        f"{ref_std:.4f}",
                         f"{actual_pct:.2f}%", 
                         f"{tol_percent:.2f}%", 
                         status
