@@ -1,25 +1,52 @@
-# Use the official YADE production image
-image: registry.gitlab.com/bohumir1/test:2022.01a
-
-test_yade_simulation:
+stages:
+  - test
+  
+# Use images with different versions of Yade by extending templat with image
+.test_template:
+  stage: test
+  variables:
+    OUTPUT_DIR: "out_${CI_JOB_NAME}"
+  before_script:
+    - set -euo pipefail
   script:
+    # 0. Print info about container
+    - echo "Container info:"
+    - cat /etc/os-release || true
+    - python3 --version || true
     # 1. Verify YADE is installed and check version
     - yade --version
 
-    # 2. Run your simulation script
-    # -x: exit when finished
-    # --tests: runs in test mode (useful for internal checks)
-    # > pipeline.log: captures all standard output
-    - yade -j1 -x -n simWheelTestRigMSSTATE.py ./testing/paramsSimpleLargeCylinder.json > test_default.log
+    # 2. Run sipmle simulation, print to screen and file
+    - mkdir -p $OUTPUT_DIR
+    - yade -j1 -x -n simWheelTestRigMSSTATE.py ./testing/paramsSimpleLargeCylinder.json | tee $OUTPUT_DIR/test_simple.log
+    - mv plot.txt plot.pdf $OUTPUT_DIR
 
-    # 3. Compare the generated log against your sample
-    - diff <(sed '2d' test_default.log) <(sed '2d' ./testing/test_default_expected.log)
-    - diff -w plot.txt testing/plot_default_expected.txt
+    # 3. Compare the generated log against your sample, delete 1st, 2nd, and last line (Yade ver, Pytohn compil time, zsurf)
+    - sed '1,2d; $d' $OUTPUT_DIR/test_simple.log > log.filtered
+    - sed '1,2d; $d' ./testing/test_default_expected.log > expected.filtered
+    - diff log.filtered expected.filtered
 
+    # 4. Compare averaged data and show results
+    - python3 ./testing/calcAvg.py $OUTPUT_DIR/plot.txt 2.0 9.0 --ref testing/plot_default_expected.txt --compare Wx:170 Vz:2 Fy:11 Fz:0.5 Slip:140 Tx:5 z:2 > $OUTPUT_DIR/test_avg.log
+    - cat $OUTPUT_DIR/plot_avg.txt
+    - cat $OUTPUT_DIR/test_avg.log
   artifacts:
+    name: ${CI_JOB_NAME}_${CI_PIPELINE_ID}
     when: always
     # This saves the log so you can download it from the GitLab UI
     paths:
-      - test_default.log
-      - plot.txt
+      - $OUTPUT_DIR/
     expire_in: 1 week
+
+# Create jobs for specific images by extending the template
+my_2022p01a_test:
+  extends: .test_template
+  image: registry.gitlab.com/bohumir1/test:2022.01a
+
+bookworm_test:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-bookworm
+
+trixie_test:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
