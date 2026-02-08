@@ -13,8 +13,8 @@
     "wheel": {
         "stlFile": "./meshes/wheelLargeCylinder.stl",
         "radEff": 0.5,
-        "mass": 500.0,
-        "Ixx": 6.25,
+        "mass": 1000.0,
+        "Ixx": 250,
         "initVals" : {
             "x": 0.0,
             "y": -1.5,
@@ -35,7 +35,7 @@
         "generation": "meanFuzz",
         "rMean": 0.06,
         "rRelFuzz": 0.3,
-        "scale": 10.0
+        "scale": 5.0
     },
     "materials": {
         "matWheel": {
@@ -45,7 +45,7 @@
             "frictionAngle": 0.5
         },
         "matSphere": {
-            "density": 1000,
+            "density": 10000,
             "young": 1e7,
             "poisson": 0.3,
             "frictionAngle": 0.6
@@ -65,7 +65,7 @@
     },
     "sim": {
         "settleTime": 1.0,
-        "endTime": 4.25,
+        "endTime": 11.1,
         "progRepInterval": 0.1,
         "dataSaveInterval": 0.005,
         "GUImode": false

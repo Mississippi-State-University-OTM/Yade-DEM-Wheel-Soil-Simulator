@@ -6,7 +6,7 @@ Parameter file:
 Particles:
  Packing level up to z = 0.8 m
  Generation method: meanFuzz, random seed: rndSeed=123
- Scale-up particle sizes: 10.0 X original size (to speed up simulation
+ Scale-up particle sizes: 5.0 X original size (to speed up simulation
  MeanFuzz generation method: mean radius: 0.06 m, radius relative fuzz: rRelFuzz=0.3
 Box dimensions: 1.0 x 4.0 x 1.5 m (width x lenght x height)
 Box center: 0.0 0.0 0.75
@@ -16,7 +16,7 @@ Checking facet normals...
  Flipped 36 facets.
 Number of facets (box and wheel): 82
 Number of particles generated: 1087
-Recommened half PWave time step: 0.00021
-Actual time step: 0.00021011622323658806
+Recommened half PWave time step: 0.000664
+Actual time step: 0.0006644458387800147
 wheelBodyId=82 partnum=1087
-Wheel repositioned to reach the highest particle surface of 0.523 m.
+Wheel repositioned to reach the highest particle surface of 0.487 m.
