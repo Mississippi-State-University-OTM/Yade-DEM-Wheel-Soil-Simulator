@@ -92,7 +92,6 @@ pp_krot         = intPPparams['krot']
 def setInMotion():
     smax = boxCenterZ - hboxZ      # stores highest particle surface
     idx = None
-    print(f'{wheelBodyId=} {partnum=}')
     for i in range(wheelBodyId + 1, wheelBodyId + partnum + 1):
         z = O.bodies[i].state.pos[2]
         r = O.bodies[i].shape.radius

@@ -18,5 +18,4 @@ Number of facets (box and wheel): 82
 Number of particles generated: 1087
 Recommened half PWave time step: 0.000664
 Actual time step: 0.0006644458387800147
-wheelBodyId=82 partnum=1087
 Wheel repositioned to reach the highest particle surface of 0.487 m.
