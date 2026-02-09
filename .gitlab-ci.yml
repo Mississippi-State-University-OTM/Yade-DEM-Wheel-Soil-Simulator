@@ -6,7 +6,9 @@ stages:
   stage: test
   variables:
     OUTPUT_DIR: "out_${CI_JOB_NAME}"
+    PARAM_FILE: "testing/paramsSimpleLargeCylinder.json"
     SAMPLE_PLOT_DATA: "testing/plot_default_expected_2023.txt"
+    NTHREADS: "8"
   before_script:
     - set -euo pipefail
   script:
@@ -19,12 +21,12 @@ stages:
 
     # 2. Run sipmle simulation, print to screen and file
     - mkdir -p $OUTPUT_DIR
-    - yade -j8 -x -n simWheelTestRigMSSTATE.py ./testing/paramsSimpleLargeCylinder.json | tee $OUTPUT_DIR/test_simple.log
+    - yade -j${NTHREADS} -x -n simWheelTestRigMSSTATE.py $PARAM_FILE | tee $OUTPUT_DIR/test_simple.log
     - mv plot.txt plot.pdf exec_time.txt $OUTPUT_DIR
 
     # 3. Compare averaged data and show results
     - cat $OUTPUT_DIR/exec_time.txt
-    - python3 ./testing/calcAvg.py $OUTPUT_DIR/plot.txt 2.0 9.0 --ref $SAMPLE_PLOT_DATA --compare Wx:6 Vz:4 Fy:6 Fz:2 Slip:4 Tx:1 z:10 | tee $OUTPUT_DIR/test_avg.log
+    - python3 ./testing/calcAvg.py $OUTPUT_DIR/plot.txt 2.0 9.0 --ref $SAMPLE_PLOT_DATA --compare Wx:6 Vz:4 Fy:6 Fz:4 Slip:4 Tx:14 z:10 | tee $OUTPUT_DIR/test_avg.log
     - cat $OUTPUT_DIR/plot_avg.txt
     - cat $OUTPUT_DIR/test_avg.log
   artifacts:
@@ -55,3 +57,11 @@ bookworm_test:
 trixie_test:
   extends: .test_template
   image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
+
+my2022p01a_test_tow:
+  extends: .test_template
+  image: registry.gitlab.com/bohumir1/test:2022.01a
+  variables:
+    PARAM_FILE: "testing/paramsKyoto_tow0p3mps.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
+    NTHREADS: "1"
