@@ -1,8 +1,5 @@
-import sys
-import argparse
-import re
-import math
-import os
+#!/usr/bin/env python3
+import sys, argparse, re, math, os
 
 def calculate_stats(file_path, start_time, end_time):
     headers = []
@@ -77,17 +74,11 @@ def main():
         sys.exit(1)
 
     # 2. Write New Results to File (Transposed: one variable per row)
-    base, ext = os.path.splitext(args.file)
-    output_name = f"{base}_avg{ext}"
-    try:
-        with open(output_name, 'w') as f:
-            f.write(f"# Statistics for {args.file} (t={args.start} to {args.end})\n")
-            f.write(f"# {'Variable':<15} {'Average':<15} {'Std_Dev':<15}\n")
-            for h, a, s in zip(headers, avgs, stds):
-                f.write(f"{h:<17} {a:<15.6f} {s:<15.6f}\n")
-        print(f"Stats saved to: {output_name}")
-    except Exception as e:
-        print(f"Could not write to file: {e}")
+    print(f"# Statistics for {args.file} (t={args.start} to {args.end})")
+    print(f"# {'Variable':<8} {'Average':>15} {'Std_Dev':15}")
+    for h, a, s in zip(headers, avgs, stds):
+        if s != 0.0 and h != "At" and h != "t":
+            print(f"{h:<10} {a:>15.6f} {s:<15.6f}")
 
     # 3. Comparison Logic
     if args.ref and comp_map:

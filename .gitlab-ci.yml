@@ -4,11 +4,12 @@ stages:
 # Use images with different versions of Yade by extending templat with image
 .test_template:
   stage: test
+  when: manual
   variables:
-    OUTPUT_DIR: "out_${CI_JOB_NAME}"
-    PARAM_FILE: "testing/paramsSimpleLargeCylinder.json"
-    SAMPLE_PLOT_DATA: "testing/plot_default_expected_2023.txt"
     NTHREADS: "8"
+    OUTPUT_DIR: "out_${CI_JOB_NAME}_${NTHREADS}"
+    BEGT: "2.5"
+    ENDT: "9"
   before_script:
     - set -euo pipefail
   script:
@@ -21,14 +22,15 @@ stages:
 
     # 2. Run sipmle simulation, print to screen and file
     - mkdir -p $OUTPUT_DIR
-    - yade -j${NTHREADS} -x -n simWheelTestRigMSSTATE.py $PARAM_FILE | tee $OUTPUT_DIR/test_simple.log
+    - cp $PARAM_FILE $OUTPUT_DIR
+    - echo $OUTPUT_DIR $NTHREADS
+    - yade -j${NTHREADS} -x -n simWheelTestRigMSSTATE.py $PARAM_FILE | tee $OUTPUT_DIR/log.report
+    - cp simWheelTestRigMSSTATE.py $OUTPUT_DIR
     - mv plot.txt plot.pdf exec_time.txt $OUTPUT_DIR
 
     # 3. Compare averaged data and show results
     - cat $OUTPUT_DIR/exec_time.txt
-    - python3 ./testing/calcAvg.py $OUTPUT_DIR/plot.txt 2.0 9.0 --ref $SAMPLE_PLOT_DATA --compare Wx:6 Vz:4 Fy:6 Fz:4 Slip:4 Tx:14 z:10 | tee $OUTPUT_DIR/test_avg.log
-    - cat $OUTPUT_DIR/plot_avg.txt
-    - cat $OUTPUT_DIR/test_avg.log
+    - python3 ./testing/calcAvg.py $OUTPUT_DIR/plot.txt $BEGT $ENDT --ref $SAMPLE_PLOT_DATA --compare Wx:6 Vz:4 Fy:6 Fz:4 Slip:4 Tx:14 z:10 | tee $OUTPUT_DIR/log.compare
   artifacts:
     name: ${CI_JOB_NAME}_${CI_PIPELINE_ID}
     when: always
@@ -58,10 +60,40 @@ trixie_test:
   extends: .test_template
   image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
 
+trixie_test_slip50p:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
+  variables:
+    PARAM_FILE: "testing/paramsKyoto_slip50p.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip50p_trixie-j8.txt"
+    ENDT: "3.5"
+    NTHREADS: "8"
+
+trixie_test_slip6p3:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
+  variables:
+    PARAM_FILE: "testing/paramsKyoto_slip6p3p.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
+    BEGT: "3"
+    ENDT: "7"
+    NTHREADS: "8"
+
+trixie_test_slip60p:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
+  variables:
+    PARAM_FILE: "testing/paramsKyoto_slip60p.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip60p_2022p01DellG3-j8.txt"
+    BEGT: "3"
+    ENDT: "7"
+    NTHREADS: "8"
+
 my2022p01a_test_tow:
   extends: .test_template
   image: registry.gitlab.com/bohumir1/test:2022.01a
   variables:
     PARAM_FILE: "testing/paramsKyoto_tow0p3mps.json"
     SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
-    NTHREADS: "1"
+    ENDT: "3.5"
+    NTHREADS: "8"
