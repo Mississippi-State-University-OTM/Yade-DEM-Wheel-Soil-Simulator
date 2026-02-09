@@ -20,11 +20,11 @@
             "y": -0.35,
             "z": 0.6,
             "vy": 0.3,
-            "wx": -2.0
+            "wx": -5.4545455
         },
         "constrains": {
             "vy": true,
-            "wx": false
+            "wx": true
         },
         "material" : "matWheel"
     },

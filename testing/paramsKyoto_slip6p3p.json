@@ -19,12 +19,12 @@
             "x": 0.0,
             "y": -0.35,
             "z": 0.6,
-            "vy": 0.3,
-            "wx": -2.0
+            "vy": 0.2844732,
+            "wx": -2.76
         },
         "constrains": {
             "vy": true,
-            "wx": false
+            "wx": true
         },
         "material" : "matWheel"
     },
@@ -67,7 +67,7 @@
     },
     "sim": {
         "settleTime": 1.0,
-        "endTime": 4.25,
+        "endTime": 7.0,
         "progRepInterval": 0.01,
         "dataSaveInterval": 0.005,
         "GUImode": false

@@ -13,7 +13,7 @@
     "wheel": {
         "stlFile": "meshes/wheelKyoto.stl",
         "radEff": 0.11,
-        "mass": 0.5,
+        "mass": 2.0,
         "Ixx": 0.0025,
         "initVals" : {
             "x": 0.0,

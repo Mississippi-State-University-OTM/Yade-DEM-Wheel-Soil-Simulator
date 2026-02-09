@@ -116,6 +116,7 @@ def setInMotion():
     else:
         wheelBody.state.blockedDOFs = 'yYZ'
 
+from datetime import timedelta
 firstPrint = True
 prevTime = timestart
 prev = 0
@@ -134,7 +135,6 @@ def printVirtTime():
         from_last_sim = curr - prev
         rem = end - curr
         est = from_last_time/from_last_sim * rem
-        from datetime import timedelta
         delta = timedelta(seconds=round(est))
         print(f"{simperc}          Est. remaining: {delta}", file = sys.stderr)
 
@@ -144,11 +144,12 @@ def printVirtTime():
 # Calculate execution time
 def timeCalculator():
     calc_time_total = timeend - timestart
-    report = f"Execution time {calc_time_total:.2f} s for {O.time:.2f} s simulation."
+    delta = timedelta(seconds=round(calc_time_total))
+    report = (f"Execution time {delta} for {O.time:.2f} s simulation"
+              f" using {O.numThreads} threads.")
     print(report, file = sys.stderr)
-    f = open('exec_time.txt','w')
-    f.write(report + "\n")
-    f.close()
+    with open('exec_time.txt','w') as f:
+        f.write(report + "\n")
 
 # Check and fix inverted normals for facets
 def fix_normals(facetList):
