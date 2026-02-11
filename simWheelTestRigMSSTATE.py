@@ -8,14 +8,14 @@ with open(param_file, 'r') as f:
     data = json.load(f)
 
 # Wheel properties and initial coordinates from JSON
-valLinVel    = data['wheel']['initVals']['vy']   # set initial value of wheel Vy
-fixLinVel    = data['wheel']['constrains']['vy'] # True: fix the initial Vy over time
-valAngVel    = data['wheel']['initVals']['wx']   # set initial value of wheel Wx
-fixAngVel    = data['wheel']['constrains']['wx'] # True: fix the initial Wy over time
+valLinVel    = data['wheel']['initVals']['vx']   # set initial value of wheel Vx
+fixLinVel    = data['wheel']['constrains']['vx'] # True: fix the initial Vx over time
+valAngVel    = data['wheel']['initVals']['wy']   # set initial value of wheel Wx
+fixAngVel    = data['wheel']['constrains']['wy'] # True: fix the initial Wy over time
 wheelRadEff  = data['wheel']['radEff']           # for Gross Traction, Slip, & height above settled soil
 acc_g        = 9.81                              # acceleration of gravity
 wheelMass    = data['wheel']['mass']             # Rigid-body mass
-wheelInertia = (data['wheel']['Ixx'], 1, 1)      # Inertia tensor
+wheelInertia = (1, data['wheel']['Iyy'], 1)      # Inertia tensor
 initX        = data['wheel']['initVals']['x']    # Initial x-coordinate
 initY        = data['wheel']['initVals']['y']    # Initial y-coordinate
 initZ        = data['wheel']['initVals']['z']    # Wheel waiting-for-soil-to-settle height
@@ -28,8 +28,6 @@ stlFile      = data['wheel']['stlFile']          # Wheel STL/OBJ file
 
 stlScale = 1.0
 stlShift = Vector3(initX, initY, initZ)
-if stlFile == "lugged_wheel.stl":
-    stlShift = Vector3(-0.4 + initX, initY, initZ)
 
 # Particle parameters
 # initial placement of particles up to 0.8 (= 80%) of box' height
@@ -54,14 +52,14 @@ elif part_gen == "clumpCloud":
     print(f" ClumpCloud generation method: Radii: {rmin}, {rmed}, {rmax}, requsted # of particles: {partnum}")
 
 # Box interior region (open top)
-hboxX     = data['box']['width']  / 2  # half width
-hboxY     = data['box']['length'] / 2  # half lenght
+hboxY     = data['box']['width']  / 2  # half width
+hboxX     = data['box']['length'] / 2  # half lenght
 boxHeight = data['box']['height']      # height of box
 hboxZ     = boxHeight / 2              # half of height
 boxCenterX = data['box']['center']['x'] # x,y,z coordinates of the box center
 boxCenterY = data['box']['center']['y']
 boxCenterZ = data['box']['center']['z']
-print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (width x lenght x height)")
+print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (lenght x width x height)")
 print(f"Box center: {boxCenterX} {boxCenterY} {boxCenterZ}")
 
 # Material parameters obtrained using material names argument
@@ -104,17 +102,17 @@ def setInMotion():
     new_wheel_center_z = smax  + r + wheelRadEff + .0001
     wheelBody.state.pos = Vector3(initX, initY, new_wheel_center_z)
     if fixLinVel and fixAngVel: # z free
-        wheelBody.state.vel = Vector3(0,valLinVel,0)
-        wheelBody.state.angVel = Vector3(valAngVel,0,0)
+        wheelBody.state.vel = Vector3(valLinVel,0,0)
+        wheelBody.state.angVel = Vector3(0,valAngVel,0)
         wheelBody.state.blockedDOFs = 'xyXYZ'
-    elif fixAngVel: # z and y free
-        wheelBody.state.blockedDOFs = 'xXYZ'
-        wheelBody.state.angVel = Vector3(valAngVel,0,0)
-    elif fixLinVel: # z and wx free
-        wheelBody.state.vel = Vector3(0,valLinVel,0)
-        wheelBody.state.blockedDOFs = 'xyYZ'
+    elif fixAngVel: # z and x free
+        wheelBody.state.blockedDOFs = 'yXYZ'
+        wheelBody.state.angVel = Vector3(0,valAngVel,0)
+    elif fixLinVel: # z and wy free
+        wheelBody.state.vel = Vector3(valLinVel,0,0)
+        wheelBody.state.blockedDOFs = 'xyXZ'
     else:
-        wheelBody.state.blockedDOFs = 'yYZ'
+        wheelBody.state.blockedDOFs = 'xYZ' # free x, z, and wy
 
 from datetime import timedelta
 firstPrint = True
@@ -190,35 +188,35 @@ def fix_normals(facetList):
 # Record wheel coords, force, torque
 def rFTrecorder(bodyID):
     bstate= O.bodies[bodyID].state
-    posy = bstate.pos[1]
+    posx = bstate.pos[0]
     posz = bstate.pos[2]
-    vely = bstate.vel[1]
+    velx = bstate.vel[0]
     velz = bstate.vel[2]
-    welx = bstate.angVel[0]
-    fy=O.forces.f(bodyID)[1]
+    wely = bstate.angVel[1]
+    fx=O.forces.f(bodyID)[0]
     fz=O.forces.f(bodyID)[2]
-    tx=O.forces.t(bodyID)[0]
-    gTr = tx / wheelRadEff
-    vrot = -welx*wheelRadEff
-    try: slip = (vrot - vely)/(vrot)
+    ty=O.forces.t(bodyID)[1]
+    gTr = -ty / wheelRadEff
+    vrot = wely*wheelRadEff
+    try: slip = (vrot - velx)/(vrot)
     except: slip = 0
     if slip < -10: slip = -10
     if slip >  10: slip =  10
     plot.addData(t = O.time,
                  At = O.time,
-                 y = posy, z = posz,
-                 Vy = vely, Vz = velz, Wx = welx, WxR = -welx*wheelRadEff,
-                 Fy = fy, Fz = fz, Tx = tx,
+                 x = posx, z = posz,
+                 Vx = velx, Vz = velz, Wy = wely, WxR = wely*wheelRadEff,
+                 Fx = fx, Fz = fz, Ty = ty, # store actual Ty and Wy
                  mg = wheelMass * acc_g,
                  GrTr = gTr,
-                 RollRes = gTr - fy,
+                 RollRes = gTr - fx, # general orient.: compare RollRess and WxR
                  Slip = slip
 )
 
 from yade import plot
 plot.plots={
-    't':('z', None, 'y'), 't ':('Vz' ,'WxR', 'Vy'),
-    't  ':('Fz', 'mg'), 't   ':('GrTr', 'Fy', 'RollRes') #, None, 'Slip')
+    't':('z', None, 'x'), 't ':('Vz' ,'WxR', 'Vx'),
+    't  ':('Fz', 'mg'), 't   ':('GrTr', 'Fx', 'RollRes') #, None, 'Slip')
 }
 # show the plot on the screen, and update while the simulation runs
 plot.plot(subPlots=True)
@@ -365,7 +363,7 @@ if GUImode:
     O.saveTmp()               # save simulation to memory
     from yade import qt       # set view direction
     v = qt.View()
-    v.lookAt = (-100, 0, 0)
+    v.lookAt = (0, 100, 0)
     v.upVector  = (0, 0, 1)
     v.center()
 else:

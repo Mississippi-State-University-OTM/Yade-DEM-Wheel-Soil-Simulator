@@ -14,17 +14,17 @@
         "stlFile": "meshes/wheelKyoto.stl",
         "radEff": 0.11,
         "mass": 2.0,
-        "Ixx": 0.0025,
+        "Iyy": 0.0025,
         "initVals" : {
-            "x": 0.0,
-            "y": -0.35,
+            "x": -0.35,
+            "y": 0.0,
             "z": 0.6,
-            "vy": 0.12144,
-            "wx": -2.76
+            "vx": 0.12144,
+            "wy": 2.76
         },
         "constrains": {
-            "vy": true,
-            "wx": true
+            "vx": true,
+            "wy": true
         },
         "material" : "matWheel"
     },
