@@ -8,9 +8,9 @@ Yade DEM simulation environment can be installed according to the instructions a
 
 ## Requirements
 
-- **Yade (tested versions):**
-  - MSSTATE simulator (`simWheelTestRigMSSTATE.py`): Yade 2022.01a, Yade daily build `20260115-8983~7c8d01e~noble1`
-  - Kyoto simulator (`simWheelTestRigKyoto.py`): Yade 2022.01a
+- Yade DEM [website](https://yade-dem.org/doc/):
+- MSSTATE simulator (`simWheelTestRigMSSTATE.py`): requires Yade 2022.01a or later versions,
+- Kyoto simulator (`simWheelTestRigKyoto.py`): requires Yade 2022.01a
 
 **Note:** The Kyoto simulator does not work with newer versions of Yade. The MSSTATE simulator is recommended for use with the latest stable release of Yade or recent daily builds.
 

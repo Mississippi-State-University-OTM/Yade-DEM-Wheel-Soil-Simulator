@@ -38,8 +38,8 @@ for angle in np.linspace(0, 2 * np.pi, lugs_number, endpoint=False):
 lugged_wheel.merge_vertices()
 
 # Apply rotation
-rot_y = trimesh.transformations.rotation_matrix(np.radians(90), [0, 1, 0])
-lugged_wheel.apply_transform(rot_y)
+# rot_y = trimesh.transformations.rotation_matrix(np.radians(90), [0, 1, 0])
+# lugged_wheel.apply_transform(rot_y)
 rot_x = trimesh.transformations.rotation_matrix(np.radians(90), [1, 0, 0])
 lugged_wheel.apply_transform(rot_x)
 
