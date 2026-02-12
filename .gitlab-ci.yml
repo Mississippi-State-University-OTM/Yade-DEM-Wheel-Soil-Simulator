@@ -123,3 +123,13 @@ tow0p3mps_Kyoto_my2022p01a:
     SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
     ENDT: "3.5"
     NTHREADS: "8"
+
+tow0p3mps_Kyoto_trixie:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
+  when: manual
+  variables:
+    PARAM_FILE: "testing/paramsKyoto_tow0p3mps.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
+    ENDT: "3.5"
+    NTHREADS: "8"
