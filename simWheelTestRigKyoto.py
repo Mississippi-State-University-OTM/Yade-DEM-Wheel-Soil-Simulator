@@ -137,13 +137,9 @@ def tirepos0():
 def printIntDetails(): ###
     import sys
     import os
-    # Get the directory where your current simulation script is located
-    # os.getcwd() returns the folder you were in when you typed 'yade my_script.py'
-    script_dir = os.getcwd()
-
-    # Add that directory to the search path
-    if script_dir not in sys.path:
-        sys.path.append(script_dir)
+    # os.getcwd() returns the current working directory
+    lib_dir = os.path.join(os.getcwd(), "libs")
+    sys.path.append(lib_dir)
 
     from libFunctors import print_functor_details, print_material_report
     from libFunctors import export_sim_state_json
