@@ -92,8 +92,6 @@ slip21p02_Kyoto_trixie:
     ENDT: "4"
     NTHREADS: "8"
 
-testing/paramsKyoto_
-
 slip60p_Kyoto_trixie:
   extends: .test_template
   image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
