@@ -23,10 +23,10 @@ stages:
     # 2. Run sipmle simulation, print to screen and file
     - mkdir -p $OUTPUT_DIR
     - cp $PARAM_FILE $OUTPUT_DIR
-    - echo $OUTPUT_DIR $NTHREADS
+    - echo $OUTPUT_DIR $NTHREADS $PARAM_FILE
     - yade -j${NTHREADS} -x -n simWheelTestRigMSSTATE.py $PARAM_FILE | tee $OUTPUT_DIR/log.report
     - cp simWheelTestRigMSSTATE.py $OUTPUT_DIR
-    - mv plot.txt plot.pdf exec_time.txt $OUTPUT_DIR
+    - mv plot.txt plot.pdf exec_time.txt vis $OUTPUT_DIR
 
     # 3. Compare averaged data and show results
     - cat $OUTPUT_DIR/exec_time.txt
@@ -75,10 +75,21 @@ slip6p3_Kyoto_trixie:
   image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
   when: manual
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip6p3p.json"
+    PARAM_FILE: "testing/paramsKyoto_slip6p3.json"
     SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
     BEGT: "3"
     ENDT: "3.5"
+    NTHREADS: "8"
+
+slip21p02_Kyoto_trixie:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
+  when: manual
+  variables:
+    PARAM_FILE: "testing/paramsKyoto_slip21p02.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
+    BEGT: "3"
+    ENDT: "4"
     NTHREADS: "8"
 
 slip60p_Kyoto_trixie:
@@ -86,7 +97,7 @@ slip60p_Kyoto_trixie:
   image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
   when: manual
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip60p.json"
+    PARAM_FILE: "testing/paramsKyoto_slip60p0.json"
     SAMPLE_PLOT_DATA: "testing/plot_Kslip60p_2022p01hd2_m2kg-j8.txt"
     BEGT: "3"
     ENDT: "7"
@@ -97,7 +108,7 @@ slip50p_Kyoto_trixie:
   image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
   when: manual
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip50p.json"
+    PARAM_FILE: "testing/paramsKyoto_slip50p0.json"
     # same as above... not 50 but 60 percent
     SAMPLE_PLOT_DATA: "testing/plot_Kslip60p_2022p01hd2_m2kg-j8.txt"
     ENDT: "3.5"
@@ -106,6 +117,16 @@ slip50p_Kyoto_trixie:
 tow0p3mps_Kyoto_my2022p01a:
   extends: .test_template
   image: registry.gitlab.com/bohumir1/test:2022.01a
+  when: manual
+  variables:
+    PARAM_FILE: "testing/paramsKyoto_tow0p3mps.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
+    ENDT: "3.5"
+    NTHREADS: "8"
+
+tow0p3mps_Kyoto_trixie:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
   when: manual
   variables:
     PARAM_FILE: "testing/paramsKyoto_tow0p3mps.json"

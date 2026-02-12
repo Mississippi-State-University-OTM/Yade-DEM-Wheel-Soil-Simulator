@@ -32,6 +32,8 @@ GUImode      = data['sim']['GUImode']            # True: run with GUI
 stlFile      = data['wheel']['stlFile']          # Wheel STL/OBJ file
 
 stlScale = 1.0
+if 'stlScaleUp' in data['wheel']:
+    stlScale = data['wheel']['stlUnitsScale']    # Ratio to multiply the coordinates from STL file by
 stlShift = Vector3(initX, initY, initZ)
 
 # Particle parameters
@@ -67,10 +69,11 @@ boxCenterZ = data['box']['center']['z']
 print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (lenght x width x height)")
 print(f"Box center: {boxCenterX} {boxCenterY} {boxCenterZ}")
 
-# Material parameters obtrained using material names argument
+# Material parameters obtained using material names argument
 matWheelParams  = data['materials'][data['wheel']    ['material']]
 matSphereParams = data['materials'][data['particles']['material']]
 matBoxParams    = data['materials'][data['box'      ]['material']]
+# helper function that creates material by calling Yade function FrictMat()
 def createFrictMaterial(params, labelarg):
     return FrictMat(density       = params['density'],
                     young         = params['young'],
@@ -127,10 +130,13 @@ def printVirtTime():
     curr = O.iter * O.dt
     end = O.stopAtIter * O.dt
     simperc = f"Simulated time: {curr:.3f}s / {end:.3f}s = {curr/end*100:.2f}%"
+    d_bottom = ( wheelBody.state.pos[2] - wheelRadEff
+                 - (boxCenterZ - boxHeight/2) ) # wheel distance from box bottom
 
     global firstPrint, prevTime, prev
     if firstPrint:
-        print(simperc, file = sys.stderr)
+        print(f"{simperc}                            DB: {d_bottom:.3f}m",
+              file = sys.stderr)
         firstPrint = False
     else:
         currTime = time.time()
@@ -139,7 +145,8 @@ def printVirtTime():
         rem = end - curr
         est = from_last_time/from_last_sim * rem
         delta = timedelta(seconds=round(est))
-        print(f"{simperc}          Est. remaining: {delta}", file = sys.stderr)
+        print(f"{simperc}    Est. remaining: {delta} DB: {d_bottom:.3f}m",
+              file = sys.stderr)
 
     prev = curr
     prevTime = time.time()
