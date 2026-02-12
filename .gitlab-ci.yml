@@ -81,6 +81,19 @@ slip6p3_Kyoto_trixie:
     ENDT: "3.5"
     NTHREADS: "8"
 
+slip21p02_Kyoto_trixie:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
+  when: manual
+  variables:
+    PARAM_FILE: "testing/paramsKyoto_slip21p02p.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
+    BEGT: "3"
+    ENDT: "4"
+    NTHREADS: "8"
+
+testing/paramsKyoto_
+
 slip60p_Kyoto_trixie:
   extends: .test_template
   image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
