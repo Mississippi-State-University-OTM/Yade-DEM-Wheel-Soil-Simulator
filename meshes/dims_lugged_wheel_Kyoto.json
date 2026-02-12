@@ -2,7 +2,7 @@
     "_comment": "Nakanishi JoT 2020",
     "_url": "https://doi.org/10.1016/j.jterra.2020.10.001",
     "radius": 0.1,
-    "width": 0.05,
+    "width": 0.1,
     "num_sections": 18,
     "lugs": {
         "width": 0.005,
