@@ -23,10 +23,10 @@ stages:
     # 2. Run sipmle simulation, print to screen and file
     - mkdir -p $OUTPUT_DIR
     - cp $PARAM_FILE $OUTPUT_DIR
-    - echo $OUTPUT_DIR $NTHREADS
+    - echo $OUTPUT_DIR $NTHREADS $PARAM_FILE
     - yade -j${NTHREADS} -x -n simWheelTestRigMSSTATE.py $PARAM_FILE | tee $OUTPUT_DIR/log.report
     - cp simWheelTestRigMSSTATE.py $OUTPUT_DIR
-    - mv plot.txt plot.pdf exec_time.txt $OUTPUT_DIR
+    - mv plot.txt plot.pdf exec_time.txt vis $OUTPUT_DIR
 
     # 3. Compare averaged data and show results
     - cat $OUTPUT_DIR/exec_time.txt
