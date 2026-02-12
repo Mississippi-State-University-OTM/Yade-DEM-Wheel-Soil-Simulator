@@ -93,8 +93,6 @@ O.engines = [
     RotationEngine(ids = [o+1], angularVelocity = 0,dead=False), # used to fix wheel at consolidation step
     PyRunner(command='tirepos0()',iterPeriod=1,nDo=waitfor -1,dead=False),
     PyRunner(command='tirepos()',iterPeriod=1,firstIterRun=waitfor),
-    # Print simulations and interaction parameter details ###
-    PyRunner(command='printIntDetails()', iterPeriod=1,firstIterRun=2,nDo=1,dead=False),
     PyRunner(command='savefile1s()', iterPeriod=1,firstIterRun=waitfor//2,nDo=1,dead=False),
     PyRunner(command='savefile2s()', iterPeriod=1,firstIterRun=waitfor  ,nDo=1,dead=False),
     PyRunner(command='O.bodies[100].material.frictionAngle=2*math.pi*36.7/360',iterPeriod=1,firstIterRun=waitfor//2,nDo=1,dead=False),
@@ -133,36 +131,6 @@ def tirepos():
 def tirepos0():
     clump.state.ori=initori
     clump.state.pos=(0,-.35,clump.state.pos[2])
-
-def printIntDetails(): ###
-    import sys
-    import os
-    # os.getcwd() returns the current working directory
-    lib_dir = os.path.join(os.getcwd(), "libs")
-    sys.path.append(lib_dir)
-
-    from libFunctors import print_functor_details, print_material_report
-    from libFunctors import export_sim_state_json
-
-    print_material_report()
-    print_functor_details()
-    export_sim_state_json()
-
-    ####
-    from libInteractions import (
-        print_insertion_sort_colliders_first,
-        print_contact_functors,
-        print_contact_types_from_interactions,
-        print_materials_summary,
-        write_simulation_summary_json,
-    )
-    # Before first sim. step
-    print_insertion_sort_colliders_first()
-    print_contact_functors()
-    print_materials_summary()
-    # After first sim. step
-    print_contact_types_from_interactions()
-    write_simulation_summary_json('sim_summary.json')
 
 def savefile1s():
     O.save(savefileName+'_1s.bz2')
