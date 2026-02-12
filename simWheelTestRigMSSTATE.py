@@ -23,6 +23,11 @@ settleTime   = data['sim']['settleTime']         # Time to settle particles
 endTime      = data['sim']['endTime']            # Total simulated time
 progRepInt   = data['sim']['progRepInterval']    # Print simulated time and % done each this simulated interval
 dataSaveInt  = data['sim']['dataSaveInterval']   # Sim. time interval to save data
+if 'vis' in data['sim']:
+    visSaveInt = data['sim']['vis']['saveInt'] # Sim. time interval to save visualization snapshots, 0 = don't save
+    visSaveSph = data['sim']['vis']['spheres'] # True: save spheres into VTK (many spheres = lot of disk space)
+else:
+    visSaveInt = 0.0
 GUImode      = data['sim']['GUImode']            # True: run with GUI
 stlFile      = data['wheel']['stlFile']          # Wheel STL/OBJ file
 
@@ -213,6 +218,12 @@ def rFTrecorder(bodyID):
                  Slip = slip
 )
 
+def save_vtk_data():
+    # 'what' is a dictionary defining what to export
+    vtk_export.exportFacets(what = {'color': 'b.shape.color'})
+    if visSaveSph:
+        vtk_export.exportSpheres()
+
 from yade import plot
 plot.plots={
     't':('z', None, 'x'), 't ':('Vz' ,'WxR', 'Vx'),
@@ -220,6 +231,15 @@ plot.plots={
 }
 # show the plot on the screen, and update while the simulation runs
 plot.plot(subPlots=True)
+
+if visSaveInt != 0:
+    from pathlib import Path
+    vis_dir = Path('vis/')
+    vis_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Visualization directory '{vis_dir}' ensured to exist.")
+
+    from yade import export
+    vtk_export = export.VTKExporter('vis/export')
 
 # Main program
 #
@@ -355,6 +375,10 @@ progReportIter = round(progRepInt/O.dt)
 O.engines += [PyRunner(command='printVirtTime()', iterPeriod = progReportIter)]
 O.engines += [PyRunner(command='timeend = time.time()', firstIterRun = endIt-1)]
 O.engines += [PyRunner(command='timeCalculator()', firstIterRun = endIt-1)]
+if visSaveInt != 0:
+    visSaveIter = round(visSaveInt/O.dt)
+    O.engines += [PyRunner(command='save_vtk_data()', iterPeriod = visSaveIter)]
+
 
 O.stopAtIter = endIt
 #O.stopAtIter = 4 ###

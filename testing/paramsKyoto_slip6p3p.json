@@ -70,6 +70,10 @@
         "endTime": 4.0,
         "progRepInterval": 0.01,
         "dataSaveInterval": 0.005,
+        "vis": {
+            "saveInt": 0.02,
+            "spheres": true
+        },
         "GUImode": false
     }
 }
