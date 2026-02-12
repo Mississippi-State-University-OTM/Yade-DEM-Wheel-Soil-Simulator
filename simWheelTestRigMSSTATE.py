@@ -130,10 +130,13 @@ def printVirtTime():
     curr = O.iter * O.dt
     end = O.stopAtIter * O.dt
     simperc = f"Simulated time: {curr:.3f}s / {end:.3f}s = {curr/end*100:.2f}%"
+    d_bottom = ( wheelBody.state.pos[2] - wheelRadEff
+                 - (boxCenterZ - boxHeight/2) ) # wheel distance from box bottom
 
     global firstPrint, prevTime, prev
     if firstPrint:
-        print(simperc, file = sys.stderr)
+        print(f"{simperc}                            DB: {d_bottom:.3f}m",
+              file = sys.stderr)
         firstPrint = False
     else:
         currTime = time.time()
@@ -142,7 +145,8 @@ def printVirtTime():
         rem = end - curr
         est = from_last_time/from_last_sim * rem
         delta = timedelta(seconds=round(est))
-        print(f"{simperc}          Est. remaining: {delta}", file = sys.stderr)
+        print(f"{simperc}    Est. remaining: {delta} DB: {d_bottom:.3f}m",
+              file = sys.stderr)
 
     prev = curr
     prevTime = time.time()
