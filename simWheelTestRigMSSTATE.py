@@ -222,7 +222,7 @@ def save_vtk_data():
     # 'what' is a dictionary defining what to export
     vtk_export.exportFacets(what = {'color': 'b.shape.color'})
     if visSaveSph:
-        vtk_export.exportSpheres(what = {'color': 'b.shape.color'})
+        vtk_export.exportSpheres()
 
 from yade import plot
 plot.plots={

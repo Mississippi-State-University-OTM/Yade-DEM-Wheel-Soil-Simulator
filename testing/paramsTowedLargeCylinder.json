@@ -71,7 +71,7 @@
         "dataSaveInterval": 0.005,
         "vis": {
             "saveInt": 0.02,
-            "spheres": false
+            "spheres": true
         },
         "GUImode": false
     }
