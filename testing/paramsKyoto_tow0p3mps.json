@@ -71,7 +71,7 @@
         "progRepInterval": 0.01,
         "dataSaveInterval": 0.005,
         "vis": {
-            "saveInt": 0.02,
+            "saveInt": 0.4,
             "spheres": true
         },
         "GUImode": false
