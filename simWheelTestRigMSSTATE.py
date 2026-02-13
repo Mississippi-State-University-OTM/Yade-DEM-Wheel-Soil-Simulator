@@ -99,15 +99,16 @@ def setInMotion():
     smax = boxCenterZ - hboxZ      # stores highest particle surface
     idx = None
     for i in range(wheelBodyId + 1, wheelBodyId + partnum + 1):
-        z = O.bodies[i].state.pos[2]
-        r = O.bodies[i].shape.radius
-        top = z ## + r
-        if top > smax:
-            smax = top
-            idx = i
-    print(f"Wheel repositioned to reach the highest particle surface of {smax:.3f} m.")
-    r = O.bodies[idx].shape.radius
-    new_wheel_center_z = smax  + r + wheelRadEff + .0001
+        x = O.bodies[i].state.pos[0]
+        if abs(x - initX) < 0.5*wheelRadEff: # ~0.5 arbitrary
+            z = O.bodies[i].state.pos[2]
+            r = O.bodies[i].shape.radius
+            top = z + r
+            if top > smax:
+                smax = top
+                idx = i
+    print(f"Wheel lowered to highest particle surface (x-coord. within +/-0.5*Reff from wheel center) of {smax:.3f} m.")
+    new_wheel_center_z = smax + wheelRadEff + .0001
     wheelBody.state.pos = Vector3(initX, initY, new_wheel_center_z)
     if fixLinVel and fixAngVel: # z free
         wheelBody.state.vel = Vector3(valLinVel,0,0)
