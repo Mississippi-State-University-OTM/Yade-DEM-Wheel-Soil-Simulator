@@ -30,6 +30,7 @@ if 'vis' in data['sim']:
     visSaveSph = data['sim']['vis']['spheres']['on']
     visSaveSphSingleFile = data['sim']['vis']['spheres']['singleFile']
     visSaveSphBname = data['sim']['vis']['spheres']['basename']
+    visSaveSphDetailed = data['sim']['vis']['spheres']['detailed']
 else:
     visSaveInt = 0.0
 GUImode      = data['sim']['GUImode']            # True: run with GUI
@@ -274,29 +275,33 @@ def exportOVITO(filename, append=False):
     f.write(f"{minZ} {maxZ}\n")
 
     # columns OVITO will read
-    f.write("ITEM: ATOMS id type x y z vx vy vz radius fx fy fz wx wy wz\n")
+    if visSaveSphDetailed:
+        f.write("ITEM: ATOMS id type x y z vx vy vz radius fx fy fz wx wy wz\n")
+    else:
+        f.write("ITEM: ATOMS id x y z radius\n")
 
     # --- Particle data ---
     for b in spheres:
         state = b.state
 
         x,y,z = state.pos
-        vx,vy,vz = state.vel
-        wx,wy,wz = state.angVel
-        fx,fy,fz = O.forces.f(b.id)
-
         r = b.shape.radius
-        typ = b.material.id
 
-        f.write(
-            f"{b.id} {typ} "
-            f"{x} {y} {z} "
-            f"{vx} {vy} {vz} "
-            f"{r} "
-            f"{fx} {fy} {fz} "
-            f"{wx} {wy} {wz}\n"
-        )
-
+        if visSaveSphDetailed:
+            vx,vy,vz = state.vel
+            wx,wy,wz = state.angVel
+            fx,fy,fz = O.forces.f(b.id)
+            typ = b.material.id
+            f.write(
+                f"{b.id} {typ} "
+                f"{x:.3g} {y:.3g} {z:.3g} "
+                f"{vx:.6g} {vy:.6g} {vz:.6g} "
+                f"{r:.3g} "
+                f"{fx:.6g} {fy:.6g} {fz:.6g} "
+                f"{wx:.6g} {wy:.6g} {wz:.6g}\n"
+            )
+        else:
+            f.write(f"{b.id} {x:.3g} {y:.3g} {z:.3g} {r:.3g}\n")
     f.close()
 
 ostep = 0

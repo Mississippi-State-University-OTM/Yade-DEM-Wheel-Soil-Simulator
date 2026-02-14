@@ -76,9 +76,10 @@
             "spheres": {
                 "on": true,
                 "singleFile": false,
-                "basename" : "vis/ovito-"
+                "basename" : "vis/ovito-",
+                "detailed" : false
             }
         },
-        "GUImode": true
+        "GUImode": false
     }
 }
