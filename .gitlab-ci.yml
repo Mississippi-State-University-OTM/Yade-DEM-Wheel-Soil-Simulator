@@ -9,7 +9,7 @@ stages:
     OUTPUT_DIR: "out_${CI_JOB_NAME}_${NTHREADS}"
     BEGT: "2.5"
     ENDT: "9"
-    SAMPLE_PLOT_DATA: "testing/plot_default_expected_2023.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_2023.txt"
   before_script:
     - set -euo pipefail
   script:
@@ -40,13 +40,21 @@ stages:
     expire_in: 1 week
 
 # Create jobs for specific images by extending the template
+towed_default_trixie:
+  extends: .test_template
+  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
+  when: manual
+  variables:
+    PARAM_FILE: "paramsKyoto.json"
+    SAMPLE_PLOT_DATA: "testing/plot_default_2023.txt"
+
 towed_quick_bullseye:
   extends: .test_template
   image: registry.gitlab.com/yade-dev/docker-prod:debian-bullseye
   when: manual
   variables:
     PARAM_FILE: "testing/paramsTowedLargeCylinder.json"
-    SAMPLE_PLOT_DATA: "testing/plot_default_expected_2022.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_2022.txt"
 
 towed_quick_my2022p01a:
   extends: .test_template
@@ -54,7 +62,7 @@ towed_quick_my2022p01a:
   when: manual
   variables:
     PARAM_FILE: "testing/paramsTowedLargeCylinder.json"
-    SAMPLE_PLOT_DATA: "testing/plot_default_expected_2022.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_2022.txt"
 
 towed_quick_bookworm:
   extends: .test_template
