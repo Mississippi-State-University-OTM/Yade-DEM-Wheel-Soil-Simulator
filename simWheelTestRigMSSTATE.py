@@ -24,8 +24,12 @@ endTime      = data['sim']['endTime']            # Total simulated time
 progRepInt   = data['sim']['progRepInterval']    # Print simulated time and % done each this simulated interval
 dataSaveInt  = data['sim']['dataSaveInterval']   # Sim. time interval to save data
 if 'vis' in data['sim']:
-    visSaveInt = data['sim']['vis']['saveInt'] # Sim. time interval to save visualization snapshots, 0 = don't save
-    visSaveSph = data['sim']['vis']['spheres'] # True: save spheres into VTK (many spheres = lot of disk space)
+    # Sim. time interval to save visualization snapshots, 0 = don't save
+    visSaveInt = data['sim']['vis']['saveInt']
+    # True: save spheres in LAMMPS dump format, more spheres = more disk space
+    visSaveSph = data['sim']['vis']['spheres']['on']
+    visSaveSphSingleFile = data['sim']['vis']['spheres']['singleFile']
+    visSaveSphBname = data['sim']['vis']['spheres']['basename']
 else:
     visSaveInt = 0.0
 GUImode      = data['sim']['GUImode']            # True: run with GUI
@@ -230,7 +234,12 @@ def saveOvitoAndVTK():
     # 'what' is a dictionary defining what to export
     vtk_export.exportFacets(ids = wheelBodyPartsIds)
     if visSaveSph:
-        ovitoSnapshot()
+        if visSaveSphSingleFile:
+            myappend = False if ostep == 0 else True
+            exportOVITO(f"{visSaveSphBname}.dump", append=myappend)
+        else:
+            myappend = False
+            exportOVITO(f"{visSaveSphBname}{ostep:08d}.dump", append=myappend)
 
 def exportOVITO(filename, append=False):
     """
@@ -289,10 +298,6 @@ def exportOVITO(filename, append=False):
         )
 
     f.close()
-
-def ovitoSnapshot():
-    myappend = False if ostep == 0 else True
-    exportOVITO("vis/ovito.dump", append=myappend)
 
 ostep = 0
 
