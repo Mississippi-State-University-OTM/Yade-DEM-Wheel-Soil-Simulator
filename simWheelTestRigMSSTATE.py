@@ -226,11 +226,75 @@ def rFTrecorder(bodyID):
                  Slip = slip
 )
 
-def save_vtk_data():
+def saveOvitoAndVTK():
     # 'what' is a dictionary defining what to export
-    vtk_export.exportFacets(what = {'color': 'b.shape.color'})
+    vtk_export.exportFacets(ids = wheelBodyPartsIds)
     if visSaveSph:
-        vtk_export.exportSpheres()
+        ovitoSnapshot()
+
+def exportOVITO(filename, append=False):
+    """
+    Export YADE spheres to OVITO-compatible LAMMPS dump format.
+    Can be called repeatedly to produce a trajectory.
+    """
+
+    global ostep
+    mode = 'a' if append else 'w'
+    f = open(filename, mode)
+
+    # collect only real particles (skip walls, facets, clumps container bodies)
+    spheres = [b for b in O.bodies if isinstance(b.shape, Sphere)]
+
+    # --- Header (LAMMPS dump style) ---
+    f.write("ITEM: TIMESTEP\n")
+    f.write(f"{ostep}\n")
+    ostep = ostep + 1
+
+    f.write("ITEM: NUMBER OF ATOMS\n")
+    f.write(f"{len(spheres)}\n")
+
+    # simulation box
+    minX,minY,minZ = O.cell.refSize if O.periodic else (
+        boxCenterX-hboxX, boxCenterY-hboxY, boxCenterZ-boxHeight/2)
+    maxX,maxY,maxZ = (10,10,10) if O.periodic else (
+        boxCenterX+hboxX, boxCenterY+hboxY, boxCenterZ+boxHeight/2)
+
+    f.write("ITEM: BOX BOUNDS pp pp pp\n")
+    f.write(f"{minX} {maxX}\n")
+    f.write(f"{minY} {maxY}\n")
+    f.write(f"{minZ} {maxZ}\n")
+
+    # columns OVITO will read
+    f.write("ITEM: ATOMS id type x y z vx vy vz radius fx fy fz wx wy wz\n")
+
+    # --- Particle data ---
+    for b in spheres:
+        state = b.state
+
+        x,y,z = state.pos
+        vx,vy,vz = state.vel
+        wx,wy,wz = state.angVel
+        fx,fy,fz = O.forces.f(b.id)
+
+        r = b.shape.radius
+        typ = b.material.id
+
+        f.write(
+            f"{b.id} {typ} "
+            f"{x} {y} {z} "
+            f"{vx} {vy} {vz} "
+            f"{r} "
+            f"{fx} {fy} {fz} "
+            f"{wx} {wy} {wz}\n"
+        )
+
+    f.close()
+
+def ovitoSnapshot():
+    myappend = False if ostep == 0 else True
+    exportOVITO("vis/ovito.dump", append=myappend)
+
+ostep = 0
 
 from yade import plot
 plot.plots={
@@ -385,7 +449,8 @@ O.engines += [PyRunner(command='timeend = time.time()', firstIterRun = endIt-1)]
 O.engines += [PyRunner(command='timeCalculator()', firstIterRun = endIt-1)]
 if visSaveInt != 0:
     visSaveIter = round(visSaveInt/O.dt)
-    O.engines += [PyRunner(command='save_vtk_data()', iterPeriod = visSaveIter)]
+    O.engines += [PyRunner(command = 'saveOvitoAndVTK()',
+                           iterPeriod = visSaveIter)]
 
 
 O.stopAtIter = endIt
