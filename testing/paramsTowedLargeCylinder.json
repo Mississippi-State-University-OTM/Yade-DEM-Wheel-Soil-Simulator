@@ -64,7 +64,7 @@
         }
     },
     "sim": {
-        "settleTime": 2.0,
+        "settleTime": 1.0,
         "endTime": 11.1,
         "progRepInterval": 0.1,
         "dataSaveInterval": 0.005,
