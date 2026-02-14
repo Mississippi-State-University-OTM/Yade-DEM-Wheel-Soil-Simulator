@@ -73,8 +73,13 @@
         "dataSaveInterval": 0.005,
         "vis": {
             "saveInt": 0.02,
-            "spheres": true
+            "spheres": {
+                "on": true,
+                "singleFile": false,
+                "basename" : "vis/ovito-",
+                "detailed" : false
+            }
         },
-        "GUImode": true
+        "GUImode": false
     }
 }

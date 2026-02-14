@@ -24,8 +24,13 @@ endTime      = data['sim']['endTime']            # Total simulated time
 progRepInt   = data['sim']['progRepInterval']    # Print simulated time and % done each this simulated interval
 dataSaveInt  = data['sim']['dataSaveInterval']   # Sim. time interval to save data
 if 'vis' in data['sim']:
-    visSaveInt = data['sim']['vis']['saveInt'] # Sim. time interval to save visualization snapshots, 0 = don't save
-    visSaveSph = data['sim']['vis']['spheres'] # True: save spheres into VTK (many spheres = lot of disk space)
+    # Sim. time interval to save visualization snapshots, 0 = don't save
+    visSaveInt = data['sim']['vis']['saveInt']
+    # True: save spheres in LAMMPS dump format, more spheres = more disk space
+    visSaveSph = data['sim']['vis']['spheres']['on']
+    visSaveSphSingleFile = data['sim']['vis']['spheres']['singleFile']
+    visSaveSphBname = data['sim']['vis']['spheres']['basename']
+    visSaveSphDetailed = data['sim']['vis']['spheres']['detailed']
 else:
     visSaveInt = 0.0
 GUImode      = data['sim']['GUImode']            # True: run with GUI
@@ -226,11 +231,80 @@ def rFTrecorder(bodyID):
                  Slip = slip
 )
 
-def save_vtk_data():
+def saveOvitoAndVTK():
     # 'what' is a dictionary defining what to export
-    vtk_export.exportFacets(what = {'color': 'b.shape.color'})
+    vtk_export.exportFacets(ids = wheelBodyPartsIds)
     if visSaveSph:
-        vtk_export.exportSpheres()
+        if visSaveSphSingleFile:
+            myappend = False if ostep == 0 else True
+            exportOVITO(f"{visSaveSphBname}.dump", append=myappend)
+        else:
+            myappend = False
+            exportOVITO(f"{visSaveSphBname}{ostep:08d}.dump", append=myappend)
+
+def exportOVITO(filename, append=False):
+    """
+    Export YADE spheres to OVITO-compatible LAMMPS dump format.
+    Can be called repeatedly to produce a trajectory.
+    """
+
+    global ostep
+    mode = 'a' if append else 'w'
+    f = open(filename, mode)
+
+    # collect only real particles (skip walls, facets, clumps container bodies)
+    spheres = [b for b in O.bodies if isinstance(b.shape, Sphere)]
+
+    # --- Header (LAMMPS dump style) ---
+    f.write("ITEM: TIMESTEP\n")
+    f.write(f"{ostep}\n")
+    ostep = ostep + 1
+
+    f.write("ITEM: NUMBER OF ATOMS\n")
+    f.write(f"{len(spheres)}\n")
+
+    # simulation box
+    minX,minY,minZ = O.cell.refSize if O.periodic else (
+        boxCenterX-hboxX, boxCenterY-hboxY, boxCenterZ-boxHeight/2)
+    maxX,maxY,maxZ = (10,10,10) if O.periodic else (
+        boxCenterX+hboxX, boxCenterY+hboxY, boxCenterZ+boxHeight/2)
+
+    f.write("ITEM: BOX BOUNDS pp pp pp\n")
+    f.write(f"{minX} {maxX}\n")
+    f.write(f"{minY} {maxY}\n")
+    f.write(f"{minZ} {maxZ}\n")
+
+    # columns OVITO will read
+    if visSaveSphDetailed:
+        f.write("ITEM: ATOMS id type x y z vx vy vz radius fx fy fz wx wy wz\n")
+    else:
+        f.write("ITEM: ATOMS id x y z radius\n")
+
+    # --- Particle data ---
+    for b in spheres:
+        state = b.state
+
+        x,y,z = state.pos
+        r = b.shape.radius
+
+        if visSaveSphDetailed:
+            vx,vy,vz = state.vel
+            wx,wy,wz = state.angVel
+            fx,fy,fz = O.forces.f(b.id)
+            typ = b.material.id
+            f.write(
+                f"{b.id} {typ} "
+                f"{x:.3g} {y:.3g} {z:.3g} "
+                f"{vx:.6g} {vy:.6g} {vz:.6g} "
+                f"{r:.3g} "
+                f"{fx:.6g} {fy:.6g} {fz:.6g} "
+                f"{wx:.6g} {wy:.6g} {wz:.6g}\n"
+            )
+        else:
+            f.write(f"{b.id} {x:.3g} {y:.3g} {z:.3g} {r:.3g}\n")
+    f.close()
+
+ostep = 0
 
 from yade import plot
 plot.plots={
@@ -385,7 +459,8 @@ O.engines += [PyRunner(command='timeend = time.time()', firstIterRun = endIt-1)]
 O.engines += [PyRunner(command='timeCalculator()', firstIterRun = endIt-1)]
 if visSaveInt != 0:
     visSaveIter = round(visSaveInt/O.dt)
-    O.engines += [PyRunner(command='save_vtk_data()', iterPeriod = visSaveIter)]
+    O.engines += [PyRunner(command = 'saveOvitoAndVTK()',
+                           iterPeriod = visSaveIter)]
 
 
 O.stopAtIter = endIt

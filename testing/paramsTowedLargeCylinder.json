@@ -64,14 +64,19 @@
         }
     },
     "sim": {
-        "settleTime": 2.0,
+        "settleTime": 1.0,
         "endTime": 11.1,
         "progRepInterval": 0.1,
         "dataSaveInterval": 0.005,
         "dataSaveInterval": 0.005,
         "vis": {
             "saveInt": 0.02,
-            "spheres": true
+            "spheres": {
+                "on": true,
+                "singleFile": false,
+                "basename" : "vis/ovito-",
+                "detailed" : false
+            }
         },
         "GUImode": false
     }
