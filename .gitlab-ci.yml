@@ -77,6 +77,7 @@ towed_quick_trixie:
   when: manual
   variables:
     PARAM_FILE: "testing/paramsTowedLargeCylinder.json"
+    NTHREADS: "1"
 
 slip6p3_Kyoto_trixie:
   extends: .test_template
