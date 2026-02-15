@@ -231,6 +231,38 @@ def rFTrecorder(bodyID):
                  Slip = slip
 )
 
+# Write wheel coords, force, torque
+def liveDataOut(bodyID):
+
+    bstate= O.bodies[bodyID].state
+    x ,  y,  z = bstate.pos
+    vx, vy, vz = bstate.vel
+    wx, wy, wz = bstate.angVel
+    fx, fy, fz = O.forces.f(bodyID)
+    tx, ty, tz = O.forces.t(bodyID)
+    vrot = wy*wheelRadEff
+    slip = 0.0
+    if vrot != 0.0:
+        slip = (vrot - vx)/(vrot)
+    if slip < -10: slip = -10
+    if slip >  10: slip =  10
+
+    global firstWrite
+    if firstWrite:
+        f = open("Data_Output.csv", "w")
+        f.write("Time,x,y,z,Fx,Fy,Fz,Tx,Ty,Tz,Vx,Vy,Vz,Wx,Wy,Wz,slip\n")
+        firstWrite = False
+    else:
+        f = open("Data_Output.csv", "a")
+
+    f.write(f"{O.time:.3g},{x:.3g},{y:.3g},{z:.3g},{fx:.6g},{fy:.6g},{fz:.6g},"
+            f"{tx:.6g},{ty:.6g},{tz:.6g},{vx:.6g},{vy:.6g},{vz:.6g},"
+            f"{wx:.6g},{wy:.6g},{wz:.6g},{slip:.6g}\n")
+
+    f.close()
+
+firstWrite = True
+
 def saveOvitoAndVTK():
     # 'what' is a dictionary defining what to export
     vtk_export.exportFacets(ids = wheelBodyPartsIds)
@@ -412,6 +444,7 @@ endIt    = round(endTime    / O.dt)
 
 # Engines, start with necessary
 rFTrecorderString='rFTrecorder(' + str(wheelBodyId) + ')'
+liveDataOutString='liveDataOut(' + str(wheelBodyId) + ')'
 phys = "Frictional"
 phys = "Mindlin"
 if phys == "Mindlin":
@@ -446,6 +479,8 @@ O.engines += [PyRunner(command = 'setInMotion()', firstIterRun = settleIt)]
 # Record and plot data
 dataSaveIter = round(dataSaveInt/O.dt)
 O.engines += [PyRunner(command = rFTrecorderString, iterPeriod = dataSaveIter,
+                       firstIterRun = 0)]
+O.engines += [PyRunner(command = liveDataOutString, iterPeriod = dataSaveIter,
                        firstIterRun = 0)]
 O.engines += [PyRunner(command = 'plot.saveDataTxt("plot.txt")',
                    firstIterRun = endIt-1)]
