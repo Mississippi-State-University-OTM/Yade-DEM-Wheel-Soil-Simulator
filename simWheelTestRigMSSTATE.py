@@ -458,7 +458,7 @@ if phys == "Mindlin":
         InsertionSortCollider([Bo1_Sphere_Aabb(), Bo1_Facet_Aabb(), Bo1_Box_Aabb()]),
         InteractionLoop(
             [Ig2_Sphere_Sphere_ScGeom(), Ig2_Facet_Sphere_ScGeom(),
-             Ig2_Box_Sphere_ScGeom(), Ig2_Box_Sphere_ScGeom6D()],
+             Ig2_Box_Sphere_ScGeom(), Ig2_Facet_Sphere_ScGeom6D()],
             [Ip2_FrictMat_FrictMat_MindlinPhys(en=pp_en, krot = pp_krot,
                                                label='ContactModel')],
             [Law2_ScGeom_MindlinPhys_Mindlin(label='Mindlin',includeMoment=True)]
