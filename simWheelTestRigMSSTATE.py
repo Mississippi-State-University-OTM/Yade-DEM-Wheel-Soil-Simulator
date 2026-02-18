@@ -34,13 +34,19 @@ if 'vis' in data['sim']:
 else:
     visSaveInt = 0.0
 GUImode      = data['sim']['GUImode']            # True: run with GUI
-stlFile      = data['wheel']['stlFile']          # Wheel STL/OBJ file
+
+stlData      = data['wheel']['stl']
+stlFile      = stlData['filename']  # Wheel STL/OBJ file
 
 stlScale = 1.0
-scaleKey = 'stlUnitsScale'
-if scaleKey in data['wheel']:
-    stlScale = data['wheel'][scaleKey]    # Ratio to multiply the coordinates from STL file by
-stlShift = Vector3(initX, initY, initZ)
+key = 'unitsScale'
+if key in stlData:
+    stlScale = stlData[key]    # Ratio to multiply the coordinates from STL file by
+
+coX = 0; coY = 0; coZ = 0;                       # STL wheel center offset
+key = 'centerOffset'
+if key in stlData:
+    coX, coY, coZ = stlData[key]['x'], stlData[key]['y'], stlData[key]['z']
 
 # Particle parameters
 # initial placement of particles up to 0.8 (= 80%) of box' height
@@ -386,6 +392,7 @@ if yade_ver == "2020.01a":
         noBound = False
     )
 else:
+    stlShift = stlScale*Vector3(-coX, -coY, -coZ) + Vector3(initX, initY, initZ)
     facets = ymport.stl(
         stlFile,
         scale = stlScale,
