@@ -372,15 +372,28 @@ print(f"Created open-top box, {nf_box} facets.")
 
 # Import wheel from STL (or OBJ) file
 from yade import ymport
-facets = ymport.stl(
-    stlFile,
-    scale = stlScale,
-    shift = stlShift,
-    material = idWheelMat,
-    dynamic = None,
-    fixed = False,
-    noBound = False
-)
+from yade import config
+yade_ver = config.revision
+print(yade_ver)
+
+if yade_ver == "2020.01a":
+    facets = ymport.stl(
+        stlFile,
+        material = idWheelMat,
+        dynamic = None,
+        fixed = False,
+        noBound = False
+    )
+else:
+    facets = ymport.stl(
+        stlFile,
+        scale = stlScale,
+        shift = stlShift,
+        material = idWheelMat,
+        dynamic = None,
+        fixed = False,
+        noBound = False
+    )
 print(f"Imported {len(facets)} facets from \"{stlFile}\" file.")
 
 print("Checking facet normals...")
@@ -401,6 +414,12 @@ wheelBody.state.inertia = wheelInertia
 wheelBody.state.blockedDOFs = 'xyzXYZ'
 wheelBody.state.vel = Vector3(0,0,0)
 wheelBody.state.angVel = Vector3(0,0,0)
+
+if yade_ver == "2020.01a":
+    # Both YADE and python
+    utils.random.seed(rndSeed)
+    random.seed(rndSeed)
+    wheelBody.state.pos = Vector3(initX, initY, initZ)
 
 nf = len(O.bodies);
 print(f"Number of facets (box and wheel): {nf-1}") # there is one extra body for wheel
@@ -424,13 +443,23 @@ elif part_gen == "clumpCloud":
     S1r = pack.SpherePack([((0,0,0),pscale*rmin)])
     S1  = pack.SpherePack([((0,0,0),pscale*rmed)])
     S1R = pack.SpherePack([((0,0,0),pscale*rmax)])
-    sp.makeClumpCloud(
-        # bottom left corner
-        (boxCenterX - hboxX, boxCenterY - hboxY, boxCenterZ - hboxZ),
-        # top right corner
-        (boxCenterX + hboxX, boxCenterY + hboxY, boxCenterZ - hboxZ + boxHeight*pck),
-        [S1, S1r, S1R],
-        num = round(80000/pscale**3), seed = rndSeed)
+    if yade_ver == "2020.01a":
+        sp.seed = rndSeed
+        sp.makeClumpCloud(
+            # bottom left corner
+            (boxCenterX - hboxX, boxCenterY - hboxY, boxCenterZ - hboxZ),
+            # top right corner
+            (boxCenterX + hboxX, boxCenterY + hboxY, boxCenterZ - hboxZ + boxHeight*pck),
+            [S1, S1r, S1R],
+            num = round(80000/pscale**3))
+    else:
+        sp.makeClumpCloud(
+            # bottom left corner
+            (boxCenterX - hboxX, boxCenterY - hboxY, boxCenterZ - hboxZ),
+            # top right corner
+            (boxCenterX + hboxX, boxCenterY + hboxY, boxCenterZ - hboxZ + boxHeight*pck),
+            [S1, S1r, S1R],
+            num = round(80000/pscale**3), seed = rndSeed)
     sp.toSimulation(color=(.6,.57,.53))
     partnum = len(sp)
 
