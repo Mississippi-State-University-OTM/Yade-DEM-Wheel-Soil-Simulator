@@ -260,7 +260,7 @@ def liveDataOut(bodyID):
     else:
         f = open("Data_Output.csv", "a")
 
-    f.write(f"{O.time:.3g},{x:.3g},{y:.3g},{z:.3g},{fx:.6g},{fy:.6g},{fz:.6g},"
+    f.write(f"{O.time:.4f},{x:.3g},{y:.3g},{z:.3g},{fx:.6g},{fy:.6g},{fz:.6g},"
             f"{tx:.6g},{ty:.6g},{tz:.6g},{vx:.6g},{vy:.6g},{vz:.6g},"
             f"{wx:.6g},{wy:.6g},{wz:.6g},{slip:.6g}\n")
 
