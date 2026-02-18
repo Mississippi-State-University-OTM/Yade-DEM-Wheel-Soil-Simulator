@@ -101,6 +101,7 @@ pp_krot         = intPPparams['krot']
 
 # Reposition the wheel to the top surface of soil and set it in motion
 def setInMotion():
+    matSphere.frictionAngle = matBox.frictionAngle
     smax = boxCenterZ - hboxZ      # stores highest particle surface
     idx = None
     for i in range(wheelBodyId + 1, wheelBodyId + partnum + 1):
