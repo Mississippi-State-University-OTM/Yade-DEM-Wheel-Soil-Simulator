@@ -37,8 +37,9 @@ GUImode      = data['sim']['GUImode']            # True: run with GUI
 stlFile      = data['wheel']['stlFile']          # Wheel STL/OBJ file
 
 stlScale = 1.0
-if 'stlScaleUp' in data['wheel']:
-    stlScale = data['wheel']['stlUnitsScale']    # Ratio to multiply the coordinates from STL file by
+scaleKey = 'stlUnitsScale'
+if scaleKey in data['wheel']:
+    stlScale = data['wheel'][scaleKey]    # Ratio to multiply the coordinates from STL file by
 stlShift = Vector3(initX, initY, initZ)
 
 # Particle parameters
