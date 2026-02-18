@@ -506,7 +506,8 @@ else:
     ]
 
 # Integrator, necessary
-O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.0)]
+O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.0,
+                               exactAsphericalRot=True)]
 
 # Adjust wheel height to the top of soil
 O.engines += [PyRunner(command = 'setInMotion()', firstIterRun = settleIt)]
