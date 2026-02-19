@@ -1,0 +1,93 @@
+{
+    "box": {
+        "length": 1.0,
+        "width": 0.15,
+        "height": 0.5,
+        "center": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "material": "matBox"
+    },
+    "wheel": {
+        "stl": {
+            "filename": "meshes/6inch_Tire/6inch_Tire_V2.1.STL",
+            "unitsScale" : 0.036721994,
+            "centerOffset": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        "radEff": 0.11,
+        "mass": 2.0,
+        "Iyy": 0.0025,
+        "initVals" : {
+            "x": -0.35,
+            "y": 0.0,
+            "z": 0.6,
+            "vx": 0.3,
+            "wy": 2.0
+        },
+        "constrains": {
+            "vx": true,
+            "wy": false
+        },
+        "material" : "matWheel"
+    },
+    "particles": {
+        "material" : "matSphere",
+        "pck": 1.451026,
+        "rndSeed": 12345,
+        "generation": "clumpCloud",
+        "num": 80000,
+        "rmin": 0.00225,
+        "rmed": 0.0025,
+        "rmax": 0.00275,
+        "scale": 10.0
+    },
+    "materials": {
+        "matWheel": {
+            "density": 75.47975738314521,
+            "young": 1e9,
+            "poisson": 0.3,
+            "frictionAngle": 0.4636476090008061
+        },
+        "matSphere": {
+            "density": 2830,
+            "young": 5e5,
+            "poisson": 0.3,
+            "frictionAngle": 0.0
+        },
+        "matBox": {
+            "density": 2830,
+            "young": 0.5e6,
+            "poisson": 0.3,
+            "frictionAngle": 0.640535835481919
+        }
+    },
+    "matPairs": {
+        "pp": {
+            "en": 0.3,
+            "krot": 0.00005
+        }
+    },
+    "sim": {
+        "settleTime": 1.0,
+        "endTime": 4.25,
+        "timeStep": 0.00004,
+        "progRepInterval": 0.01,
+        "dataSaveInterval": 0.005,
+        "vis": {
+            "saveInt": 0.02,
+            "spheres": {
+                "on": true,
+                "singleFile": false,
+                "basename" : "vis/ovito-",
+                "detailed" : false
+            }
+        },
+        "GUImode": true
+    }
+}
