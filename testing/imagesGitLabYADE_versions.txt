@@ -1,0 +1,40 @@
+registry.gitlab.com/yade-dev/docker-prod
+
+Yade 2025.2.0
+debian trixie August 9, 2025. 
+sudo docker run -it registry.gitlab.com/yade-dev/docker-prod:debian-trixie yade --version
+Yade version: 2025.2.0 
+
+Yade daily build 20241225-8296~a615749~noble1
+ubuntu24.04    
+podman run registry.gitlab.com/yade-dev/docker-prod:ubuntu24.04 yadedaily --version
+Yade version: 20241225-8296~a615749~noble1
+My Dell G3:
+yadedaily --version
+Yade version: 20260115-8983~7c8d01e~noble1
+
+Yade 2023.02a 
+bookworm June 10 2023:
+sudo docker run -it registry.gitlab.com/yade-dev/docker-prod:debian-bookworm yade --version
+Yade version: 2023.02a 
+podman run registry.gitlab.com/yade-dev/docker-prod:debian-bookworm yadedaily --version
+Yade version: 20260115-8983~7c8d01e~bookworm1
+
+Yade 2021.01a 
+bullseye Aug 14 2021:
+sudo docker run -it registry.gitlab.com/yade-dev/docker-prod:debian-bullseye yade --version
+Yade version: 2021.01a 
+
+Yade 2020.01a (Ubuntu 22.04)
+podman run -it registry.gitlab.com/yade-dev/docker-prod:ubuntu22.04 yade --version
+Yade version: 2020.01a 
+
+Yade 2018.02b
+sudo docker run registry.gitlab.com/yade-dev/docker-prod:ubuntu18.04 yade --version
+Yade version: 2018.02b 
+
+Yade 1.20.0
+sudo docker run registry.gitlab.com/yade-dev/docker-prod:ubuntu16.04 yade --version
+Yade version: 1.20.0
+sudo docker run registry.gitlab.com/yade-dev/docker-prod:ubuntu16.04 yadedaily --version
+Yade version: 20220429-6506~6b71c48~xenial1

@@ -11,7 +11,9 @@
         "material": "matBox"
     },
     "wheel": {
-        "stlFile": "meshes/wheelKyoto.stl",
+        "stl": {
+            "filename": "meshes/wheelKyoto.stl"
+        },
         "radEff": 0.11,
         "mass": 2.0,
         "Iyy": 0.0025,

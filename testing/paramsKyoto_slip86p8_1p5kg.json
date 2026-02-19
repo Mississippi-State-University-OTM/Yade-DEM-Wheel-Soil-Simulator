@@ -11,7 +11,9 @@
         "material": "matBox"
     },
     "wheel": {
-        "stlFile": "meshes/wheelKyoto.stl",
+        "stl": {
+            "filename": "meshes/wheelKyoto.stl"
+        },
         "radEff": 0.11,
         "mass": 1.4979613,
         "Iyy": 0.0025,
@@ -19,7 +21,7 @@
             "x": -0.35,
             "y": 0.0,
             "z": 0.6,
-            "vx": 0.2844732,
+            "vx": 0.0400752,
             "wy": 2.76
         },
         "constrains": {
@@ -66,12 +68,12 @@
         }
     },
     "sim": {
-        "settleTime": 2.0,
-        "endTime": 4.0,
+        "settleTime": 1.0,
+        "endTime": 16.0,
         "progRepInterval": 0.01,
-        "dataSaveInterval": 0.005,
+        "dataSaveInterval": 0.001,
         "vis": {
-            "saveInt": 0.4,
+            "saveInt": 1.0,
             "spheres": {
                 "on": true,
                 "singleFile": false,

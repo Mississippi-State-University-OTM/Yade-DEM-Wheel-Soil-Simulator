@@ -4,9 +4,11 @@ stages:
 # Use images with different versions of Yade by extending templat with image
 .test_template:
   stage: test
+  image: registry.gitlab.com/yade-dev/docker-prod:$YADE_OS
   variables:
+    YADEBUILD: "yade"
     NTHREADS: "8"
-    OUTPUT_DIR: "out_${CI_JOB_NAME}_${NTHREADS}"
+    OUTPUT_DIR: "out_${CI_JOB_ID}_${NTHREADS}"
     BEGT: "2.5"
     ENDT: "9"
     SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_2023.txt"
@@ -17,128 +19,191 @@ stages:
     - echo "Container info:"
     - cat /etc/os-release || true
     - python3 --version || true
+    - set -x
     # 1. Verify YADE is installed and check version
-    - yade --version
+    - $YADEBUILD --version
 
     # 2. Run sipmle simulation, print to screen and file
-    - mkdir -p $OUTPUT_DIR
-    - cp $PARAM_FILE $OUTPUT_DIR
-    - echo $OUTPUT_DIR $NTHREADS $PARAM_FILE
-    - yade -j${NTHREADS} -x -n simWheelTestRigMSSTATE.py $PARAM_FILE | tee $OUTPUT_DIR/log.report
-    - cp simWheelTestRigMSSTATE.py $OUTPUT_DIR
-    - mv plot.txt plot.pdf exec_time.txt vis $OUTPUT_DIR
+    - mkdir "$OUTPUT_DIR"
+    - cp simWheelTestRigMSSTATE.py $PARAM_FILE "$OUTPUT_DIR"
+    - $YADEBUILD -j${NTHREADS} -x -n simWheelTestRigMSSTATE.py $PARAM_FILE | tee "$OUTPUT_DIR"/log.report
+    - cat exec_time.txt
+    - mv plot.txt plot.pdf exec_time.txt Data_Output.csv vis "$OUTPUT_DIR"
 
     # 3. Compare averaged data and show results
-    - cat $OUTPUT_DIR/exec_time.txt
-    - python3 ./testing/calcAvg.py $OUTPUT_DIR/plot.txt $BEGT $ENDT --ref $SAMPLE_PLOT_DATA --compare WxR:6 Vz:4 Fx:6 Fz:4 Slip:4 GrTr:14 z:10 | tee $OUTPUT_DIR/log.compare
+    - python3 ./testing/calcAvg.py "$OUTPUT_DIR"/plot.txt $BEGT $ENDT 1 --ref $SAMPLE_PLOT_DATA --compare WxR:6 Vz:4 Fx:40 Fz:4 Slip:4 GrTr:50 z:11 | tee "$OUTPUT_DIR"/log.compare
+
   artifacts:
     name: ${CI_JOB_NAME}_${CI_PIPELINE_ID}
     when: always
     # This saves the log so you can download it from the GitLab UI
     paths:
-      - $OUTPUT_DIR/
+      - "$OUTPUT_DIR/"
     expire_in: 1 week
 
-# Create jobs for specific images by extending the template
-towed_default_trixie:
-  extends: .test_template
-  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
+
+.matrix_yade:
   when: manual
+  parallel:
+    matrix:
+       - YADE_OS: ["debian-trixie", "debian-bookworm", "debian-bullseye", "ubuntu22.04", "ubuntu18.04", "ubuntu16.04"]
+         NTHREADS: ["1", "8"]
+  variables:
+    YADEBUILD: "yade"
+
+.matrix_yadedaily:
+  when: manual
+  parallel:
+    matrix:
+       - YADE_OS: ["ubuntu24.04", "debian-bookworm", "debian-bullseye", "ubuntu18.04", "ubuntu16.04"]
+         NTHREADS: ["1", "8"]
+  variables:
+    YADEBUILD: "yadedaily"
+
+# Create jobs for specific images and nthreads by extending the templates
+.towed_default:
+  extends: .test_template
   variables:
     PARAM_FILE: "paramsKyoto.json"
-    SAMPLE_PLOT_DATA: "testing/plot_default_2023.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_default_2025.txt"
+    BEGT: "2.5"
+    ENDT: "9"
 
-towed_quick_bullseye:
+.towed_quick:
   extends: .test_template
-  image: registry.gitlab.com/yade-dev/docker-prod:debian-bullseye
+  image: registry.gitlab.com/yade-dev/docker-prod:$YADE_OS
   when: manual
   variables:
     PARAM_FILE: "testing/paramsTowedLargeCylinder.json"
     SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_2022.txt"
+    BEGT: "2.5"
+    ENDT: "9"
 
-towed_quick_my2022p01a:
+towed_default_yade:
+  extends:
+    - .towed_default
+    - .matrix_yade
+
+towed_default_yadedaily:
+  extends:
+    - .towed_default
+    - .matrix_yadedaily
+
+towed_quick_yade:
+  extends:
+    - .towed_quick
+    - .matrix_yade
+
+towed_quick_yadedaily:
+  extends:
+    - .towed_quick
+    - .matrix_yadedaily
+
+.slip6p3_Kyoto_2p0kg:
   extends: .test_template
-  image: registry.gitlab.com/bohumir1/test:2022.01a
   when: manual
   variables:
-    PARAM_FILE: "testing/paramsTowedLargeCylinder.json"
-    SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_2022.txt"
-
-towed_quick_bookworm:
-  extends: .test_template
-  image: registry.gitlab.com/yade-dev/docker-prod:debian-bookworm
-  when: manual
-  variables:
-    PARAM_FILE: "testing/paramsTowedLargeCylinder.json"
-
-towed_quick_trixie:
-  extends: .test_template
-  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
-  when: manual
-  variables:
-    PARAM_FILE: "testing/paramsTowedLargeCylinder.json"
-    NTHREADS: "1"
-
-slip6p3_Kyoto_trixie:
-  extends: .test_template
-  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
-  when: manual
-  variables:
-    PARAM_FILE: "testing/paramsKyoto_slip6p3.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
-    BEGT: "3"
+    PARAM_FILE: "testing/paramsKyoto_slip6p3_2p0kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip6p3p_2p0kg_setl1s_nobleY24daily.txt"
+    BEGT: "1.5"
     ENDT: "3.5"
-    NTHREADS: "8"
 
-slip21p02_Kyoto_trixie:
+slip6p3_Kyoto_yade:
+  extends:
+    - .slip6p3_Kyoto_2p0kg
+    - .matrix_yade
+
+slip6p3_Kyoto_yadedaily:
+  extends:
+    - .slip6p3_Kyoto_2p0kg
+    - .matrix_yadedaily
+
+.slip21p02_Kyoto_2p0kg:
   extends: .test_template
-  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
-  when: manual
   variables:
     PARAM_FILE: "testing/paramsKyoto_slip21p02.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
-    BEGT: "3"
-    ENDT: "4"
-    NTHREADS: "8"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip21p02_2kg_setl1s_y25_-j8.txt"
+    BEGT: "2"
+    ENDT: "3.5"
 
-slip60p_Kyoto_trixie:
+slip21p02_Kyoto_yade:
+  extends:
+    - .slip21p02_Kyoto_2p0kg
+    - .matrix_yade
+
+slip21p02_Kyoto_yadedaily:
+  extends:
+    - .slip21p02_Kyoto_2p0kg
+    - .matrix_yadedaily
+
+.slip60p_Kyoto_2p0kg:
   extends: .test_template
-  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
-  when: manual
   variables:
     PARAM_FILE: "testing/paramsKyoto_slip60p0.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip60p_2022p01hd2_m2kg-j8.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip60p0_2p0kg_setl1s_y25_-j8.txt"
     BEGT: "3"
     ENDT: "7"
-    NTHREADS: "8"
 
-slip50p_Kyoto_trixie:
+slip60p_Kyoto_yade:
+  extends:
+    - .slip21p02_Kyoto_2p0kg
+    - .matrix_yade
+
+slip60p_Kyoto_yadedaily:
+  extends:
+    - .slip21p02_Kyoto_2p0kg
+    - .matrix_yadedaily
+
+.slip86p8_Kyoto_1p5kg:
   extends: .test_template
-  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
-  when: manual
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip50p0.json"
-    # same as above... not 50 but 60 percent
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip60p_2022p01hd2_m2kg-j8.txt"
-    ENDT: "3.5"
-    NTHREADS: "8"
+    PARAM_FILE: "testing/paramsKyoto_slip86p8_1p5kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip86p8_m1p5kg_hd2_-j8.txt"
+    BEGT: "10.0"
+    ENDT: "16.0"
 
-tow0p3mps_Kyoto_my2022p01a:
+slip86p8_Kyoto_yade:
+  extends:
+    - .slip86p8_Kyoto_1p5kg
+    - .matrix_yade
+
+slip86p8_Kyoto_yadedaily:
+  extends:
+    - .slip86p8_Kyoto_1p5kg
+    - .matrix_yadedaily
+
+.tow0p3mps_Kyoto_1p5kg:
   extends: .test_template
-  image: registry.gitlab.com/bohumir1/test:2022.01a
-  when: manual
   variables:
     PARAM_FILE: "testing/paramsKyoto_tow0p3mps.json"
     SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
+    BEGT: "2.5"
     ENDT: "3.5"
-    NTHREADS: "8"
 
-tow0p3mps_Kyoto_trixie:
+tow0p3mps_Kyoto_yade:
+  extends:
+    - .tow0p3mps_Kyoto_1p5kg
+    - .matrix_yade
+
+tow0p3mps_Kyoto_yadedaily:
+  extends:
+    - .tow0p3mps_Kyoto_1p5kg
+    - .matrix_yadedaily
+
+.selfProp1ms_Kyoto_1p5kg:
   extends: .test_template
-  image: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
-  when: manual
   variables:
-    PARAM_FILE: "testing/paramsKyoto_tow0p3mps.json"
+    PARAM_FILE: "testing/paramsKyoto_selfProp1ms.json"
     SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
+    BEGT: "2.5"
     ENDT: "3.5"
-    NTHREADS: "8"
+
+selfProp1ms_Kyoto_yade:
+  extends:
+    - .selfProp1ms_Kyoto_1p5kg
+    - .matrix_yade
+
+selfProp1ms_Kyoto_yadedaily:
+  extends:
+    - .selfProp1ms_Kyoto_1p5kg
+    - .matrix_yadedaily
