@@ -1,62 +1,64 @@
 {
     "box": {
-        "length": 4.0,
-        "width":  1.0,
-        "height": 1.5,
+        "length": 1.0,
+        "width": 0.15,
+        "height": 0.5,
         "center": {
             "x": 0.0,
             "y": 0.0,
-            "z": 0.75
+            "z": 0.0
         },
         "material": "matBox"
     },
     "wheel": {
         "stl": {
-            "filename": "./meshes/wheelLargeCylinder.stl"
+            "filename": "meshes/wheelKyoto.stl"
         },
-        "radEff": 0.5,
-        "mass": 1000.0,
-        "Iyy": 250,
+        "radEff": 0.11,
+        "mass": 1.4979613,
+        "Iyy": 0.0025,
         "initVals" : {
-            "x": -1.5,
+            "x": -0.35,
             "y": 0.0,
-            "z": 1.8,
-            "vx": 0.3,
-            "wy": -2.0
+            "z": 0.6,
+            "vx": 0.2844732,
+            "wy": 2.76
         },
         "constrains": {
             "vx": true,
-            "wy": false
+            "wy": true
         },
         "material" : "matWheel"
     },
     "particles": {
         "material" : "matSphere",
-        "pck": 0.8,
-        "rndSeed": 123,
-        "generation": "meanFuzz",
-        "rMean": 0.06,
-        "rRelFuzz": 0.3,
-        "scale": 5.0
+        "pck": 1.451026,
+        "rndSeed": 12345,
+        "generation": "clumpCloud",
+        "num": 80000,
+        "rmin": 0.00225,
+        "rmed": 0.0025,
+        "rmax": 0.00275,
+        "scale": 1.0
     },
     "materials": {
         "matWheel": {
-            "density": 1000,
-            "young": 1e7,
+            "density": 75.47975738314521,
+            "young": 1e9,
             "poisson": 0.3,
-            "frictionAngle": 0.5
+            "frictionAngle": 0.4636476090008061
         },
         "matSphere": {
-            "density": 10000,
-            "young": 1e7,
+            "density": 2830,
+            "young": 5e5,
             "poisson": 0.3,
-            "frictionAngle": 0.6
+            "frictionAngle": 0.0
         },
         "matBox": {
-            "density": 1000,
-            "young": 1e7,
+            "density": 2830,
+            "young": 0.5e6,
             "poisson": 0.3,
-            "frictionAngle": 0.6
+            "frictionAngle": 0.640535835481919
         }
     },
     "matPairs": {
@@ -67,12 +69,11 @@
     },
     "sim": {
         "settleTime": 1.0,
-        "endTime": 11.1,
-        "progRepInterval": 0.1,
-        "dataSaveInterval": 0.005,
-        "dataSaveInterval": 0.005,
+        "endTime": 4.0,
+        "progRepInterval": 0.01,
+        "dataSaveInterval": 0.001,
         "vis": {
-            "saveInt": 0.02,
+            "saveInt": 0.4,
             "spheres": {
                 "on": true,
                 "singleFile": false,

@@ -11,7 +11,9 @@
         "material": "matBox"
     },
     "wheel": {
-        "stlFile": "meshes/wheelKyoto.stl",
+        "stl": {
+            "filename": "meshes/wheelKyoto.stl"
+        },
         "radEff": 0.11,
         "mass": 2.0,
         "Iyy": 0.0025,
@@ -66,9 +68,8 @@
         }
     },
     "sim": {
-        "settleTime": 2.0,
+        "settleTime": 1.0,
         "endTime": 8.0,
-        "timeStep": 0.00001,
         "progRepInterval": 0.01,
         "dataSaveInterval": 0.005,
         "vis": {

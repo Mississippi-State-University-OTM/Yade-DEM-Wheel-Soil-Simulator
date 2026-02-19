@@ -60,6 +60,7 @@ def main():
     parser.add_argument("file", help="Input data file")
     parser.add_argument("start", type=float, help="Start time")
     parser.add_argument("end", type=float, help="End time")
+    parser.add_argument("tol_pct", type=float, help="Percentage difference tolerance")
     parser.add_argument("--ref", help="Reference file to compare against", default=None)
     parser.add_argument("--compare", nargs='+', help="Pairs of col:accuracy (e.g., var1:10.0)", default=[])
     
@@ -74,7 +75,7 @@ def main():
         sys.exit(1)
 
     # 2. Write New Results to File (Transposed: one variable per row)
-    print(f"# Statistics for {args.file} (t={args.start} to {args.end})")
+    print(f"# Statistics for {args.file} (t={args.start} to {args.end} @ {args.tol_pct} % tol)")
     print(f"# {'Variable':<8} {'Average':>15} {'Std_Dev':15}")
     for h, a, s in zip(headers, avgs, stds):
         if s != 0.0 and h != "At" and h != "t":
@@ -87,9 +88,9 @@ def main():
         
         if ref_avgs:
             # Updated Table Header with Target % column
-            fmt = "{:<8} | {:>10} | {:>10} | {:>10} | {:>8} | {:>8} | {:<8}"
-            print(fmt.format("Variable", "New Avg", "Ref Avg", "+/- StDev", "Actual %", "Target %", "Status"))
-            print("-" * 79)
+            fmt = "{:<8} | {:>10} | {:>10} | {:>10} | {:>8} | {:>8} | {:>8} | {:<8}"
+            print(fmt.format("Variable", "New Avg", "Ref Avg", "+/- StDev", "RelErr %", "StDev %", "Target %", "Status"))
+            print("-" * 101)
             
             for col_name, tol_percent in comp_map.items():
                 if col_name in headers and col_name in ref_headers:
@@ -99,16 +100,31 @@ def main():
                     new_val = avgs[idx]
                     ref_val = ref_avgs[ridx]
                     ref_std = ref_stds[ridx]
-                    
-                    diff = abs(new_val - ref_val)
-                    tolerance_val = (tol_percent / 100.0) * ref_std
-                    
-                    # Calculate actual deviation as a percentage of ref StDev
-                    actual_pct = (diff / ref_std * 100.0) if ref_std != 0 else (0.0 if diff == 0 else float('inf'))
-                    
-                    is_pass = diff <= tolerance_val
-                    status = "PASS" if is_pass else "FAIL"
-                    if not is_pass:
+                    diff_posneg = new_val - ref_val
+
+                    status = "FAIL"
+
+                    # Caclculate relative error
+                    diff_pct = diff_posneg / abs(ref_val) * 100
+                    # E.g. < 5% diff => PASS <5%RelE
+                    if abs(diff_pct) <= args.tol_pct :
+                        status = "PASS < " + str(args.tol_pct) + " % RelE"
+
+                    # Calculate difference as % of ref StdDev
+                    if ref_std != 0:
+                        pct_stdev = (diff_posneg / ref_std * 100.0) 
+                    else:
+                        if abs(diff_posneg) == 0:
+                            pct_stdev = 0
+                        else:
+                            pct_stdev = float('inf')
+
+                    if status == "FAIL": # May change to PASS if ref StDev is high
+                        if abs(pct_stdev) <= tol_percent:
+                            status = "PASS < " + str(tol_percent)  + " % StDev"
+
+                    # If both failed, overall pass is set to FAIL
+                    if status == "FAIL":
                         overall_pass = False
                     
                     print(fmt.format(
@@ -116,7 +132,8 @@ def main():
                         f"{new_val:.4f}", 
                         f"{ref_val:.4f}", 
                         f"{ref_std:.4f}",
-                        f"{actual_pct:.2f}%", 
+                        f"{diff_pct:.2f}%", 
+                        f"{pct_stdev:.2f}%", 
                         f"{tol_percent:.2f}%", 
                         status
                     ))
