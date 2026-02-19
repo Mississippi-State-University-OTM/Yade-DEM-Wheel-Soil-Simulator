@@ -65,7 +65,7 @@ stages:
   extends: .test_template
   variables:
     PARAM_FILE: "paramsKyoto.json"
-    SAMPLE_PLOT_DATA: "testing/plot_default_2025.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_default_2025_j1.txt"
     BEGT: "2.5"
     ENDT: "9"
 
