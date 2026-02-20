@@ -1,6 +1,8 @@
-# Yade DEM Soil-Wheel Simulators
+# Yade DEM Soil-Wheel Simulator
 
-Two soil-wheel simulators are provided. The first is `simWheelTestRigKyoto.py`, developed at Kyoto University and published by [Nakanishi (2020)](https://doi.org/10.1016/j.jterra.2020.10.001). It sets the tractive load and uses PID controller to keep angular velocity constant. The published code was adapted here to work with Python 3. The second, `simWheelTestRigMSSTATE.py`, was inspired by `simWheelTestRigKyoto` and developed at the Center for Advanced Vehicular Systems, Mississippi State University by [Bohumir Jelinek](https://www.cavs.msstate.edu/directory/information.php?d=69) to assist students in the [Wheel and Track Design Competition](https://doi.org/10.1016/j.jterra.2025.101117) of the [International Society of Terrain-Vehicle Systems](https://www.istvs.org/). It simulates the wheel motion in towed, self-propelled, and prescribed slip conditions.
+This document describes a Yade DEM based Soil-Wheel Simulator, `simWheelTestRigMSSTATE.py`, developed at the Center for Advanced Vehicular Systems, Mississippi State University to aid in the [Wheel and Track Design Competition](https://doi.org/10.1016/j.jterra.2025.101117) of the [International Society of Terrain-Vehicle Systems](https://www.istvs.org/). It simulates planar motion of a rigid wheel in granular terrain under prescribed forward and/or angular velocity.
+
+The `simWheelTestRigMSSTATE.py` simulator follows the model and source code published by [Nakanishi (2020)](https://doi.org/10.1016/j.jterra.2020.10.001) developed at Kyoto University. A shortened version of the Kyoto simulator adapted  to work with Python 3 is provided in `simWheelTestRigKyoto.py`. This simulator uses PID controller to keep angular velocity constant and allows to impose a tractive load.
 
 ## Installation of Yade DEM Simulation Environment
 
@@ -8,13 +10,13 @@ Yade DEM simulation environment can be installed according to the instructions a
 
 ## Requirements
 
-- Yade DEM [website](https://yade-dem.org/doc/):
-- MSSTATE simulator (`simWheelTestRigMSSTATE.py`): requires Yade 2021.01a or later versions. It also works with Yade 2020.01a (Ubuntu 22.04) except for scaling the wheel size.
-- Kyoto simulator (`simWheelTestRigKyoto.py`): was executed with Yade 2020.01a or later versions.
+Up-to-date version of [Yade DEM](https://yade-dem.org/doc/) environment:
+- MSSTATE simulator (`simWheelTestRigMSSTATE.py`) requires Yade 2021.01a or later versions. It also works with Yade 2020.01a (Ubuntu 22.04) except for scaling the wheel size.
+- Kyoto simulator (`simWheelTestRigKyoto.py`) requires Yade 2020.01a or later versions.
 
 ## Running the Simulators with GUI
 
-Start the simulators using Yade from the command line. Use `yade` for stable releases or `yadedaily` if you have a daily build installed. Check your installed version with `yade --version` or `yadedaily --version`.
+Start the simulators using Yade from the command line. Use `yade` for stable releases or `yadedaily` if your Linux distribution only provides a daily build of Yade. Check your installed version with `yade --version` or `yadedaily --version`.
 
 **Kyoto simulator:**
 
@@ -84,9 +86,9 @@ Note: `simWheelTestRigKyoto.py` uses hard-coded parameters and does not read `pa
 yade -n -x simWheelTestRigKyoto.py
 ```
 
-## Reading STL File with Wheel Geometry (`simWheelTestRigKyoto.py`)
+## Reading STL File with Wheel Geometry
 
-`simWheelTestRigKyoto.py` uses x-forward, z-up coordinate system. That means the wheel moves forward in the +x direction and the gravity points in the -z direction. Please build you STL file with the wheel in the xz plane (wheel rotational axis in the y direction), or find a way to postprocess your whee's STL file to comply. Wheen center does not need to be in the origin but you need to specify center offset in the JSON parameter file (snippet below) to position the wheel to proper initial location in the soil bin. Yade function importing STL returns triangular facets, which are then used by the `simWheelTestRigKyoto.py` to construct the wheel body. Yade STL importer can't rotate the coordinate system of the wheel at the moment (that's why it is better to provide STL file with the wheel in the xz plan), although a rotation should not be hard to implement in `simWheelTestRigMSSTATE.py` upon reading the facets. `simWheelTestRigKyoto.py` currently supports scaling the wheel size (by applying multiplicative units ratio factor) and translation (Yade needs to know wheel center offset). Expected distance units are meters. Following is an example snipped from the JSON parameter file:
+`simWheelTestRigKyoto.py` soil-wheel simulator can read a rigid wheel geometry from plaintext or binary STL file. `simWheelTestRigKyoto.py` uses `x`-forward, `z`-up coordinate system, meaning the wheel moves forward in the `+x` direction and the gravity points in the `-z` direction. The STL file needs to have a wheel in the `xz` plane, with the wheel rotational axis in the `y` direction, or it will need to be transformed to comply. If the wheel center is not in the origin of coordinate system, the wheel center offset needs to be specified in the input JSON parameter file in order to position the wheel to proper initial location in the soil bin. Yade STL importer in `simWheelTestRigMSSTATE.py` returns triangular facets from which  the outer boundary of the rigid wheel body is constructed. Yade STL importer currently can't rotate the coordinate system of the wheel - that is why the rotational axis of the wheel in the STL file needs to point in the `y` direction. (Note that the rotation is not difficult to implement following the facet-checking function in the `simWheelTestRigMSSTATE.py`). The `simWheelTestRigMSSTATE.py` currently supports scaling the wheel size (by applying multiplicative units ratio factor) and translation (Yade needs to know wheel center offset). Expected distance units in the STL file are `meters`. Following is an example snippet from the JSON parameter file:
 
 ```json
 {
@@ -119,7 +121,7 @@ yade -n -x simWheelTestRigKyoto.py
 }
 ```
 
-Effective radius `radEff` is used to calculate slip. The constraint `vx=True` means x-component of the velocity is fixed at the specified value `vx` (towed condition), and `wy=True` means angular velocity of the wheel is forced to have the specified value `wy` (self-propelled condition). If not fixed by a constrain, the initial value is zero. For a prescribed slip condition, constrain both `vx` and `wy` to a desired value. The wheel is allowed to move freely in the z-direction.
+Effective radius `radEff` is used to compute the wheel slip. The constraint `vx=True` means `x`-component of the velocity is fixed at the specified value `vx` (towed condition). The constraint `wy=True` means angular velocity of the wheel is forced to have the specified value `wy` (self-propelled condition). If not fixed by a constrain, the initial value of the velocity is set to zero. For a prescribed slip condition, both `vx` and `wy` to be constrained and set to a desired value. The wheel is allowed to move freely in the z-direction.
 
 ### YADE 3D Display Keyboard Shortcuts
 
