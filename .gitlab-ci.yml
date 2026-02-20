@@ -104,8 +104,8 @@ towed_quick_yadedaily:
   when: manual
   variables:
     PARAM_FILE: "testing/paramsKyoto_slip6p3_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip6p3p_2p0kg_setl1s_nobleY24daily.txt"
-    BEGT: "1.5"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip6p3p_2p0kg_setl1s_trixie_j1.txt"
+    BEGT: "1.75"
     ENDT: "3.5"
 
 slip6p3_Kyoto_yade:
