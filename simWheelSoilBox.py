@@ -1,6 +1,6 @@
 timestart = time.time()
 
-param_file = sys.argv[1] if len(sys.argv) > 1 else 'paramsKyoto.json'
+param_file = sys.argv[1] if len(sys.argv) > 1 else 'params.json'
 print(f'Parameter file:\n "{param_file}"')
 
 import json

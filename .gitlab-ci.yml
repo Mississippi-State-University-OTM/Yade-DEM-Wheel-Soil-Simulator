@@ -25,8 +25,8 @@ stages:
 
     # 2. Run sipmle simulation, print to screen and file
     - mkdir "$OUTPUT_DIR"
-    - cp simWheelTestRigMSSTATE.py $PARAM_FILE "$OUTPUT_DIR"
-    - $YADEBUILD -j${NTHREADS} -x -n simWheelTestRigMSSTATE.py $PARAM_FILE | tee "$OUTPUT_DIR"/log.report
+    - cp simWheelSoilBox.py $PARAM_FILE "$OUTPUT_DIR"
+    - $YADEBUILD -j${NTHREADS} -x -n simWheelSoilBox.py $PARAM_FILE | tee "$OUTPUT_DIR"/log.report
     - cat exec_time.txt
     - mv plot.txt plot.pdf exec_time.txt Data_Output.csv vis "$OUTPUT_DIR"
 

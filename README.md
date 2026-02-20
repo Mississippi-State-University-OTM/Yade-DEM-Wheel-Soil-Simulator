@@ -1,64 +1,66 @@
-# Yade DEM Soil-Wheel Simulator
+# DEM Wheel-Soil-Box Simulator
 
-This document describes a Yade DEM based Soil-Wheel Simulator, `simWheelTestRigMSSTATE.py`, developed at the Center for Advanced Vehicular Systems, Mississippi State University to aid in the [Wheel and Track Design Competition](https://doi.org/10.1016/j.jterra.2025.101117) of the [International Society of Terrain-Vehicle Systems](https://www.istvs.org/). It simulates planar motion of a rigid wheel in granular terrain under prescribed forward and/or angular velocity.
+This document describes a Yade DEM based Wheel-Soil-Box Simulator, `simWheelSoilBox.py`, developed at the [Center for Advanced Vehicular Systems](https://cavs.msstate.edu/), [Mississippi State University](https://www.msstate.edu/) to aid in the [Wheel and Track Design Competition](https://doi.org/10.1016/j.jterra.2025.101117) of the [International Society of Terrain-Vehicle Systems](https://www.istvs.org/). It simulates planar motion of a rigid wheel in a box with granular soil under prescribed forward and/or angular velocity conditions.
 
-The `simWheelTestRigMSSTATE.py` simulator follows the model and source code published by [Nakanishi (2020)](https://doi.org/10.1016/j.jterra.2020.10.001) developed at Kyoto University. A shortened version of the Kyoto simulator adapted  to work with Python 3 is provided in `simWheelTestRigKyoto.py`. This simulator uses PID controller to keep angular velocity constant and allows to impose a tractive load.
+The simulator follows the model and source code published by [Nakanishi (2020)](https://doi.org/10.1016/j.jterra.2020.10.001) developed at Kyoto University. A shortened version of the Kyoto simulator adapted  to work with Python 3 is provided in `simWheelSoilBoxKyoto.py`. The Kyoto simulator uses PID controller to keep angular velocity constant and allows to impose a traction load.
 
 ## Installation of Yade DEM Simulation Environment
 
-Yade DEM simulation environment can be installed according to the instructions at the [Yade DEM website](https://yade-dem.org/doc/), which provides an introduction to Linux, Python, and detailed documentation.
+Yade DEM simulation environment can be installed according to the instructions at the [Yade DEM website](https://yade-dem.org/doc/), which provides an introduction to Linux, Python, and detailed documentation. The simulator was tested to work under Ubuntu 24.04 and Ubuntu 22.04 application installed under Windows 11 OS and in Docker containers.
 
 ## Requirements
 
 Up-to-date version of [Yade DEM](https://yade-dem.org/doc/) environment:
-- MSSTATE simulator (`simWheelTestRigMSSTATE.py`) requires Yade 2021.01a or later versions. It also works with Yade 2020.01a (Ubuntu 22.04) except for scaling the wheel size.
-- Kyoto simulator (`simWheelTestRigKyoto.py`) requires Yade 2020.01a or later versions.
+- `simWheelSoilBox.py` simulator requires Yade 2020.01a or later version (Ubuntu 20.04, Debian Bullseye or later). Scaling the wheel size currently works only with Yadex 2021.01a or later (Ubuntu 24.04, Debian Bullseye or later).
+- `simWheelSoilBoxKyoto.py` requires Yade 2020.01a or later version (Ubuntu 20.04, Debian Bullseye or later).
 
-## Running the Simulators with GUI
+A computer with at least 8 GB of memory is recommended.
 
-Start the simulators using Yade from the command line. Use `yade` for stable releases or `yadedaily` if your Linux distribution only provides a daily build of Yade. Check your installed version with `yade --version` or `yadedaily --version`.
+## Running the Simulator with GUI
 
-**Kyoto simulator:**
+Start the simulator using Yade from the command line. Use `yade` for stable releases or `yadedaily` if your Linux distribution only provides a daily build of Yade. Check your installed version with `yade --version` or `yadedaily --version`.
+
+**Starting the simulator using stable release of Yade:**
 
 ```bash
-yade simWheelTestRigKyoto.py
+yade simWheelSoilBox.py
 ```
 
-**MSSTATE simulator with stable release of Yade:**
+**Starting the simulator with daily build of Yade:**
 
 ```bash
-yade simWheelTestRigMSSTATE.py
+yadedaily simWheelSoilBox.py
 ```
 
-**MSSTATE simulator with daily build of Yade:**
+Each command will open a GUI control panel window, a plotting window, and a 3D display window. Press the "Play" button in the controller window to start the simulation. Closing the 3D display window will speed up the simulation noticeably. The 3D display window can be re-open by clicking `Show 3D` button in the YADE control panel.
+
+By default, the simulator reads the parameter file `params.json` from the working directory. This file contains the wheel and soil parameters used in [Nakanishi (2020)](https://doi.org/10.1016/j.jterra.2020.10.001) and particles size scaled up 10X to speed up the simulation. To get the particles sizes as publised, chcange the `particles` `scale` parameter in params.json file from 10.0 to 1.0.
+
+To run the simulator with a different input parameter file, provide the filename or path as the first command-line argument. Examples:
+
+GUI mode (open the GUI, read alternate input parameter file `paramsCustom.json`):
 
 ```bash
-yadedaily simWheelTestRigMSSTATE.py
-```
-
-Each command will open a GUI controller window, a plotting window, and a 3D display window. Press the "Play" button in the controller window to start the simulation.
-
-By default, the MSSTATE simulator `simWheelTestRigMSSTATE.py` reads the parameter file `paramsKyoto.json` from the working directory. This file contains the wheel and soil parameters used in [Nakanishi (2020)](https://doi.org/10.1016/j.jterra.2020.10.001). The Kyoto simulator `simWheelTestRigKyoto.py` uses hard-coded parameters and does not read a parameter file.
-
-To run the MSSTATE simulator with a different parameter file, pass the filename or path as the first command-line argument. Examples:
-
-GUI mode (open the GUI and use alternate params):
-
-```bash
-yade simWheelTestRigMSSTATE.py paramsCustom.json
+yade simWheelSoilBox.py paramsCustom.json
 ```
 
 Headless mode (no GUI):
 
 ```bash
-yade -n -x simWheelTestRigMSSTATE.py paramsCustom.json
+yade -n -x simWheelSoilBox.py paramsCustom.json
 ```
 
-Paths are resolved relative to the current working directory where you run `yade`.
+Paths are resolved relative to the current working directory where you run `yade`. To execute a simulation using, for example, eight threads, add `-j8 command line parameter:
 
-## Running Simulators without GUI
+```bash
+yade -n -x -j8 simWheelSoilBox.py paramsCustom.json
+```
 
-For the MSSTATE simulator `simWheelTestRigMSSTATE.py`, set GUI mode to `false` in the parameter JSON and run with Yade's no-GUI flags. Example snippet:
+Multi-thread simulations run faster than single-thread. Only single-thread (-j1) simulations are reproducible.
+
+## Running Simulator without GUI
+
+First, set the `GUImode` to `false` in the input JSON file to false (snippet below)
 
 ```json
 {
@@ -68,27 +70,27 @@ For the MSSTATE simulator `simWheelTestRigMSSTATE.py`, set GUI mode to `false` i
 }
 ```
 
-Run headless:
+and then execute with `-n` (no GUI) and `-x` (exit upon completion) flags as below
 
 ```bash
-yade -n -x simWheelTestRigMSSTATE.py
+yade -n -x simWheelSoilBox.py
 ```
 
-Or explicitly pass a parameter file (example):
+User can specify a parameter file from command line (example below)
 
 ```bash
-yade -n -x simWheelTestRigMSSTATE.py paramsCustom.json
+yade -n -x simWheelSoilBox.py paramsCustom.json
 ```
 
-Note: `simWheelTestRigKyoto.py` uses hard-coded parameters and does not read `paramsKyoto.json`. To run the Kyoto script without a GUI, set the `GUImode = False` near the end of `simWheelTestRigKyoto.py` and use Yade's CLI flags:
+Note: `simWheelSoilBoxKyoto.py` uses hard-coded parameters - it does not read input parameter file. To run the Kyoto simulator without a GUI, set the `GUImode` to `False` near the end of `simWheelSoilBoxKyoto.py` script and use Yade's CLI flags:
 
 ```bash
-yade -n -x simWheelTestRigKyoto.py
+yade -n -x simWheelSoilBoxKyoto.py
 ```
 
-## Reading STL File with Wheel Geometry
+## Reading Wheel Geometry from STL File 
 
-`simWheelTestRigKyoto.py` soil-wheel simulator can read a rigid wheel geometry from plaintext or binary STL file. `simWheelTestRigKyoto.py` uses `x`-forward, `z`-up coordinate system, meaning the wheel moves forward in the `+x` direction and the gravity points in the `-z` direction. The STL file needs to have a wheel in the `xz` plane, with the wheel rotational axis in the `y` direction, or it will need to be transformed to comply. If the wheel center is not in the origin of coordinate system, the wheel center offset needs to be specified in the input JSON parameter file in order to position the wheel to proper initial location in the soil bin. Yade STL importer in `simWheelTestRigMSSTATE.py` returns triangular facets from which  the outer boundary of the rigid wheel body is constructed. Yade STL importer currently can't rotate the coordinate system of the wheel - that is why the rotational axis of the wheel in the STL file needs to point in the `y` direction. (Note that the rotation is not difficult to implement following the facet-checking function in the `simWheelTestRigMSSTATE.py`). The `simWheelTestRigMSSTATE.py` currently supports scaling the wheel size (by applying multiplicative units ratio factor) and translation (Yade needs to know wheel center offset). Expected distance units in the STL file are `meters`. Following is an example snippet from the JSON parameter file:
+The simulator reads a rigid wheel geometry from a plain text or binary STL file. The simulator uses `x`-forward, `z`-up coordinate system, meaning the wheel moves forward in the `+x` direction and the gravity points in the `-z` direction. The STL file needs to have a wheel in the `xz` plane, with the wheel rotational axis in the `y` direction, or it will need to be transformed to comply. If the wheel center is not in the origin of coordinate system, the wheel center offset needs to be specified in the input JSON parameter file in order to position the wheel to proper initial location in the soil bin. Yade STL importer in the simulator returns triangular facets from which  the outer boundary of the rigid wheel body is constructed. Yade STL importer currently can't rotate the coordinate system of the wheel - that is why the rotational axis of the wheel in the STL file needs to point in the `y` direction. Note that the rotation is not difficult to implement following the facet-checking function in the source code. The simulator currently supports scaling the wheel size (by applying multiplicative units ratio factor) and translation (Yade needs to know wheel center offset). Expected distance units in the STL file are `meters`. Following is an example snippet from the JSON parameter file:
 
 ```json
 {
@@ -131,4 +133,4 @@ Effective radius `radEff` is used to compute the wheel slip. The constraint `vx=
 - `o`: zoom in
 - `p`: zoom out
 
-To see all available shortcuts, focus the 3D display window and press `h`.
+To see all available shortcuts, focus the 3D display window and press `h`. Double click the 3D display window to align the view with the nearest axes.

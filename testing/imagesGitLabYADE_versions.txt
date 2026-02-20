@@ -27,6 +27,7 @@ Yade version: 2021.01a
 
 Yade 2020.01a (Ubuntu 22.04)
 podman run -it registry.gitlab.com/yade-dev/docker-prod:ubuntu22.04 yade --version
+podman run -it registry.gitlab.com/yade-dev/docker-prod:ubuntu20.04 yade --version
 Yade version: 2020.01a 
 
 Yade 2018.02b
