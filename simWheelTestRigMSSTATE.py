@@ -95,6 +95,9 @@ def createFrictMaterial(params, labelarg):
 # create materials, mark them with labels
 matWheel  = createFrictMaterial(matWheelParams, "wheelmat")
 matSphere = createFrictMaterial(matSphereParams, "mat1")
+# set sphere friction to zero for settling only, restore when the wheel is set in motion
+sphereFrictionAngle = matSphere.frictionAngle  # store the value before setting to zero
+matSphere.frictionAngle = 0.0
 matBox = createFrictMaterial(matBoxParams, "wallmat")
 idWheelMat  = O.materials.append(matWheel)
 idBoxMat = O.materials.append(matBox)
@@ -108,7 +111,7 @@ pp_krot         = intPPparams['krot']
 
 # Reposition the wheel to the top surface of soil and set it in motion
 def setInMotion():
-    matSphere.frictionAngle = matBox.frictionAngle
+    matSphere.frictionAngle = sphereFrictionAngle
     smax = boxCenterZ - hboxZ      # stores highest particle surface
     idx = None
     for i in range(wheelBodyId + 1, wheelBodyId + partnum + 1):
