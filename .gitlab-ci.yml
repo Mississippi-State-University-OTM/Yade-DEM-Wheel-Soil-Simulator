@@ -6,12 +6,7 @@ stages:
   stage: test
   image: registry.gitlab.com/yade-dev/docker-prod:$YADE_OS
   variables:
-    YADEBUILD: "yade"
-    NTHREADS: "8"
     OUTPUT_DIR: "out_${CI_JOB_ID}_${NTHREADS}"
-    BEGT: "2.5"
-    ENDT: "9"
-    SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_trixie_j1.txt"
   before_script:
     - set -euo pipefail
   script:
@@ -75,7 +70,7 @@ stages:
   when: manual
   variables:
     PARAM_FILE: "testing/paramsTowedLargeCylinder.json"
-    SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_2022.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_trixie_j1.txt"
     BEGT: "2.5"
     ENDT: "9"
 
