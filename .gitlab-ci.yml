@@ -158,7 +158,7 @@ slip60p_Kyoto_yadedaily:
   extends: .test_template
   variables:
     PARAM_FILE: "testing/paramsKyoto_slip86p8_1p5kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip86p8_m1p5kg_hd2_-j8.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip86p8_m1p5kg_trixie_j1.txt"
     BEGT: "10.0"
     ENDT: "16.0"
 
