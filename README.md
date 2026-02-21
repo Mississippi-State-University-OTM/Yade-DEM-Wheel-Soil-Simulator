@@ -16,17 +16,17 @@ Up-to-date version of [Yade DEM](https://yade-dem.org/doc/) environment:
 
 A computer with at least 8 GB of memory is recommended.
 
-## Running the Simulator with GUI
+## Running Simulator with GUI
 
 Start the simulator using Yade from the command line. Use `yade` for stable releases or `yadedaily` if your Linux distribution provides a daily build of Yade. Check your installed version with `yade --version` or `yadedaily --version`.
 
-**Starting the simulator using stable release of Yade:**
+**Starting simulator using stable release of Yade:**
 
 ```bash
 yade simWheelSoilBox.py
 ```
 
-**Starting the simulator with daily build of Yade:**
+**Starting simulator with daily build of Yade:**
 
 ```bash
 yadedaily simWheelSoilBox.py
@@ -88,7 +88,7 @@ Note: `simWheelSoilBoxKyoto.py` uses hard-coded parameters - it does not read in
 yade -n -x simWheelSoilBoxKyoto.py
 ```
 
-## Reading Wheel Geometry from STL File 
+## Reading Wheel Geometry from STL File
 
 The simulator reads a rigid wheel geometry from a plain text or binary STL file. The simulator uses `x`-forward, `z`-up coordinate system, meaning the wheel moves forward in the `+x` direction and the gravity points in the `-z` direction. The STL file needs to have a wheel in the `xz` plane, with the wheel rotational axis in the `y` direction, or it will need to be transformed to comply. If the wheel center is not in the origin of the coordinate system, the wheel center offset needs to be specified in the input JSON parameter file to position the wheel to proper initial location in the soil bin. The Yade STL importer in the simulator returns triangular facets from which  the outer boundary of the rigid wheel body is constructed. Yade STL importer currently can't rotate the coordinate system of the wheel - that is why the rotational axis of the wheel in the STL file needs to point in the `y` direction. Note that the rotation is not difficult to implement following the facet-checking function in the source code. The simulator currently supports scaling the wheel size (by applying multiplicative units ratio factor) and translation (Yade needs to know wheel center offset). Expected distance units in the STL file are `meters`. Following is an example snippet from the JSON parameter file:
 
@@ -133,4 +133,4 @@ Effective radius `radEff` is used to compute the wheel slip. The constraint `vx=
 - `o`: zoom in
 - `p`: zoom out
 
-To see all available shortcuts, set focus on the 3D display window and press `h`. Double-click the 3D display window to align the view with the nearest axes.
+To see all available shortcuts, set focus on the 3D display window and press `h`. Double-click the 3D display window to align the view with nearest axes.

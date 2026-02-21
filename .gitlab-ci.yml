@@ -11,7 +11,7 @@ stages:
     OUTPUT_DIR: "out_${CI_JOB_ID}_${NTHREADS}"
     BEGT: "2.5"
     ENDT: "9"
-    SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_2023.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_trixie_j1.txt"
   before_script:
     - set -euo pipefail
   script:
@@ -31,7 +31,7 @@ stages:
     - mv plot.txt plot.pdf exec_time.txt Data_Output.csv vis "$OUTPUT_DIR"
 
     # 3. Compare averaged data and show results
-    - python3 ./testing/calcAvg.py "$OUTPUT_DIR"/plot.txt $BEGT $ENDT 1 --ref $SAMPLE_PLOT_DATA --compare WxR:6 Vz:4 Fx:40 Fz:4 Slip:4 GrTr:50 z:11 | tee "$OUTPUT_DIR"/log.compare
+    - python3 ./testing/calcAvg.py "$OUTPUT_DIR"/plot.txt $BEGT $ENDT 4 --ref $SAMPLE_PLOT_DATA --compare WxR:6 Vz:4 Fx:40 Fz:4 Slip:4 GrTr:50 z:11 | tee "$OUTPUT_DIR"/log.compare
 
   artifacts:
     name: ${CI_JOB_NAME}_${CI_PIPELINE_ID}
@@ -64,7 +64,7 @@ stages:
 .towed_default:
   extends: .test_template
   variables:
-    PARAM_FILE: "paramsKyoto.json"
+    PARAM_FILE: "params.json"
     SAMPLE_PLOT_DATA: "testing/plot_default_2025_j1.txt"
     BEGT: "2.5"
     ENDT: "9"
@@ -122,7 +122,7 @@ slip6p3_Kyoto_yadedaily:
   extends: .test_template
   variables:
     PARAM_FILE: "testing/paramsKyoto_slip21p02.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip21p02_2kg_setl1s_y25_-j8.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip21p02_2kg_setl1s_y25_-j1.txt"
     BEGT: "2"
     ENDT: "3.5"
 
@@ -146,12 +146,12 @@ slip21p02_Kyoto_yadedaily:
 
 slip60p_Kyoto_yade:
   extends:
-    - .slip21p02_Kyoto_2p0kg
+    - .slip60p_Kyoto_2p0kg
     - .matrix_yade
 
 slip60p_Kyoto_yadedaily:
   extends:
-    - .slip21p02_Kyoto_2p0kg
+    - .slip60p_Kyoto_2p0kg
     - .matrix_yadedaily
 
 .slip86p8_Kyoto_1p5kg:
