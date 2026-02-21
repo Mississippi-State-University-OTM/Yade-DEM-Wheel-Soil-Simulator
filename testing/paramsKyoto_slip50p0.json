@@ -52,7 +52,7 @@
             "density": 2830,
             "young": 5e5,
             "poisson": 0.3,
-            "frictionAngle": 0.0
+            "frictionAngle": 0.640535835481919
         },
         "matBox": {
             "density": 2830,
