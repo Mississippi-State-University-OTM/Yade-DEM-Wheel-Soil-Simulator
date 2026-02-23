@@ -13,6 +13,12 @@
     "wheel": {
         "stl": {
             "filename": "meshes/wheelKyoto.stl"
+            "unitsScale" : 1.0,
+            "centerOffset": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
         },
         "radEff": 0.11,
         "mass": 2.0,
