@@ -134,3 +134,27 @@ Effective radius `radEff` is used to compute the wheel slip. The constraint `vx=
 - `p`: zoom out
 
 To see all available shortcuts, set focus on the 3D display window and press `h`. Double-click the 3D display window to align the view with nearest axes.
+
+## Copyright Statement
+
+```text
+<DEM Wheel-Soil-Box Simulator.>
+Copyright (C) 2026  Mississippi State University
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+```
+
+For more information, contact Mississippi State University's Office of
+Technology Management at otm@msstate.edu
+

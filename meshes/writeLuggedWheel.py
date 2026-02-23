@@ -1,3 +1,23 @@
+'''
+    <DEM Wheel-Soil-Box Simulator.>
+    Copyright (C) 2026  Mississippi State University
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+For more information, contact Mississippi State University's Office of Technology Management at otm@msstate.edu
+'''
+
 import numpy as np
 import trimesh
 from shapely.geometry import Polygon
@@ -75,5 +95,5 @@ rot_x = trimesh.transformations.rotation_matrix(np.radians(90), [1, 0, 0])
 wheel.apply_transform(rot_x)
 
 wheel.show() # Opens a viewer to inspect the triangular facets
-wheel.export('wheelKyoto2_binary.stl')
-wheel.export('wheelKyoto2.stl', file_type ='stl_ascii')
+wheel.export('wheelKyoto_binary.stl')
+wheel.export('wheelKyoto.stl', file_type ='stl_ascii')
