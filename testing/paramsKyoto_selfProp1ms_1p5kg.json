@@ -72,7 +72,7 @@
         "endTime": 4.2,
         "timeStep": 0.00001,
         "progRepInterval": 0.01,
-        "dataSaveInterval": 0.005,
+        "dataSaveInterval": 0.001,
         "vis": {
             "saveInt": 0.1,
             "spheres": {
