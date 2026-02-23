@@ -60,17 +60,17 @@ stages:
   extends: .test_template
   variables:
     PARAM_FILE: "params.json"
-    SAMPLE_PLOT_DATA: "testing/plot_default_2025_j1.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_tow0p3mps_2p0kg_y21_j1_pscale10x.txt"
     BEGT: "2.5"
     ENDT: "9"
 
-.towed_quick:
+.towed_Large:
   extends: .test_template
   image: registry.gitlab.com/yade-dev/docker-prod:$YADE_OS
   when: manual
   variables:
-    PARAM_FILE: "testing/paramsTowedLargeCylinder.json"
-    SAMPLE_PLOT_DATA: "testing/plot_towedLargeCyl_trixie_j1.txt"
+    PARAM_FILE: "testing/params_Large_tow0p3mps_1e3kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Large_tow0p3mps_1e3kg_y25_j1.txt"
     BEGT: "2.5"
     ENDT: "9"
 
@@ -94,48 +94,48 @@ towed_quick_yadedaily:
     - .towed_quick
     - .matrix_yadedaily
 
-.slip6p3_Kyoto_2p0kg:
+.slip06p3_Kyoto_2p0kg:
   extends: .test_template
   when: manual
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip6p3_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip6p3p_2p0kg_setl1s_trixie_j1.txt"
+    PARAM_FILE: "testing/params_Kyoto_fSlip06p3_2p0kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_fSlip06p3_2p0kg_y25_j1.txt"
     BEGT: "1.75"
     ENDT: "3.5"
 
-slip6p3_Kyoto_yade:
+slip06p3_Kyoto_yade:
   extends:
-    - .slip6p3_Kyoto_2p0kg
+    - .slip06p3_Kyoto_2p0kg
     - .matrix_yade
 
-slip6p3_Kyoto_yadedaily:
+slip06p3_Kyoto_yadedaily:
   extends:
-    - .slip6p3_Kyoto_2p0kg
+    - .slip06p3_Kyoto_2p0kg
     - .matrix_yadedaily
 
-.slip21p02_Kyoto_2p0kg:
+.slip21p0_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip21p02_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip21p02_2p0kg_setl1s_y25_-j1.txt"
+    PARAM_FILE: "testing/params_Kyoto_fSlip21p0_2p0kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_fSlip21p0_2p0kg_y25_j1.txt"
     BEGT: "2"
     ENDT: "3.5"
 
-slip21p02_Kyoto_yade:
+slip21p0_Kyoto_yade:
   extends:
-    - .slip21p02_Kyoto_2p0kg
+    - .slip21p0_Kyoto_2p0kg
     - .matrix_yade
 
-slip21p02_Kyoto_yadedaily:
+slip21p0_Kyoto_yadedaily:
   extends:
-    - .slip21p02_Kyoto_2p0kg
+    - .slip21p0_Kyoto_2p0kg
     - .matrix_yadedaily
 
 .slip60p_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip60p0_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip60p0_2p0kg_setl1s_trixie_-j1.txt"
+    PARAM_FILE: "testing/params_Kyoto_fSlip60p0_2p0kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_fSlip60p0_2p0kg_y25_j1.txt"
     BEGT: "3"
     ENDT: "7"
 
@@ -152,8 +152,8 @@ slip60p_Kyoto_yadedaily:
 .slip86p8_Kyoto_1p5kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip86p8_1p5kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip86p8_m1p5kg_trixie_j1.txt"
+    PARAM_FILE: "testing/params_Kyoto_fSlip86p8_1p5kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_fSlip86p8_1p5kg_y25_j1.txt"
     BEGT: "10.0"
     ENDT: "16.0"
 
@@ -170,8 +170,8 @@ slip86p8_Kyoto_1p5kg_yadedaily:
 .slip86p8_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip86p8_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip86p8_m1p5kg_trixie_j1.txt"
+    PARAM_FILE: "testing/params_Kyoto_fSlip86p8_2p0kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_fSlip86p8_1p5kg_y25_j1.txt"
     BEGT: "10.0"
     ENDT: "16.0"
 
@@ -185,38 +185,38 @@ slip86p8_Kyoto_yadedaily:
     - .slip86p8_Kyoto_2p0kg
     - .matrix_yadedaily
 
-.tow0p3mps_Kyoto_1p5kg:
+.tow0p3mps_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/paramsKyoto_tow0p3mps_1p5kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
+    PARAM_FILE: "testing/params_Kyoto_tow0p3mps_2p0kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_tow0p3mps_2p0kg_y22_j8.txt"
     BEGT: "2.5"
     ENDT: "3.5"
 
-tow0p3mps_Kyoto_1p5kg_yade:
+tow0p3mps_Kyoto_yade:
   extends:
-    - .tow0p3mps_Kyoto_1p5kg
+    - .tow0p3mps_Kyoto_2p0kg
     - .matrix_yade
 
-tow0p3mps_Kyoto_1p5kg_yadedaily:
+tow0p3mps_Kyoto_yadedaily:
   extends:
-    - .tow0p3mps_Kyoto_1p5kg
+    - .tow0p3mps_Kyoto_2p0kg
     - .matrix_yadedaily
 
-.selfProp1ms_Kyoto_1p5kg:
+.selfProp1ms_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/paramsKyoto_selfProp1ms_1p5kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
+    PARAM_FILE: "testing/params_Kyoto_selfP2p76_2p0kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_tow0p3mps_2p0kg_y22_j8.txt"
     BEGT: "2.5"
     ENDT: "3.5"
 
 selfProp1ms_Kyoto_yade:
   extends:
-    - .selfProp1ms_Kyoto_1p5kg
+    - .selfProp1ms_Kyoto_2p0kg
     - .matrix_yade
 
 selfProp1ms_Kyoto_yadedaily:
   extends:
-    - .selfProp1ms_Kyoto_1p5kg
+    - .selfProp1ms_Kyoto_2p0kg
     - .matrix_yadedaily
