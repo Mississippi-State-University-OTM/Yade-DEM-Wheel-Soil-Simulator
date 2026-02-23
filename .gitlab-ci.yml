@@ -116,8 +116,8 @@ slip6p3_Kyoto_yadedaily:
 .slip21p02_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip21p02.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kslip21p02_2kg_setl1s_y25_-j1.txt"
+    PARAM_FILE: "testing/paramsKyoto_slip21p02_2p0kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip21p02_2p0kg_setl1s_y25_-j1.txt"
     BEGT: "2"
     ENDT: "3.5"
 
@@ -134,7 +134,7 @@ slip21p02_Kyoto_yadedaily:
 .slip60p_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/paramsKyoto_slip60p0.json"
+    PARAM_FILE: "testing/paramsKyoto_slip60p0_2p0kg.json"
     SAMPLE_PLOT_DATA: "testing/plot_Kslip60p0_2p0kg_setl1s_trixie_-j1.txt"
     BEGT: "3"
     ENDT: "7"
@@ -157,30 +157,48 @@ slip60p_Kyoto_yadedaily:
     BEGT: "10.0"
     ENDT: "16.0"
 
-slip86p8_Kyoto_yade:
+slip86p8_Kyoto_1p5kg_yade:
   extends:
     - .slip86p8_Kyoto_1p5kg
     - .matrix_yade
 
-slip86p8_Kyoto_yadedaily:
+slip86p8_Kyoto_1p5kg_yadedaily:
   extends:
     - .slip86p8_Kyoto_1p5kg
+    - .matrix_yadedaily
+
+.slip86p8_Kyoto_2p0kg:
+  extends: .test_template
+  variables:
+    PARAM_FILE: "testing/paramsKyoto_slip86p8_2p0kg.json"
+    SAMPLE_PLOT_DATA: "testing/plot_Kslip86p8_m1p5kg_trixie_j1.txt"
+    BEGT: "10.0"
+    ENDT: "16.0"
+
+slip86p8_Kyoto_yade:
+  extends:
+    - .slip86p8_Kyoto_2p0kg
+    - .matrix_yade
+
+slip86p8_Kyoto_yadedaily:
+  extends:
+    - .slip86p8_Kyoto_2p0kg
     - .matrix_yadedaily
 
 .tow0p3mps_Kyoto_1p5kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/paramsKyoto_tow0p3mps.json"
+    PARAM_FILE: "testing/paramsKyoto_tow0p3mps_1p5kg.json"
     SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
     BEGT: "2.5"
     ENDT: "3.5"
 
-tow0p3mps_Kyoto_yade:
+tow0p3mps_Kyoto_1p5kg_yade:
   extends:
     - .tow0p3mps_Kyoto_1p5kg
     - .matrix_yade
 
-tow0p3mps_Kyoto_yadedaily:
+tow0p3mps_Kyoto_1p5kg_yadedaily:
   extends:
     - .tow0p3mps_Kyoto_1p5kg
     - .matrix_yadedaily
@@ -188,7 +206,7 @@ tow0p3mps_Kyoto_yadedaily:
 .selfProp1ms_Kyoto_1p5kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/paramsKyoto_selfProp1ms.json"
+    PARAM_FILE: "testing/paramsKyoto_selfProp1ms_1p5kg.json"
     SAMPLE_PLOT_DATA: "testing/plot_Ktowed0p3mpsDtHPW_expected_2022-j8.txt"
     BEGT: "2.5"
     ENDT: "3.5"

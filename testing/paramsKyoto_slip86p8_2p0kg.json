@@ -21,8 +21,8 @@
             "x": -0.35,
             "y": 0.0,
             "z": 0.6,
-            "vx": 0.3,
-            "wy": 5.4545455
+            "vx": 0.0400752,
+            "wy": 2.76
         },
         "constrains": {
             "vx": true,
@@ -68,13 +68,12 @@
         }
     },
     "sim": {
-        "settleTime": 2.0,
-        "endTime": 4.25,
-        "timeStep": 0.00001,
+        "settleTime": 1.0,
+        "endTime": 16.0,
         "progRepInterval": 0.01,
-        "dataSaveInterval": 0.005,
+        "dataSaveInterval": 0.001,
         "vis": {
-            "saveInt": 0.4,
+            "saveInt": 1.0,
             "spheres": {
                 "on": true,
                 "singleFile": false,
