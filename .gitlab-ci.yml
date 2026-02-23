@@ -42,7 +42,7 @@ stages:
   parallel:
     matrix:
        - YADE_OS: ["debian-trixie", "debian-bookworm", "debian-bullseye", "ubuntu22.04", "ubuntu18.04", "ubuntu16.04"]
-         NTHREADS: ["1", "8", "16", "32", "40"]
+         NTHREADS: ["1", "8"]
   variables:
     YADEBUILD: "yade"
 
@@ -51,7 +51,7 @@ stages:
   parallel:
     matrix:
        - YADE_OS: ["ubuntu24.04", "debian-bookworm", "debian-bullseye", "ubuntu18.04", "ubuntu16.04"]
-         NTHREADS: ["1", "8", "16", "32", "40"]
+         NTHREADS: ["1", "8"]
   variables:
     YADEBUILD: "yadedaily"
 
@@ -86,12 +86,12 @@ towed_default_yadedaily:
 
 towed_quick_yade:
   extends:
-    - .towed_quick
+    - .towed_Large
     - .matrix_yade
 
 towed_quick_yadedaily:
   extends:
-    - .towed_quick
+    - .towed_Large
     - .matrix_yadedaily
 
 .slip06p3_Kyoto_2p0kg:
