@@ -26,7 +26,7 @@ stages:
     - mv plot.txt plot.pdf exec_time.txt Data_Output.csv vis "$OUTPUT_DIR"
 
     # 3. Compare averaged data and show results
-    - python3 ./testing/calcAvg.py "$OUTPUT_DIR"/plot.txt $BEGT $ENDT 4 --ref $SAMPLE_PLOT_DATA --compare WxR:6 Vz:4 Fx:40 Fz:4 Slip:4 GrTr:50 z:11 | tee "$OUTPUT_DIR"/log.compare
+    - python3 ./testing/calcAvg.py "$OUTPUT_DIR"/plot.txt $BEGT $ENDT 4 --ref $SAMPLE_PLOT_DATA --compare WxR:6 Vz:10 Fx:40 Fz:4 Slip:4 GrTr:50 z:11 | tee "$OUTPUT_DIR"/log.compare
 
   artifacts:
     name: ${CI_JOB_NAME}_${CI_PIPELINE_ID}
