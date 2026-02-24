@@ -12,7 +12,7 @@
     },
     "wheel": {
         "stl": {
-            "filename": "meshes/wheelKyoto.stl"
+            "filename": "meshes/wheelKyoto.stl",
             "unitsScale" : 1.0,
             "centerOffset": {
                 "x": 0.0,
