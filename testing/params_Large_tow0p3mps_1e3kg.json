@@ -77,6 +77,7 @@
         "timeStep": 0.0,
         "progRepInterval": 0.1,
         "dataSaveInterval": 0.001,
+        "exactAsphericalRot": true,
         "vis": {
             "saveInt": 0.02,
             "spheres": {

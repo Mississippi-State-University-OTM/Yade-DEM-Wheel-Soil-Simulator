@@ -43,6 +43,11 @@ settleTime   = data['sim']['settleTime']         # Time to settle particles
 endTime      = data['sim']['endTime']            # Total simulated time
 progRepInt   = data['sim']['progRepInterval']    # Print simulated time and % done each this simulated interval
 dataSaveInt  = data['sim']['dataSaveInterval']   # Sim. time interval to save data
+exactARot = True
+if 'exactAsphericalRot' in data['sim']:
+    exactARot =  data['sim']['exactAsphericalRot']
+print(f"Exact Aspherical Rotation: {exactARot}")
+
 if 'vis' in data['sim']:
     # Sim. time interval to save visualization snapshots, 0 = don't save
     visSaveInt = data['sim']['vis']['saveInt']
@@ -541,7 +546,7 @@ else:
 
 # Integrator, necessary
 O.engines += [NewtonIntegrator(gravity = (0,0,-acc_g), damping = 0.0,
-                               exactAsphericalRot=True)]
+                               exactAsphericalRot=exactARot)]
 
 # Adjust wheel height to the top of soil
 O.engines += [PyRunner(command = 'setInMotion()', firstIterRun = settleIt)]
