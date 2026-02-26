@@ -135,6 +135,12 @@ Effective radius `radEff` is used to compute the wheel slip. The constraint `vx=
 
 To see all available shortcuts, set focus on the 3D display window and press `h`. Double-click the 3D display window to align the view with nearest axes.
 
+## AI Use
+
+ChatGPT helped to write command line argument parsing, set_nested, fix
+facet normals, and Ovito exporter routines. ChatGPT, Google Gemini and
+MS Copilot helped to understand Yade usage and parameter setup.
+
 ## Copyright Statement
 
 ```text
