@@ -203,7 +203,7 @@ tow0p3mps_Kyoto_yadedaily:
     - .tow0p3mps_Kyoto_2p0kg
     - .matrix_yadedaily
 
-.selfProp1ms_Kyoto_2p0kg:
+.selfProp_Kyoto_2p0kg:
   extends: .test_template
   variables:
     PARAM_FILE: "testing/params_Kyoto_selfP2p76_2p0kg.json"
@@ -211,12 +211,12 @@ tow0p3mps_Kyoto_yadedaily:
     BEGT: "2.5"
     ENDT: "3.5"
 
-selfProp1ms_Kyoto_yade:
+selfProp_Kyoto_yade:
   extends:
-    - .selfProp1ms_Kyoto_2p0kg
+    - .selfProp_Kyoto_2p0kg
     - .matrix_yade
 
-selfProp1ms_Kyoto_yadedaily:
+selfProp_Kyoto_yadedaily:
   extends:
-    - .selfProp1ms_Kyoto_2p0kg
+    - .selfProp_Kyoto_2p0kg
     - .matrix_yadedaily
