@@ -20,12 +20,63 @@ For more information, contact Mississippi State University's Office of Technolog
 
 timestart = time.time()
 
-param_file = sys.argv[1] if len(sys.argv) > 1 else 'params.json'
+import argparse
+
+parser = argparse.ArgumentParser(description="Wheel-Soil-Box Simulator.")
+parser.add_argument("param_file", help="Parameter file", default = "params.json")
+parser.add_argument("--params", nargs='+', help="Pairs of param:value (e.g., sim.GUImode:false, sim.timeStep:0.00001)", default=[])
+
+args = parser.parse_args()
+
+# Parse command line parameter values, returns parameter map
+# Example cmdline par_list:  ['sim.timeStep:0.0', 'sim.GUImode:true']
+def parse_cmdln_params(par_list):
+    par_map = {}
+    if not par_list:
+        return par_map
+    for item in par_list:
+            par_name, val = item.split(':')
+            if val == "true":
+                par_map[par_name] = True
+            elif val == "false":
+                par_map[par_name] = False
+            else:
+                try:
+                    ival = int(val)
+                    par_map[par_name] = ival
+                except ValueError:
+                    try:
+                        fval = float(val)
+                        par_map[par_name] = fval
+                    except ValueError: # not T/F, not int, not float => string
+                        par_map[par_name] = val
+    return par_map
+
+print("arg params:", args.params)
+params_map = parse_cmdln_params(args.params)
+
+param_file = args.param_file
 print(f'Parameter file:\n "{param_file}"')
 
 import json
 with open(param_file, 'r') as f:
     data = json.load(f)
+
+# Example use: set_nested(data, "sim.GUImode", True)
+#              set_nested(data, "sim.timeStep", 0.00001)
+def set_nested(data, path, value):
+    keys = path.split(".")
+    d = data
+    for key in keys[:-1]:
+        if key not in d or not isinstance(d[key], dict):
+            d[key] = {}
+        d = d[key]
+    d[keys[-1]] = value
+
+# Overwrite parameters from param file by values from command line
+for key, value in params_map.items():
+    print(f"Cmdln param: {key} = {value}")
+    set_nested(data, key, value)
 
 # Wheel properties and initial coordinates from JSON
 valLinVel    = data['wheel']['initVals']['vx']   # set initial value of wheel Vx
@@ -132,7 +183,6 @@ idSphereMat = O.materials.append(matSphere) # last
 intPPparams     = data['matPairs']['pp']
 pp_en           = intPPparams['en']
 pp_krot         = intPPparams['krot']
-
 
 # Reposition the wheel to the top surface of soil and set it in motion
 def setInMotion():
@@ -305,7 +355,6 @@ def liveDataOut(bodyID):
 firstWrite = True
 
 def saveOvitoAndVTK():
-    # 'what' is a dictionary defining what to export
     vtk_export.exportFacets(ids = wheelBodyPartsIds)
     if visSaveSph:
         if visSaveSphSingleFile:
@@ -396,8 +445,6 @@ if visSaveInt != 0:
     from yade import export
     vtk_export = export.VTKExporter('vis/export')
 
-# Main program
-#
 # Create rectangular open-top box
 O.bodies.append(geom.facetBox((boxCenterX, boxCenterY, boxCenterZ),
                               (hboxX, hboxY, boxHeight/2),

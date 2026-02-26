@@ -89,6 +89,6 @@
                 "detailed" : false
             }
         },
-        "GUImode": false
+        "GUImode": true
     }
 }
