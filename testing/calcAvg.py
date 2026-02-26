@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
     <Column average calculation and comparison utility.>
     Copyright (C) 2026  Mississippi State University
@@ -75,34 +76,88 @@ def parse_comparisons(comp_list):
 
 def main():
     parser = argparse.ArgumentParser(description="Average time sequences and compare specific columns.")
-    parser.add_argument("file", help="Input data file")
-    parser.add_argument("start", type=float, help="Start time")
-    parser.add_argument("end", type=float, help="End time")
-    parser.add_argument("tol_pct", type=float, help="Percentage difference tolerance")
+    parser.add_argument("file", help="Input data file") # always
+    parser.add_argument("--begt", type=float, help="Start time", default=None)
+    parser.add_argument("--endt", type=float, help="End time", default=None)
+    parser.add_argument("--pRE", type=float, help="Percentage Relative Error tolerance for all columns", default=None)
+    parser.add_argument("--param", help="Sim parameter file, key to params_postproc.json", default=None)
     parser.add_argument("--ref", help="Reference file to compare against", default=None)
     parser.add_argument("--compare", nargs='+', help="Pairs of col:accuracy (e.g., var1:10.0)", default=[])
     
     args = parser.parse_args()
-    comp_map = parse_comparisons(args.compare)
+    args_comp_map = parse_comparisons(args.compare)
+
+    acc_fn = "accuracies.json"
+    from pathlib import Path
+    acc_file_path = Path(acc_fn)
+
+    acc_comp_map = {}
+    ref_plot = None
+    # use accur file if found
+    if acc_file_path.is_file():
+        with open(acc_fn, 'r') as f:
+            import json
+            data = json.load(f)
+
+        # populate from defaults first
+        dd = data['defaults']
+        begt = dd['avgInt'][0]
+        endt = dd['avgInt'][1]
+        pctRE = dd['percRelErr']
+        # gather defauls for vars accurs
+        acc_compare = []
+        for var, val in dd['percStdDev'].items():
+            acc_compare.append(var + ":" + str(val))
+        acc_comp_map = parse_comparisons(acc_compare)
+
+        # "params.json" from --param arg not in "accuracies.json"
+        if args.param:
+            # use specific times and file or error out
+            if args.param in data:
+                ds = data[args.param]
+                begt = ds['avgInt'][0]
+                endt = ds['avgInt'][1]
+                ref_plot = ds['refPlot']
+            else:
+                print(f'Error: "accuracies.json" missing "{args.param}"!',
+                      file=sys.stderr)
+                sys.exit(1)
+
+    # overwrite from cmdln if given
+    if args.begt:
+        begt = args.begt
+    if args.endt:
+        endt = args.endt
+    if args.ref:
+        ref_plot = args.ref
+    if args.pRE:
+        pctRE = args.pRE
+
+    # merge, second overwrites values for the shared keys
+    comp_map = acc_comp_map | args_comp_map
+
+    ##############################
+    # only merged vars from now on, except args.file
+
     overall_pass = True
 
     # 1. Process Main File
-    headers, avgs, stds = calculate_stats(args.file, args.start, args.end)
+    headers, avgs, stds = calculate_stats(args.file, begt, endt)
     if not avgs:
         print("No data processed for main file.")
         sys.exit(1)
 
     # 2. Write New Results to File (Transposed: one variable per row)
-    print(f"# Statistics for {args.file} (t={args.start} to {args.end} @ {args.tol_pct} % tol)")
+    print(f"# Statistics for {args.file} (t={begt} to {endt} @ {pctRE} % tol)")
     print(f"# {'Variable':<8} {'Average':>15} {'Std_Dev':15}")
     for h, a, s in zip(headers, avgs, stds):
         if s != 0.0 and h != "At" and h != "t":
             print(f"{h:<10} {a:>15.6f} {s:<15.6f}")
 
     # 3. Comparison Logic
-    if args.ref and comp_map:
-        print(f"\n--- Comparison with {args.ref} ---")
-        ref_headers, ref_avgs, ref_stds = calculate_stats(args.ref, args.start, args.end)
+    if ref_plot and comp_map:
+        print(f"\n--- Comparison with {ref_plot} ---")
+        ref_headers, ref_avgs, ref_stds = calculate_stats(ref_plot, begt, endt)
         
         if ref_avgs:
             # Updated Table Header with Target % column
@@ -125,8 +180,8 @@ def main():
                     # Caclculate relative error
                     diff_pct = diff_posneg / abs(ref_val) * 100
                     # E.g. < 5% diff => PASS <5%RelE
-                    if abs(diff_pct) <= args.tol_pct :
-                        status = "PASS < " + str(args.tol_pct) + " % RelE"
+                    if abs(diff_pct) <= pctRE:
+                        status = "PASS < " + str(pctRE) + " % RelE"
 
                     # Calculate difference as % of ref StdDev
                     if ref_std != 0:
@@ -166,7 +221,7 @@ def main():
         print("\nOverall Result: FAILED")
         sys.exit(1)
     else:
-        if args.ref and comp_map: print("\nOverall Result: PASSED")
+        if ref_plot and comp_map: print("\nOverall Result: PASSED")
         sys.exit(0)
 
 if __name__ == "__main__":

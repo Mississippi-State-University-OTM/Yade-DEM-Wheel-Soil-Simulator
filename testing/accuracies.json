@@ -1,0 +1,51 @@
+{
+    "defaults": {
+        "avgInt": [1.75, 3.5],
+        "percRelErr": 4.0,
+        "percStdDev": {
+            "WxR": 6,
+            "Vz": 10,
+            "Fx": 40,
+            "Fz": 4,
+            "Slip": 4,
+            "GrTr": 50,
+            "z":11
+        }
+    },
+    "params_Kyoto_fSlip06p3_2p0kg.json": {
+        "avgInt": [1.75, 3.5],
+        "refPlot": "plot_Kyoto_fSlip06p3_2p0kg_y25_j1.txt"
+    },
+    "params_Kyoto_fSlip21p0_2p0kg.json": {
+        "avgInt": [2.0, 3.5],
+        "refPlot": "plot_Kyoto_fSlip21p0_2p0kg_y25_j1.txt"
+    },
+    "params_Kyoto_fSlip60p0_2p0kg.json": {
+        "avgInt": [3.0, 7.0],
+        "refPlot": "plot_Kyoto_fSlip60p0_2p0kg_y25_j1.txt"
+    },
+    "params_Kyoto_fSlip86p8_1p5kg.json": {
+        "avgInt": [10.0, 16.0],
+        "refPlot": "plot_Kyoto_fSlip86p8_1p5kg_y25_j1.txt"
+    },
+    "params_Kyoto_fSlip86p8_2p0kg.json": {
+        "avgInt": [10.0, 16.0],
+        "refPlot": "plot_Kyoto_fSlip86p8_2p0kg_y25_j1.txt"
+    },
+    "params.json": {
+        "avgInt": [2.5, 9.0],
+        "refPlot": "plot_Kyoto_tow0p3mps_2p0kg_y21_j1_pscale10x.txt"
+    },
+    "params_Large_tow0p3mps_1e3kg.json": {
+        "avgInt": [2.5, 9.0],
+        "refPlot": "plot_Large_tow0p3mps_1e3kg_y25_j1.txt"
+    },
+    "params_Kyoto_tow0p3mps_2p0kg.json": {
+        "avgInt": [2.5, 3.5],
+        "refPlot": "plot_Kyoto_tow0p3mps_2p0kg_y22_j8.txt"
+    },
+    "params_Kyoto_selfP2p76_2p0kg.json": {
+        "avgInt": [2.5, 3.5],
+        "refPlot": "plot_Kyoto_tow0p3mps_2p0kg_y22_j8.txt"
+    }
+}
