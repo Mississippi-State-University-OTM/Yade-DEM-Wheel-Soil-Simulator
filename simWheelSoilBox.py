@@ -23,7 +23,7 @@ timestart = time.time()
 import argparse
 
 parser = argparse.ArgumentParser(description="Wheel-Soil-Box Simulator.")
-parser.add_argument("param_file", help="Parameter file", default = "params.json")
+parser.add_argument("param_file", nargs='?', help="Parameter file", default = "params.json")
 parser.add_argument("--params", nargs='+', help="Pairs of param:value (e.g., sim.GUImode:false, sim.timeStep:0.00001)", default=[])
 
 args = parser.parse_args()
