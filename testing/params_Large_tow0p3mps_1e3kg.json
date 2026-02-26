@@ -74,6 +74,7 @@
     "sim": {
         "settleTime": 1.0,
         "endTime": 11.1,
+        "timeStep": 0.0,
         "progRepInterval": 0.1,
         "dataSaveInterval": 0.001,
         "vis": {

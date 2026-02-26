@@ -500,7 +500,11 @@ print(f"Number of particles generated: {partnum}")
 recDt = 0.5 * utils.PWaveTimeStep()
 print(f"Recommened half PWave time step: {recDt:.3g}")
 if 'timeStep' in data['sim']:
-    O.dt = data['sim']['timeStep']
+    paramFileDt = data['sim']['timeStep']
+    if paramFileDt == 0.0:
+        O.dt = recDt
+    else:
+        O.dt = paramFileDt
 else:
     O.dt = recDt
 print(f"Actual time step: {O.dt}")
