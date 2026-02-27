@@ -189,7 +189,7 @@ slip86p8_Kyoto_yadedaily:
   extends: .test_template
   variables:
     PARAM_FILE: "testing/params_Kyoto_tow0p3mps_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_tow0p3mps_2p0kg_y22_j8.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_tow0p3mps_2p0kg_y25_j1.txt"
     BEGT: "2.5"
     ENDT: "3.5"
 
@@ -207,7 +207,7 @@ tow0p3mps_Kyoto_yadedaily:
   extends: .test_template
   variables:
     PARAM_FILE: "testing/params_Kyoto_selfP2p76_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_tow0p3mps_2p0kg_y22_j8.txt"
+    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_selfP2p76_2p0kg_y25_j1.txt"
     BEGT: "2.5"
     ENDT: "3.5"
 

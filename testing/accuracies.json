@@ -42,10 +42,10 @@
     },
     "params_Kyoto_tow0p3mps_2p0kg.json": {
         "avgInt": [2.5, 3.5],
-        "refPlot": "plot_Kyoto_tow0p3mps_2p0kg_y22_j8.txt"
+        "refPlot": "plot_Kyoto_tow0p3mps_2p0kg_y25_j1.txt"
     },
     "params_Kyoto_selfP2p76_2p0kg.json": {
         "avgInt": [2.5, 3.5],
-        "refPlot": "plot_Kyoto_tow0p3mps_2p0kg_y22_j8.txt"
+        "refPlot": "plot_Kyoto_selfP2p76_2p0kg_y25_j1.txt"
     }
 }
