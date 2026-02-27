@@ -93,6 +93,8 @@ def main():
 
     acc_comp_map = {}
     ref_plot = None
+    begt = None
+    endt = None
     # use accur file if found
     if acc_file_path.is_file():
         with open(acc_fn, 'r') as f:
@@ -101,8 +103,6 @@ def main():
 
         # populate from defaults first
         dd = data['defaults']
-        begt = dd['avgInt'][0]
-        endt = dd['avgInt'][1]
         pctRE = dd['percRelErr']
         # gather defauls for vars accurs
         acc_compare = []
@@ -128,6 +128,10 @@ def main():
         begt = args.begt
     if args.endt:
         endt = args.endt
+    if not begt or not endt:
+        print("Error: need begt, endt for avgInt from cmdln or accuracies.json",
+              file=sys.stderr)
+        sys.exit(1)
     if args.ref:
         ref_plot = args.ref
     if args.pRE:
