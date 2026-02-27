@@ -79,49 +79,31 @@ def main():
     parser.add_argument("file", help="Input data file") # always
     parser.add_argument("--begt", type=float, help="Start time", default=None)
     parser.add_argument("--endt", type=float, help="End time", default=None)
-    parser.add_argument("--pRE", type=float, help="Percentage Relative Error tolerance for all columns", default=None)
-    parser.add_argument("--param", help="Sim parameter file, key to params_postproc.json", default=None)
+    parser.add_argument("--pRE", type=float, help="Percentage Relative Error tolerance for all columns", default=4.0)
+    parser.add_argument("--param", help="Sim parameter file with postproc.avgInt", default=None)
     parser.add_argument("--ref", help="Reference file to compare against", default=None)
-    parser.add_argument("--compare", nargs='+', help="Pairs of col:accuracy (e.g., var1:10.0)", default=[])
-    
+    parser.add_argument("--compare", nargs='+', help="Pairs of col:accuracy (e.g., var1:10.0)", default=['WxR:6', 'Vz:10', 'Fx:40', 'Fz:4', 'Slip:4', 'GrTr:50', 'z:11'])
+
     args = parser.parse_args()
     args_comp_map = parse_comparisons(args.compare)
 
-    acc_fn = "accuracies.json"
-    from pathlib import Path
-    acc_file_path = Path(acc_fn)
-
-    acc_comp_map = {}
     ref_plot = None
     begt = None
     endt = None
-    # use accur file if found
-    if acc_file_path.is_file():
-        with open(acc_fn, 'r') as f:
+    # use parameter file if provided
+    if args.param:
+        with open(args.param, 'r') as f:
             import json
             data = json.load(f)
 
-        # populate from defaults first
-        dd = data['defaults']
-        pctRE = dd['percRelErr']
-        # gather defauls for vars accurs
-        acc_compare = []
-        for var, val in dd['percStdDev'].items():
-            acc_compare.append(var + ":" + str(val))
-        acc_comp_map = parse_comparisons(acc_compare)
+        begt = data['postproc']['avgInt'][0]
+        endt = data['postproc']['avgInt'][1]
 
-        # "params.json" from --param arg not in "accuracies.json"
-        if args.param:
-            # use specific times and file or error out
-            if args.param in data:
-                ds = data[args.param]
-                begt = ds['avgInt'][0]
-                endt = ds['avgInt'][1]
-                ref_plot = ds['refPlot']
-            else:
-                print(f'Error: "accuracies.json" missing "{args.param}"!',
-                      file=sys.stderr)
-                sys.exit(1)
+        #gather vars : accur pairs (TODO)
+        #par_compare = []
+        #for var, val in data['compare']['percStdDev'].items():
+        #    par_compare.append(var + ":" + str(val))
+        #par_comp_map = parse_comparisons(par_compare)
 
     # overwrite from cmdln if given
     if args.begt:
@@ -129,7 +111,7 @@ def main():
     if args.endt:
         endt = args.endt
     if not begt or not endt:
-        print("Error: need begt, endt for avgInt from cmdln or accuracies.json",
+        print("Error: need begt, endt for avgInt from cmdln or params.json",
               file=sys.stderr)
         sys.exit(1)
     if args.ref:
@@ -138,7 +120,8 @@ def main():
         pctRE = args.pRE
 
     # merge, second overwrites values for the shared keys
-    comp_map = acc_comp_map | args_comp_map
+    #comp_map = par_comp_map | args_comp_map (TODO)
+    comp_map = args_comp_map
 
     ##############################
     # only merged vars from now on, except args.file

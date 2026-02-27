@@ -77,9 +77,9 @@
         "settleTime": 1.0,
         "endTime": 4.5,
         "timeStep": 0.0,
+        "exactAsphericalRot": true,
         "progRepInterval": 0.01,
         "dataSaveInterval": 0.001,
-        "exactAsphericalRot": true,
         "vis": {
             "saveInt": 0.5,
             "spheres": {
@@ -90,5 +90,8 @@
             }
         },
         "GUImode": false
+    },
+    "postproc": {
+        "avgInt": [2.0, 3.5]
     }
 }
