@@ -124,6 +124,11 @@ key = 'centerOffset'
 if key in stlData:
     coX, coY, coZ = stlData[key]['x'], stlData[key]['y'], stlData[key]['z']
 
+fixNormals = True
+key = 'fixNormals'
+if key in stlData:
+    fixNormals = stlData[key]
+
 # Particle parameters
 # initial placement of particles up to 0.8 (= 80%) of box' height
 pck      = data['particles']['pck']
@@ -479,8 +484,9 @@ else:
     )
 print(f"Imported {len(facets)} facets from \"{stlFile}\" file.")
 
-print("Checking facet normals...")
-facets = fix_normals(facets)
+if fixNormals:
+    print("Checking facet normals...")
+    facets = fix_normals(facets)
 
 # Assign mass before clumping
 # (required, not used - body properties defined next are used)
