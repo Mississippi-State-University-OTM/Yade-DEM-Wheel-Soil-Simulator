@@ -7,8 +7,9 @@ fi
 
 pf=$1
 dd=$2
+shift 2
 
-apptainer exec -B /media/bj48 $tp/singularity/yade/debian-trixie.sif yade -j1 -n -x simWheelSoilBox.py $pf 2> log2 > log
+apptainer exec -B /media/bj48 $tp/singularity/yade/debian-trixie.sif yade -j1 -n -x simWheelSoilBox.py $pf $@ 2> log2 > log
 
 mkdir -p $dd
 cp -p simWheelSoilBox.py $pf $dd
