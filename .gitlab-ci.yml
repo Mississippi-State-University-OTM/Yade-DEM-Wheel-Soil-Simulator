@@ -20,13 +20,13 @@ stages:
 
     # 2. Run sipmle simulation, print to screen and file
     - mkdir "$OUTPUT_DIR"
-    - cp simWheelSoilBox.py $PARAM_FILE "$OUTPUT_DIR"
-    - $YADEBUILD -j${NTHREADS} -x -n simWheelSoilBox.py $PARAM_FILE --params sim.GUImode:false | tee "$OUTPUT_DIR"/log.report
+    - cp simWheelSoilBox.py examples/$EXAMPLE_DIR/params.json "$OUTPUT_DIR"
+    - $YADEBUILD -j${NTHREADS} -x -n simWheelSoilBox.py examples/$EXAMPLE_DIR/params.json --params sim.GUImode:false | tee "$OUTPUT_DIR"/log.report
     - cat exec_time.txt
     - mv plot.txt plot.pdf exec_time.txt Data_Output.csv vis "$OUTPUT_DIR"
 
     # 3. Compare averaged data and show results
-    - python3 ./testing/calcAvg.py "$OUTPUT_DIR"/plot.txt --begt $BEGT --endt $ENDT --pRE 4.0 --ref $SAMPLE_PLOT_DATA --compare WxR:6 Vz:10 Fx:40 Fz:4 Slip:4 GrTr:50 z:11 | tee "$OUTPUT_DIR"/log.compare
+    - python3 ./scripts/calcAvg.py "$OUTPUT_DIR"/plot.txt --param examples/$EXAMPLE_DIR/params.json --ref examples/$EXAMPLE_DIR/plot.txt | tee "$OUTPUT_DIR"/log.compare
 
   artifacts:
     name: ${CI_JOB_NAME}_${CI_PIPELINE_ID}
@@ -56,33 +56,12 @@ stages:
     YADEBUILD: "yadedaily"
 
 # Create jobs for specific images and nthreads by extending the templates
-.towed_default:
-  extends: .test_template
-  variables:
-    PARAM_FILE: "params.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_tow0p3mps_2p0kg_y21_j1_pscale10x.txt"
-    BEGT: "2.5"
-    ENDT: "9"
-
 .towed_Large:
   extends: .test_template
   image: registry.gitlab.com/yade-dev/docker-prod:$YADE_OS
   when: manual
   variables:
-    PARAM_FILE: "testing/params_Large_tow0p3mps_1e3kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Large_tow0p3mps_1e3kg_y25_j1.txt"
-    BEGT: "2.5"
-    ENDT: "9"
-
-towed_default_yade:
-  extends:
-    - .towed_default
-    - .matrix_yade
-
-towed_default_yadedaily:
-  extends:
-    - .towed_default
-    - .matrix_yadedaily
+    EXAMPLE_DIR: "LargeWheel_tow0p3mps_1e3kg"
 
 towed_quick_yade:
   extends:
@@ -98,10 +77,7 @@ towed_quick_yadedaily:
   extends: .test_template
   when: manual
   variables:
-    PARAM_FILE: "testing/params_Kyoto_fSlip06p3_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_fSlip06p3_2p0kg_y25_j1.txt"
-    BEGT: "1.75"
-    ENDT: "3.5"
+    EXAMPLE_DIR: "KyotoWheel_fSlip06p3_2p0kg"
 
 slip06p3_Kyoto_yade:
   extends:
@@ -116,10 +92,7 @@ slip06p3_Kyoto_yadedaily:
 .slip21p0_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/params_Kyoto_fSlip21p0_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_fSlip21p0_2p0kg_y25_j1.txt"
-    BEGT: "2"
-    ENDT: "3.5"
+    EXAMPLE_DIR: "KyotoWheel_fSlip21p0_2p0kg"
 
 slip21p0_Kyoto_yade:
   extends:
@@ -134,10 +107,7 @@ slip21p0_Kyoto_yadedaily:
 .slip60p_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/params_Kyoto_fSlip60p0_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_fSlip60p0_2p0kg_y25_j1.txt"
-    BEGT: "3"
-    ENDT: "7"
+    EXAMPLE_DIR: "KyotoWheel_fSlip60p0_2p0kg"
 
 slip60p_Kyoto_yade:
   extends:
@@ -152,10 +122,7 @@ slip60p_Kyoto_yadedaily:
 .slip86p8_Kyoto_1p5kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/params_Kyoto_fSlip86p8_1p5kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_fSlip86p8_1p5kg_y25_j1.txt"
-    BEGT: "10.0"
-    ENDT: "16.0"
+    EXAMPLE_DIR: "KyotoWheel_fSlip86p8_1p5kg"
 
 slip86p8_Kyoto_1p5kg_yade:
   extends:
@@ -170,10 +137,7 @@ slip86p8_Kyoto_1p5kg_yadedaily:
 .slip86p8_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/params_Kyoto_fSlip86p8_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_fSlip86p8_2p0kg_y25_j1.txt"
-    BEGT: "10.0"
-    ENDT: "16.0"
+    EXAMPLE_DIR: "KyotoWheel_fSlip86p8_2p0kg"
 
 slip86p8_Kyoto_yade:
   extends:
@@ -188,10 +152,7 @@ slip86p8_Kyoto_yadedaily:
 .tow0p3mps_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/params_Kyoto_tow0p3mps_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_tow0p3mps_2p0kg_y25_j1.txt"
-    BEGT: "2.5"
-    ENDT: "3.5"
+    EXAMPLE_DIR: "KyotoWheel_tow0p3mps_2p0kg"
 
 tow0p3mps_Kyoto_yade:
   extends:
@@ -206,10 +167,7 @@ tow0p3mps_Kyoto_yadedaily:
 .selfProp_Kyoto_2p0kg:
   extends: .test_template
   variables:
-    PARAM_FILE: "testing/params_Kyoto_selfP2p76_2p0kg.json"
-    SAMPLE_PLOT_DATA: "testing/plot_Kyoto_selfP2p76_2p0kg_y25_j1.txt"
-    BEGT: "2.5"
-    ENDT: "3.5"
+    EXAMPLE_DIR: "KyotoWheel_selfP2p76_2p0kg"
 
 selfProp_Kyoto_yade:
   extends:
