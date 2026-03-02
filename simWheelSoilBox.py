@@ -129,6 +129,16 @@ key = 'fixNormals'
 if key in stlData:
     fixNormals = stlData[key]
 
+# Which way the wheel moves forward, which way is up: x,-x,-y,z,-z
+# (to reorient the wheel for driving - default is x-forward and z-up)
+key = 'orientDriving'
+if key in stlData:
+    x_new = stlData[key]['forward']
+    z_new = stlData[key]['up']
+else:
+    x_new = 'x'
+    z_new = 'z'
+
 # Particle parameters
 # initial placement of particles up to 0.8 (= 80%) of box' height
 pck      = data['particles']['pck']
@@ -138,7 +148,7 @@ pscale   = data['particles']['scale']
 print(f"Particles:")
 print(f" Packing level up to z = {pck} m")
 print(f" Generation method: {part_gen}, random seed: {rndSeed=}")
-print(f" Scale-up particle sizes: {pscale} X original size (to speed up simulation")
+print(f" Scale-up particle sizes: {pscale} X original size (to speed up the simulation).")
 if part_gen == "meanFuzz":
     rMean    = data['particles']['rMean']
     rRelFuzz = data['particles']['rRelFuzz']
@@ -262,6 +272,65 @@ def timeCalculator():
     print(report, file = sys.stderr)
     with open('exec_time.txt','w') as f:
         f.write(report + "\n")
+
+import numpy as np
+from yade import Vector3
+
+def calcRotMatrix(x_new_label, z_new_label):
+    """
+    Calculate rotation matrix to reorient the wheel from STL for driving
+    """
+    mapping = {
+        "x": (0, 1), "-x": (0, -1),
+        "y": (1, 1), "-y": (1, -1),
+        "z": (2, 1), "-z": (2, -1)
+    }
+
+    # 1. Input Validation
+    if x_new_label not in mapping or z_new_label not in mapping:
+        raise ValueError(f"Invalid labels. Use {list(mapping.keys())}")
+
+    idx_x, sign_x = mapping[x_new_label]
+    idx_z, sign_z = mapping[z_new_label]
+
+    if idx_x == idx_z:
+        raise ValueError(f"X_new ({x_new_label}) and Z_new ({z_new_label}) are collinear!")
+
+    # 2. Build Rotation Matrix (R)
+    i_new = np.zeros(3); i_new[idx_x] = sign_x
+    k_new = np.zeros(3); k_new[idx_z] = sign_z
+    j_new = np.cross(k_new, i_new) # Right-hand rule
+    R = np.array([i_new, j_new, k_new])
+
+    return R
+
+def reorientShift(shiftXYZ, R):
+
+    # Apply Transformation
+    old_shift = np.array([shiftXYZ[0], shiftXYZ[1], shiftXYZ[2]])
+    new_shift = R.T @ old_shift
+    shiftXYZ = Vector3(new_shift[0], new_shift[1], new_shift[2])
+    return shiftXYZ
+
+def reorientWheelFacets(facet_list, R):
+
+    # Apply Transformation
+    for b in facet_list:
+        # Transform Global Centroid
+        old_pos = np.array([b.state.pos[0], b.state.pos[1], b.state.pos[2]])
+        new_pos = R @ old_pos
+        b.state.pos = Vector3(new_pos[0], new_pos[1], new_pos[2])
+
+        # Transform Local Vertices
+        new_verts = []
+        for v in b.shape.vertices:
+            v_np = np.array([v[0], v[1], v[2]])
+            v_rot = R @ v_np
+            new_verts.append(Vector3(v_rot[0], v_rot[1], v_rot[2]))
+
+        b.shape.vertices = new_verts
+
+    return facet_list
 
 # Check and fix inverted normals for facets
 def fix_normals(facetList):
@@ -457,6 +526,12 @@ O.bodies.append(geom.facetBox((boxCenterX, boxCenterY, boxCenterZ),
 nf_box = len(O.bodies) # ! no extra body for complete box
 print(f"Created open-top box, {nf_box} facets.")
 
+# Inverse shift to get correct initial wheel position after reorienting wheel coordinate system
+shiftXYZ = Vector3(initX, initY, initZ)
+if x_new != 'x' or z_new != 'z':
+    R = calcRotMatrix(x_new, z_new)
+    shiftXYZ = reorientShift(shiftXYZ, R)
+
 # Import wheel from STL (or OBJ) file
 from yade import ymport
 from yade import config
@@ -472,7 +547,7 @@ if yade_ver == "2020.01a":
         noBound = False
     )
 else:
-    stlShift = stlScale*Vector3(-coX, -coY, -coZ) + Vector3(initX, initY, initZ)
+    stlShift = stlScale*Vector3(-coX, -coY, -coZ) + shiftXYZ
     facets = ymport.stl(
         stlFile,
         scale = stlScale,
@@ -483,6 +558,12 @@ else:
         noBound = False
     )
 print(f"Imported {len(facets)} facets from \"{stlFile}\" file.")
+
+# swap coordinats if needed, x_new is forward, z_new is up
+if x_new != 'x' or z_new != 'z':
+
+    print(f"Reorienting the wheel for driving: forward: {x_new}, up: {z_new}")
+    facets = reorientWheelFacets(facets, R)
 
 if fixNormals:
     print("Checking facet normals...")
