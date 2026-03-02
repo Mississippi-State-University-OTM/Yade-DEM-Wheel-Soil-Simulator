@@ -12,7 +12,7 @@
     },
     "wheel": {
         "stl": {
-            "filename": "meshes/6inch_Tire/6inch_Tire_V2.1.STL",
+            "filename": "meshes/6inch_Tire_V2_1.STL",
             "unitsScale" : 0.036721994,
             "centerOffset": {
                 "x": 0.0,

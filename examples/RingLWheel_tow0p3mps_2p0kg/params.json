@@ -12,7 +12,7 @@
     },
     "wheel": {
         "stl": {
-            "filename": "meshes/Tire_ring/Tire_ring.STL",
+            "filename": "meshes/Tire_ring.STL",
             "unitsScale" : 0.0090909091,
             "centerOffset": {
                 "x": 12.1,
