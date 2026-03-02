@@ -124,10 +124,10 @@ key = 'centerOffset'
 if key in stlData:
     coX, coY, coZ = stlData[key]['x'], stlData[key]['y'], stlData[key]['z']
 
-fixNormals = True
-key = 'fixNormals'
+fixWinding = False
+key = 'fixWinding'
 if key in stlData:
-    fixNormals = stlData[key]
+    fixWinding = stlData[key]
 
 # Which way the wheel moves forward, which way is up: x,-x,-y,z,-z
 # (to reorient the wheel for driving - default is x-forward and z-up)
@@ -332,18 +332,18 @@ def reorientWheelFacets(facet_list, R):
 
     return facet_list
 
-# Check and fix inverted normals for facets
-def fix_normals(facetList):
+# Check winding order of facet vertices (ccw outward, for simple meshes only)
+def fix_winding(facetList):
     """
-    Ensure all facets point outward by flipping those whose
-    normals point inward based on object centroid.
+    Ensure all facets point outward by flipping order of vertices
+    where normal points inward based on object centroid.
     """
-    # Compute centroids of all vertices
+    # Compute centroids of **all vertices**
     allVerts = []
     for f in facetList:
         for v in f.shape.vertices:
             allVerts.append(v+f.state.pos)
-    if not allVerts:
+    if not allVerts: # empty
         return facetList
     centroid = sum(allVerts, Vector3.Zero) / len(allVerts)
 
@@ -363,8 +363,7 @@ def fix_normals(facetList):
         if n.dot(outward) < 0:
             f.shape.vertices = [v[0], v[2], v[1]]   # swap to flip orientation
             count_flipped = count_flipped + 1
-    if count_flipped:
-        print(f" Flipped {count_flipped} facets.")
+    print(f" Flipped {count_flipped} facets.")
 
     return facetList
 
@@ -565,9 +564,9 @@ if x_new != 'x' or z_new != 'z':
     print(f"Reorienting the wheel for driving: forward: {x_new}, up: {z_new}")
     facets = reorientWheelFacets(facets, R)
 
-if fixNormals:
-    print("Checking facet normals...")
-    facets = fix_normals(facets)
+if fixWinding:
+    print("Checking facet winding...")
+    facets = fix_winding(facets)
 
 # Assign mass before clumping
 # (required, not used - body properties defined next are used)
