@@ -142,7 +142,12 @@ STL file. The simulator uses `x`-forward, `z`-up coordinate system,
 meaning the wheel moves forward in the `+x` direction and the gravity
 points in the `-z` direction. The STL file needs to have a wheel in
 the `xz` plane, with the wheel rotational axis in the `y` direction,
-or it will need to be transformed to comply. If the wheel center is
+or it will need to be transformed to comply,
+which is done specifying `forward` and `up` directions in the
+`wheel.stl.orientDriving` component of the parameter file, as shown in
+the snippet below. Acceptable values for `forward` and `up`
+directions are `x`, `y`, `z`, `-x`, `-y`, and `-z`.
+If the wheel center is
 not in the origin of the coordinate system, the wheel center offset
 needs to be specified in the input JSON parameter file to position the
 wheel to proper initial location in the soil bin. The Yade STL
@@ -168,6 +173,10 @@ parameter file:
                 "x": 12.1,
                 "y": 3.3,
                 "z": 12.1
+            },
+            "orientDriving": {
+                "forward": "-x",
+                "up": "z"
             }
         },
         "radEff": 0.11,
@@ -213,9 +222,9 @@ nearest axes.
 
 ## AI Use
 
-ChatGPT helped to write command line argument parsing, set_nested, fix
-facet normals, and Ovito exporter routines. ChatGPT, Google Gemini and
-MS Copilot helped to understand Yade usage and parameter setup.
+ChatGPT helped to write command line argument parsing, set_nested, and
+Ovito exporter routines. Google Gemini helped ChatGPT, Google Gemini
+and MS Copilot helped to understand Yade usage and parameter setup.
 
 ## Copyright Statement
 
@@ -239,4 +248,3 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 For more information, contact Mississippi State University's Office of
 Technology Management at otm@msstate.edu
-
