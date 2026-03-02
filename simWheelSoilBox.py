@@ -131,7 +131,7 @@ if key in stlData:
 
 # Which way the wheel moves forward, which way is up: x,-x,-y,z,-z
 # (to reorient the wheel for driving - default is x-forward and z-up)
-key = 'orient_driving'
+key = 'orientDriving'
 if key in stlData:
     x_new = stlData[key]['forward']
     z_new = stlData[key]['up']
@@ -304,7 +304,7 @@ def calcRotMatrix(x_new_label, z_new_label):
 
     return R
 
-def reorient_shift(shiftXYZ, R):
+def reorientShift(shiftXYZ, R):
 
     # Apply Transformation
     old_shift = np.array([shiftXYZ[0], shiftXYZ[1], shiftXYZ[2]])
@@ -312,7 +312,7 @@ def reorient_shift(shiftXYZ, R):
     shiftXYZ = Vector3(new_shift[0], new_shift[1], new_shift[2])
     return shiftXYZ
 
-def reorient_yade_facets(facet_list, R):
+def reorientWheelFacets(facet_list, R):
 
     # Apply Transformation
     for b in facet_list:
@@ -530,7 +530,7 @@ print(f"Created open-top box, {nf_box} facets.")
 shiftXYZ = Vector3(initX, initY, initZ)
 if x_new != 'x' or z_new != 'z':
     R = calcRotMatrix(x_new, z_new)
-    shiftXYZ = reorient_shift(shiftXYZ, R)
+    shiftXYZ = reorientShift(shiftXYZ, R)
 
 # Import wheel from STL (or OBJ) file
 from yade import ymport
@@ -563,7 +563,7 @@ print(f"Imported {len(facets)} facets from \"{stlFile}\" file.")
 if x_new != 'x' or z_new != 'z':
 
     print(f"Reorienting the wheel for driving: forward: {x_new}, up: {z_new}")
-    facets = reorient_yade_facets(facets, R)
+    facets = reorientWheelFacets(facets, R)
 
 if fixNormals:
     print("Checking facet normals...")
