@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
     <DEM Wheel-Soil-Box Simulator.>
     Copyright (C) 2026  Mississippi State University

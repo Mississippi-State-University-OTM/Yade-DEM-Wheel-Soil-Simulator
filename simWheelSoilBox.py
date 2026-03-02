@@ -124,6 +124,11 @@ key = 'centerOffset'
 if key in stlData:
     coX, coY, coZ = stlData[key]['x'], stlData[key]['y'], stlData[key]['z']
 
+fixWinding = False
+key = 'fixWinding'
+if key in stlData:
+    fixWinding = stlData[key]
+
 # Which way the wheel moves forward, which way is up: x,-x,-y,z,-z
 # (to reorient the wheel for driving - default is x-forward and z-up)
 key = 'orientDriving'
@@ -327,6 +332,41 @@ def reorientWheelFacets(facet_list, R):
 
     return facet_list
 
+# Check winding order of facet vertices (ccw outward, for simple meshes only)
+def fix_winding(facetList):
+    """
+    Ensure all facets point outward by flipping order of vertices
+    where normal points inward based on object centroid.
+    """
+    # Compute centroids of **all vertices**
+    allVerts = []
+    for f in facetList:
+        for v in f.shape.vertices:
+            allVerts.append(v+f.state.pos)
+    if not allVerts: # empty
+        return facetList
+    centroid = sum(allVerts, Vector3.Zero) / len(allVerts)
+
+    def facet_normal(f):
+        v = f.shape.vertices
+        p0, p1, p2 = v[0], v[1], v[2]
+        return (p1 - p0).cross(p2 - p0)
+
+    count_flipped = 0
+    for f in facetList:
+        v = f.shape.vertices
+        fCenter = f.state.pos
+        outward = (fCenter - centroid)
+        n = facet_normal(f)
+
+        # If dot < 0 -> normal points toward centroid -> needs flipping
+        if n.dot(outward) < 0:
+            f.shape.vertices = [v[0], v[2], v[1]]   # swap to flip orientation
+            count_flipped = count_flipped + 1
+    print(f" Flipped {count_flipped} facets.")
+
+    return facetList
+
 # Record wheel coords, force, torque
 def rFTrecorder(bodyID):
     bstate= O.bodies[bodyID].state
@@ -523,6 +563,10 @@ if x_new != 'x' or z_new != 'z':
 
     print(f"Reorienting the wheel for driving: forward: {x_new}, up: {z_new}")
     facets = reorientWheelFacets(facets, R)
+
+if fixWinding:
+    print("Checking facet winding...")
+    facets = fix_winding(facets)
 
 # Assign mass before clumping
 # (required, not used - body properties defined next are used)
