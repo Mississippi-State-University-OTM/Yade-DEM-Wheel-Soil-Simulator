@@ -342,7 +342,7 @@ def fix_normals(facetList):
     allVerts = []
     for f in facetList:
         for v in f.shape.vertices:
-            allVerts.append(v)
+            allVerts.append(v+f.state.pos)
     if not allVerts:
         return facetList
     centroid = sum(allVerts, Vector3.Zero) / len(allVerts)
@@ -355,7 +355,7 @@ def fix_normals(facetList):
     count_flipped = 0
     for f in facetList:
         v = f.shape.vertices
-        fCenter = (v[0] + v[1] + v[2]) / 3.0
+        fCenter = f.state.pos
         outward = (fCenter - centroid)
         n = facet_normal(f)
 
