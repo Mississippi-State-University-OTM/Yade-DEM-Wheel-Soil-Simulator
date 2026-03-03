@@ -92,35 +92,36 @@ def setInMotion():
         wheelBody.state.blockedDOFs = 'xYZ' # free x, z, and wy
 
 from datetime import timedelta
-def printVirtTime():
-    curr = O.iter * O.dt
-    end = O.stopAtIter * O.dt
-    simperc = f"Simulated time: {curr:.3f}s / {end:.3f}s = {curr/end*100:.2f}%"
+def printProgressReport():
+    currentVirtualT = O.iter * O.dt
+    endVirtualT = O.stopAtIter * O.dt
+    simulationPercentage = (f"Simulated time: {currentVirtualT:.3f}s / {endVirtualT:.3f}s = "
+                            f"{currentVirtualT/endVirtualT*100:.2f}%")
     d_bottom = ( wheelBody.state.pos[2] - wheelRadEff
-                 - (boxCenterZ - boxHeight/2) ) # wheel distance from box bottom
+                 - (boxCenterZ - boxHeight/2) ) # wheel distance from the box bottom
     x = wheelBody.state.pos[0]
 
-    global firstPrint, prevTime, prev
-    if firstPrint:
-        print(f"{simperc}                            DB: {d_bottom:.3f}m",
+    global initialProgressReport, lastReportElapsedT, lastReportVirtualT
+    if initialProgressReport:
+        print(f"{simulationPercentage}                            DB: {d_bottom:.3f}m",
               file = sys.stderr)
-        firstPrint = False
+        initialProgressReport = False
     else:
-        currTime = time.time()
-        from_last_time = currTime - prevTime
-        from_last_sim = curr - prev
-        rem = end - curr
-        est = from_last_time/from_last_sim * rem
-        delta = timedelta(seconds=round(est))
+        currentElapsedT = time.time()
+        from_last_elapT = currentElapsedT - lastReportElapsedT
+        from_last_virtT = currentVirtualT - lastReportVirtualT
+        remainingVirtualT = endVirtualT - currentVirtualT
+        estimatedRemainingT = from_last_elapT/from_last_virtT * remainingVirtualT
+        delta = timedelta(seconds=round(estimatedRemainingT))
         if not fixLinVel and fixAngVel:
-            print(f"{simperc}    Est. remaining: {delta} DB: {d_bottom:.3f}m ",
+            print(f"{simulationPercentage}    Est. remaining: {delta} DB: {d_bottom:.3f}m ",
                   f"x: {x:.3f}", file = sys.stderr) # print also wheel x-coord.
         else:
-            print(f"{simperc}    Est. remaining: {delta} DB: {d_bottom:.3f}m",
+            print(f"{simulationPercentage}    Est. remaining: {delta} DB: {d_bottom:.3f}m",
                   file = sys.stderr)
 
-    prev = curr
-    prevTime = time.time()
+    lastReportVirtualT = currentVirtualT
+    lastReportElapsedT = time.time()
 
 # Calculate execution time
 def timeCalculator():
@@ -270,11 +271,11 @@ def liveDataOut(bodyID):
     if slip < -10: slip = -10
     if slip >  10: slip =  10
 
-    global firstWrite
-    if firstWrite:
+    global initalDataWrite
+    if initalDataWrite:
         f = open("Data_Output.csv", "w")
         f.write("Time,x,y,z,Fx,Fy,Fz,Tx,Ty,Tz,Vx,Vy,Vz,Wx,Wy,Wz,slip\n")
-        firstWrite = False
+        initalDataWrite = False
     else:
         f = open("Data_Output.csv", "a")
 
@@ -288,19 +289,19 @@ def saveOvitoAndVTK():
     vtk_export.exportFacets(ids = wheelBodyPartsIds)
     if visSaveSph:
         if visSaveSphSingleFile:
-            myappend = False if ostep == 0 else True
-            exportOVITO(f"{visSaveSphBname}.dump", append=myappend)
+            myappend = False if dumpVTKStep == 0 else True
+            exportDUMP(f"{visSaveSphBname}.dump", append=myappend)
         else:
             myappend = False
-            exportOVITO(f"{visSaveSphBname}{ostep:08d}.dump", append=myappend)
+            exportDUMP(f"{visSaveSphBname}{dumpVTKStep:08d}.dump", append=myappend)
 
-def exportOVITO(filename, append=False):
+def exportDUMP(filename, append=False):
     """
     Export YADE spheres to OVITO-compatible LAMMPS dump format.
     Can be called repeatedly to produce a trajectory.
     """
 
-    global ostep
+    global dumpVTKStep
     mode = 'a' if append else 'w'
     f = open(filename, mode)
 
@@ -309,8 +310,8 @@ def exportOVITO(filename, append=False):
 
     # --- Header (LAMMPS dump style) ---
     f.write("ITEM: TIMESTEP\n")
-    f.write(f"{ostep}\n")
-    ostep = ostep + 1
+    f.write(f"{dumpVTKStep}\n")
+    dumpVTKStep = dumpVTKStep + 1
 
     f.write("ITEM: NUMBER OF ATOMS\n")
     f.write(f"{len(spheres)}\n")
@@ -326,7 +327,7 @@ def exportOVITO(filename, append=False):
     f.write(f"{minY} {maxY}\n")
     f.write(f"{minZ} {maxZ}\n")
 
-    # columns OVITO will read
+    # columns in LAMMPS dump format file
     if visSaveSphDetailed:
         f.write("ITEM: ATOMS id type x y z vx vy vz radius fx fy fz wx wy wz\n")
     else:
@@ -498,11 +499,12 @@ intPPparams     = data['matPairs']['pp']
 pp_en           = intPPparams['en']
 pp_krot         = intPPparams['krot']
 
-firstPrint = True
-prevTime = timestart
-prev = 0
-firstWrite = True
-ostep = 0
+initialProgressReport = True
+lastReportElapsedT = timestart
+lastReportVirtualT = 0
+
+initalDataWrite = True
+dumpVTKStep = 0
 
 from yade import plot
 plot.plots={
@@ -700,7 +702,7 @@ O.engines += [PyRunner(command = 'plot.plot(noShow=True).savefig("plot.pdf")',
 
 # Timing info
 progReportIter = round(progRepInt/O.dt)
-O.engines += [PyRunner(command='printVirtTime()', iterPeriod = progReportIter)]
+O.engines += [PyRunner(command='printProgressReport()', iterPeriod = progReportIter)]
 O.engines += [PyRunner(command='timeend = time.time()', firstIterRun = endIt-1)]
 O.engines += [PyRunner(command='timeCalculator()', firstIterRun = endIt-1)]
 if visSaveInt != 0:

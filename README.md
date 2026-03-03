@@ -12,11 +12,7 @@ and/or angular velocity conditions.
 
 The simulator follows the model and source code published by
 [Nakanishi (2020)](https://doi.org/10.1016/j.jterra.2020.10.001)
-developed at Kyoto University. A shortened version of the Kyoto
-simulator adapted to work with Python 3 is provided in
-`simWheelSoilBoxKyoto.py`. The Kyoto simulator uses a PID controller
-to keep angular velocity constant and allows to impose a traction
-load.
+developed at Kyoto University.
 
 ## Installation of Yade DEM Simulation Environment
 
@@ -29,14 +25,20 @@ containers.
 
 ## Requirements
 
-Up-to-date version of [Yade DEM](https://yade-dem.org/doc/)
-environment:
-- `simWheelSoilBox.py` simulator requires Yade 2020.01a or later
+The `simWheelSoilBox.py` simulator
+
+- requires up-to-date version of [Yade DEM](https://yade-dem.org/doc/)
+  environment: Yade 2020.01a or later
   version (Ubuntu 20.04, Debian Bullseye or later). Scaling the wheel
   size currently works only with Yade 2021.01a or later (Ubuntu 24.04,
   Debian Bullseye or later).
-- `simWheelSoilBoxKyoto.py` requires Yade 2020.01a or later version
-  (Ubuntu 20.04, Debian Bullseye or later).
+
+The `fixWinding.py` and `writeLuggedWheel.py` scripts
+
+- require [NumPy](https://numpy.org/) Python package, and
+  [trimesh](https://trimesh.org/install.html) which requires
+  additional packages ("pyglet<2", scipy, numpy-stl, and shapely)
+  which can be installed into a Python virtual environment.
 
 A computer with at least 8 GB of memory is recommended.
 
@@ -126,15 +128,6 @@ User can specify a parameter file from command line (example below)
 yade -n -x simWheelSoilBox.py paramsCustom.json
 ```
 
-Note: `simWheelSoilBoxKyoto.py` uses hard-coded parameters - it does
-not read input parameter file. To run the Kyoto simulator without a
-GUI, set the `GUImode` to `False` near the end of
-`simWheelSoilBoxKyoto.py` script and use Yade's CLI flags:
-
-```bash
-yade -n -x simWheelSoilBoxKyoto.py
-```
-
 ## Reading Wheel Geometry from STL File
 
 The simulator reads a rigid wheel geometry from a plain text or binary
@@ -208,7 +201,7 @@ prescribed slip condition, both `vx` and `wy` to be constrained and
 set to a desired value. The wheel is allowed to move freely in the
 z-direction.
 
-### YADE 3D Display Keyboard Shortcuts
+## YADE 3D Display Keyboard Shortcuts
 
 - `z`: set z-axis up
 - `x`: set x-axis up
@@ -219,6 +212,31 @@ z-direction.
 To see all available shortcuts, set focus on the 3D display window and
 press `h`. Double-click the 3D display window to align the view with
 nearest axes.
+
+## Post-processing
+
+`simWheelSoilBox.py` can store soil particles (spheres) in a LAMMPS
+dump format, and the wheel geometry in VTK format. A convenient GUI
+tool for visualizing these is [OVITO](https://www.ovito.org). OVITO
+open-source version is called `OVITO Basic`. OVITO Basic versions
+lower than 3.8.0 can visualize particles along with the wheel. Options
+for saving the dump files are in the JSON parameter file shown in the
+snippet below.
+
+```json
+    "sim": {
+        "Di's": {
+            "saveInt": 0.02,
+            "spheres": {
+                "on": true,
+                "singleFile": false,
+                "basename" : "vis/ovito-",
+                "detailed" : false
+            }
+        }
+    }
+}
+```
 
 ## AI Use
 
