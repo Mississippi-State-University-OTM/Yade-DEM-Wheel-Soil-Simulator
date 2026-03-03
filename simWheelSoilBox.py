@@ -18,16 +18,6 @@
 For more information, contact Mississippi State University's Office of Technology Management at otm@msstate.edu
 '''
 
-timestart = time.time()
-
-import argparse
-
-parser = argparse.ArgumentParser(description="Wheel-Soil-Box Simulator.")
-parser.add_argument("param_file", nargs='?', help="Parameter file", default = "params.json")
-parser.add_argument("--params", nargs='+', help="Pairs of param:value (e.g., sim.GUImode:false, sim.timeStep:0.00001)", default=[])
-
-args = parser.parse_args()
-
 # Parse command line parameter values, returns parameter map
 # Example cmdline par_list:  ['sim.timeStep:0.0', 'sim.GUImode:true']
 def parse_cmdln_params(par_list):
@@ -52,16 +42,6 @@ def parse_cmdln_params(par_list):
                         par_map[par_name] = val
     return par_map
 
-print("arg params:", args.params)
-params_map = parse_cmdln_params(args.params)
-
-param_file = args.param_file
-print(f'Parameter file:\n "{param_file}"')
-
-import json
-with open(param_file, 'r') as f:
-    data = json.load(f)
-
 # Example use: set_nested(data, "sim.GUImode", True)
 #              set_nested(data, "sim.timeStep", 0.00001)
 def set_nested(data, path, value):
@@ -73,131 +53,13 @@ def set_nested(data, path, value):
         d = d[key]
     d[keys[-1]] = value
 
-# Overwrite parameters from param file by values from command line
-for key, value in params_map.items():
-    print(f"Cmdln param: {key} = {value}")
-    set_nested(data, key, value)
-
-# Wheel properties and initial coordinates from JSON
-valLinVel    = data['wheel']['initVals']['vx']   # set initial value of wheel Vx
-fixLinVel    = data['wheel']['constrains']['vx'] # True: fix the initial Vx over time
-valAngVel    = data['wheel']['initVals']['wy']   # set initial value of wheel Wx
-fixAngVel    = data['wheel']['constrains']['wy'] # True: fix the initial Wy over time
-wheelRadEff  = data['wheel']['radEff']           # for Gross Traction, Slip, & height above settled soil
-acc_g        = 9.81                              # acceleration of gravity
-wheelMass    = data['wheel']['mass']             # Rigid-body mass
-wheelInertia = (1, data['wheel']['Iyy'], 1)      # Inertia tensor
-initX        = data['wheel']['initVals']['x']    # Initial x-coordinate
-initY        = data['wheel']['initVals']['y']    # Initial y-coordinate
-initZ        = data['wheel']['initVals']['z']    # Wheel waiting-for-soil-to-settle height
-settleTime   = data['sim']['settleTime']         # Time to settle particles
-endTime      = data['sim']['endTime']            # Total simulated time
-progRepInt   = data['sim']['progRepInterval']    # Print simulated time and % done each this simulated interval
-dataSaveInt  = data['sim']['dataSaveInterval']   # Sim. time interval to save data
-exactARot = True
-if 'exactAsphericalRot' in data['sim']:
-    exactARot =  data['sim']['exactAsphericalRot']
-print(f"Exact Aspherical Rotation: {exactARot}")
-
-if 'vis' in data['sim']:
-    # Sim. time interval to save visualization snapshots, 0 = don't save
-    visSaveInt = data['sim']['vis']['saveInt']
-    # True: save spheres in LAMMPS dump format, more spheres = more disk space
-    visSaveSph = data['sim']['vis']['spheres']['on']
-    visSaveSphSingleFile = data['sim']['vis']['spheres']['singleFile']
-    visSaveSphBname = data['sim']['vis']['spheres']['basename']
-    visSaveSphDetailed = data['sim']['vis']['spheres']['detailed']
-else:
-    visSaveInt = 0.0
-GUImode      = data['sim']['GUImode']            # True: run with GUI
-
-stlData      = data['wheel']['stl']
-stlFile      = stlData['filename']  # Wheel STL/OBJ file
-
-stlScale = 1.0
-key = 'unitsScale'
-if key in stlData:
-    stlScale = stlData[key]    # Ratio to multiply the coordinates from STL file by
-
-coX = 0; coY = 0; coZ = 0;                       # STL wheel center offset
-key = 'centerOffset'
-if key in stlData:
-    coX, coY, coZ = stlData[key]['x'], stlData[key]['y'], stlData[key]['z']
-
-fixWinding = False
-key = 'fixWinding'
-if key in stlData:
-    fixWinding = stlData[key]
-
-# Which way the wheel moves forward, which way is up: x,-x,-y,z,-z
-# (to reorient the wheel for driving - default is x-forward and z-up)
-key = 'orientDriving'
-if key in stlData:
-    x_new = stlData[key]['forward']
-    z_new = stlData[key]['up']
-else:
-    x_new = 'x'
-    z_new = 'z'
-
-# Particle parameters
-# initial placement of particles up to 0.8 (= 80%) of box' height
-pck      = data['particles']['pck']
-rndSeed  = data['particles']['rndSeed']
-part_gen = data['particles']['generation']
-pscale   = data['particles']['scale']
-print(f"Particles:")
-print(f" Packing level up to z = {pck} m")
-print(f" Generation method: {part_gen}, random seed: {rndSeed=}")
-print(f" Scale-up particle sizes: {pscale} X original size (to speed up the simulation).")
-if part_gen == "meanFuzz":
-    rMean    = data['particles']['rMean']
-    rRelFuzz = data['particles']['rRelFuzz']
-    rndSeed  = data['particles']['rndSeed']
-    print(f" MeanFuzz generation method: mean radius: {rMean} m, radius relative fuzz: {rRelFuzz=}")
-elif part_gen == "clumpCloud":
-    rmin     = data['particles']['rmin']
-    rmed     = data['particles']['rmed']
-    rmax     = data['particles']['rmax']
-    partnum  = data['particles']['num' ]
-    print(f" ClumpCloud generation method: Radii: {rmin}, {rmed}, {rmax}, requsted # of particles: {partnum}")
-
-# Box interior region (open top)
-hboxY     = data['box']['width']  / 2  # half width
-hboxX     = data['box']['length'] / 2  # half lenght
-boxHeight = data['box']['height']      # height of box
-hboxZ     = boxHeight / 2              # half of height
-boxCenterX = data['box']['center']['x'] # x,y,z coordinates of the box center
-boxCenterY = data['box']['center']['y']
-boxCenterZ = data['box']['center']['z']
-print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (lenght x width x height)")
-print(f"Box center: {boxCenterX} {boxCenterY} {boxCenterZ}")
-
-# Material parameters obtained using material names argument
-matWheelParams  = data['materials'][data['wheel']    ['material']]
-matSphereParams = data['materials'][data['particles']['material']]
-matBoxParams    = data['materials'][data['box'      ]['material']]
-# helper function that creates material by calling Yade function FrictMat()
+# Helper function that creates material by calling Yade function FrictMat()
 def createFrictMaterial(params, labelarg):
     return FrictMat(density       = params['density'],
                     young         = params['young'],
                     poisson       = params['poisson'],
                     frictionAngle = params['frictionAngle'],
                     label = labelarg)
-# create materials, mark them with labels
-matWheel  = createFrictMaterial(matWheelParams, "wheelmat")
-matSphere = createFrictMaterial(matSphereParams, "mat1")
-# set sphere friction to zero for settling only, restore when the wheel is set in motion
-sphereFrictionAngle = matSphere.frictionAngle  # store the value before setting to zero
-matSphere.frictionAngle = 0.0
-matBox = createFrictMaterial(matBoxParams, "wallmat")
-idWheelMat  = O.materials.append(matWheel)
-idBoxMat = O.materials.append(matBox)
-idSphereMat = O.materials.append(matSphere) # last
-
-# Particle-particld pair interaction parameters
-intPPparams     = data['matPairs']['pp']
-pp_en           = intPPparams['en']
-pp_krot         = intPPparams['krot']
 
 # Reposition the wheel to the top surface of soil and set it in motion
 def setInMotion():
@@ -230,9 +92,6 @@ def setInMotion():
         wheelBody.state.blockedDOFs = 'xYZ' # free x, z, and wy
 
 from datetime import timedelta
-firstPrint = True
-prevTime = timestart
-prev = 0
 def printVirtTime():
     curr = O.iter * O.dt
     end = O.stopAtIter * O.dt
@@ -425,8 +284,6 @@ def liveDataOut(bodyID):
 
     f.close()
 
-firstWrite = True
-
 def saveOvitoAndVTK():
     vtk_export.exportFacets(ids = wheelBodyPartsIds)
     if visSaveSph:
@@ -499,6 +356,152 @@ def exportOVITO(filename, append=False):
             f.write(f"{b.id} {x:.3g} {y:.3g} {z:.3g} {r:.3g}\n")
     f.close()
 
+
+# Main program
+#
+timestart = time.time()
+
+import argparse
+
+parser = argparse.ArgumentParser(description="Wheel-Soil-Box Simulator.")
+parser.add_argument("param_file", nargs='?', help="Parameter file", default = "params.json")
+parser.add_argument("--params", nargs='+', help="Pairs of param:value (e.g., sim.GUImode:false, sim.timeStep:0.00001)", default=[])
+
+args = parser.parse_args()
+
+print("arg params:", args.params)
+params_map = parse_cmdln_params(args.params)
+
+param_file = args.param_file
+print(f'Parameter file:\n "{param_file}"')
+
+import json
+with open(param_file, 'r') as f:
+    data = json.load(f)
+
+# Overwrite parameters from param file by values from command line
+for key, value in params_map.items():
+    print(f"Cmdln param: {key} = {value}")
+    set_nested(data, key, value)
+
+# Wheel properties and initial coordinates from JSON
+valLinVel    = data['wheel']['initVals']['vx']   # set initial value of wheel Vx
+fixLinVel    = data['wheel']['constrains']['vx'] # True: fix the initial Vx over time
+valAngVel    = data['wheel']['initVals']['wy']   # set initial value of wheel Wx
+fixAngVel    = data['wheel']['constrains']['wy'] # True: fix the initial Wy over time
+wheelRadEff  = data['wheel']['radEff']           # for Gross Traction, Slip, & height above settled soil
+acc_g        = 9.81                              # acceleration of gravity
+wheelMass    = data['wheel']['mass']             # Rigid-body mass
+wheelInertia = (1, data['wheel']['Iyy'], 1)      # Inertia tensor
+initX        = data['wheel']['initVals']['x']    # Initial x-coordinate
+initY        = data['wheel']['initVals']['y']    # Initial y-coordinate
+initZ        = data['wheel']['initVals']['z']    # Wheel waiting-for-soil-to-settle height
+settleTime   = data['sim']['settleTime']         # Time to settle particles
+endTime      = data['sim']['endTime']            # Total simulated time
+progRepInt   = data['sim']['progRepInterval']    # Print simulated time and % done each this simulated interval
+dataSaveInt  = data['sim']['dataSaveInterval']   # Sim. time interval to save data
+exactARot = True
+if 'exactAsphericalRot' in data['sim']:
+    exactARot =  data['sim']['exactAsphericalRot']
+print(f"Exact Aspherical Rotation: {exactARot}")
+
+if 'vis' in data['sim']:
+    # Sim. time interval to save visualization snapshots, 0 = don't save
+    visSaveInt = data['sim']['vis']['saveInt']
+    # True: save spheres in LAMMPS dump format, more spheres = more disk space
+    visSaveSph = data['sim']['vis']['spheres']['on']
+    visSaveSphSingleFile = data['sim']['vis']['spheres']['singleFile']
+    visSaveSphBname = data['sim']['vis']['spheres']['basename']
+    visSaveSphDetailed = data['sim']['vis']['spheres']['detailed']
+else:
+    visSaveInt = 0.0
+GUImode      = data['sim']['GUImode']            # True: run with GUI
+
+stlData      = data['wheel']['stl']
+stlFile      = stlData['filename']  # Wheel STL/OBJ file
+
+stlScale = 1.0
+key = 'unitsScale'
+if key in stlData:
+    stlScale = stlData[key]    # Ratio to multiply the coordinates from STL file by
+
+coX = 0; coY = 0; coZ = 0;                       # STL wheel center offset
+key = 'centerOffset'
+if key in stlData:
+    coX, coY, coZ = stlData[key]['x'], stlData[key]['y'], stlData[key]['z']
+
+fixWinding = False
+key = 'fixWinding'
+if key in stlData:
+    fixWinding = stlData[key]
+
+# Which way the wheel moves forward, which way is up: x,-x,-y,z,-z
+# (to reorient the wheel for driving - default is x-forward and z-up)
+key = 'orientDriving'
+if key in stlData:
+    x_new = stlData[key]['forward']
+    z_new = stlData[key]['up']
+else:
+    x_new = 'x'
+    z_new = 'z'
+
+# Particle parameters
+# initial placement of particles up to 0.8 (= 80%) of box' height
+pck      = data['particles']['pck']
+rndSeed  = data['particles']['rndSeed']
+part_gen = data['particles']['generation']
+pscale   = data['particles']['scale']
+print(f"Particles:")
+print(f" Packing level up to z = {pck} m")
+print(f" Generation method: {part_gen}, random seed: {rndSeed=}")
+print(f" Scale-up particle sizes: {pscale} X original size (to speed up the simulation).")
+if part_gen == "meanFuzz":
+    rMean    = data['particles']['rMean']
+    rRelFuzz = data['particles']['rRelFuzz']
+    rndSeed  = data['particles']['rndSeed']
+    print(f" MeanFuzz generation method: mean radius: {rMean} m, radius relative fuzz: {rRelFuzz=}")
+elif part_gen == "clumpCloud":
+    rmin     = data['particles']['rmin']
+    rmed     = data['particles']['rmed']
+    rmax     = data['particles']['rmax']
+    partnum  = data['particles']['num' ]
+    print(f" ClumpCloud generation method: Radii: {rmin}, {rmed}, {rmax}, requsted # of particles: {partnum}")
+
+# Box interior region (open top)
+hboxY     = data['box']['width']  / 2  # half width
+hboxX     = data['box']['length'] / 2  # half lenght
+boxHeight = data['box']['height']      # height of box
+hboxZ     = boxHeight / 2              # half of height
+boxCenterX = data['box']['center']['x'] # x,y,z coordinates of the box center
+boxCenterY = data['box']['center']['y']
+boxCenterZ = data['box']['center']['z']
+print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (lenght x width x height)")
+print(f"Box center: {boxCenterX} {boxCenterY} {boxCenterZ}")
+
+# Material parameters obtained using material names argument
+matWheelParams  = data['materials'][data['wheel']    ['material']]
+matSphereParams = data['materials'][data['particles']['material']]
+matBoxParams    = data['materials'][data['box'      ]['material']]
+# Create materials, mark them with labels
+matWheel  = createFrictMaterial(matWheelParams, "wheelmat")
+matSphere = createFrictMaterial(matSphereParams, "mat1")
+# set sphere friction to zero for settling only, restore when the wheel is set in motion
+sphereFrictionAngle = matSphere.frictionAngle  # store the value before setting to zero
+matSphere.frictionAngle = 0.0
+matBox = createFrictMaterial(matBoxParams, "wallmat")
+idWheelMat  = O.materials.append(matWheel)
+idBoxMat = O.materials.append(matBox)
+idSphereMat = O.materials.append(matSphere) # last
+
+# Particle-particld pair interaction parameters
+intPPparams     = data['matPairs']['pp']
+pp_en           = intPPparams['en']
+pp_krot         = intPPparams['krot']
+
+firstPrint = True
+prevTime = timestart
+prev = 0
+firstWrite = True
 ostep = 0
 
 from yade import plot
@@ -558,7 +561,7 @@ else:
     )
 print(f"Imported {len(facets)} facets from \"{stlFile}\" file.")
 
-# swap coordinats if needed, x_new is forward, z_new is up
+# Swap coordinats if needed, x_new is forward, z_new is up
 if x_new != 'x' or z_new != 'z':
 
     print(f"Reorienting the wheel for driving: forward: {x_new}, up: {z_new}")
