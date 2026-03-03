@@ -208,7 +208,7 @@ prescribed slip condition, both `vx` and `wy` to be constrained and
 set to a desired value. The wheel is allowed to move freely in the
 z-direction.
 
-### YADE 3D Display Keyboard Shortcuts
+## YADE 3D Display Keyboard Shortcuts
 
 - `z`: set z-axis up
 - `x`: set x-axis up
@@ -219,6 +219,31 @@ z-direction.
 To see all available shortcuts, set focus on the 3D display window and
 press `h`. Double-click the 3D display window to align the view with
 nearest axes.
+
+## Post-processing
+
+`simWheelSoilBox.py` can store soil particles (spheres) in a LAMMPS
+dump format, and the wheel geometry in VTK format. A convenient GUI
+tool for visualizing these is [OVITO](https://www.ovito.org). OVITO
+open-source version is called `OVITO Basic`. OVITO Basic versions
+lower than 3.8.0 can visualize particles along with the wheel. Options
+for saving the dump files are in the JSON parameter file shown in the
+snippet below.
+
+```json
+    "sim": {
+        "Di's": {
+            "saveInt": 0.02,
+            "spheres": {
+                "on": true,
+                "singleFile": false,
+                "basename" : "vis/ovito-",
+                "detailed" : false
+            }
+        }
+    }
+}
+```
 
 ## AI Use
 
