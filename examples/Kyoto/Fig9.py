@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 # Load data from text file
 # ------------------------
 # Header must be: x net gross res
-data = np.genfromtxt('fig9ref.txt', names=True)
-datj = np.genfromtxt('fig9here.txt', names=True)
+data = np.genfromtxt('Fig9ref.txt', names=True)
+datj = np.genfromtxt('Fig9here.txt', names=True)
 
-x = data['x']
+x = data['slip']
 y_net  = data['net']
 y_gross = data['gross']
 y_res = data['res']
 
-xj = datj['x']
+xj = datj['slip']
 yj_net  = datj['net']
 yj_gross = datj['gross']
 
@@ -63,8 +63,8 @@ plt.axhline(y=0, color='black', linestyle='-', linewidth=1.0)
 plt.axvline(x=0, color='black', linestyle='-', linewidth=1.0)
 
 # Axes formatting
-plt.xlabel('Slip [%]', fontsize=16)
-plt.ylabel('F [N]', fontsize=16)
+plt.xlabel('Slip (%)', fontsize=16)
+plt.ylabel('Gross Tractive Effort, Net Traction,\nMotion Resistance (N)', fontsize=16)
 plt.xlim(-5, 100)
 plt.ylim(-5, 20)
 plt.xticks([0, 20, 40, 60, 80, 100], fontsize=16)
@@ -74,5 +74,5 @@ plt.legend(loc='upper left', frameon=False, fontsize=16)
 plt.grid(True)
 
 plt.tight_layout()
-plt.savefig("fig9.png")
+plt.savefig("Fig9.png")
 plt.show()
