@@ -135,7 +135,7 @@ def main():
         sys.exit(1)
 
     # 2. Write New Results to File (Transposed: one variable per row)
-    print(f"# Statistics for {args.file} (t={begt} to {endt} @ {pctRE} % tol)")
+    print(f"# Statistics for {args.file} (t={begt} to {endt})")
     print(f"# {'Variable':<8} {'Average':>15} {'Std_Dev':15}")
     for h, a, s in zip(headers, avgs, stds):
         if s != 0.0 and h != "At" and h != "t":
@@ -143,7 +143,7 @@ def main():
 
     # 3. Comparison Logic
     if ref_plot and comp_map:
-        print(f"\n--- Comparison with {ref_plot} ---")
+        print(f"\n--- Comparison with {ref_plot} @ {pctRE} % tol ---")
         ref_headers, ref_avgs, ref_stds = calculate_stats(ref_plot, begt, endt)
         
         if ref_avgs:
