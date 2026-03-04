@@ -32,6 +32,8 @@ The `simWheelSoilBox.py` simulator
   version (Ubuntu 20.04, Debian Bullseye or later). Scaling the wheel
   size currently works only with Yade 2021.01a or later (Ubuntu 24.04,
   Debian Bullseye or later).
+  Yade daily build, `yadedaily`, which is automatically generated from a
+  recent Yade development source code, should work as well.
 
 The `fixWinding.py` and `writeLuggedWheel.py` scripts
 
@@ -75,32 +77,29 @@ size scaled up 10X to speed up the simulation. To get the particles
 sizes matching the publication, change the `particles` `scale`
 parameter in the `params.json` file from 10.0 to 1.0.
 
-To run the simulator with a different input parameter file, provide
-the filename or path as the first command-line argument. Examples:
+To run the simulator with a specific input parameter file, provide the
+filename or path as the first command-line argument. If desired,
+``yade`` can be replaced by ``yadedaily`` in any of the examples.
 
-GUI mode (open the GUI, read alternate input parameter file
-`paramsCustom.json`):
-
-```bash
-yade simWheelSoilBox.py paramsCustom.json
-```
-
-Headless mode (no GUI):
+The following example opens the GUI, read input parameter file
+`params.json` from the current directory, and awaits you to press
+`Play` to start the simulation:
 
 ```bash
-yade -n -x simWheelSoilBox.py paramsCustom.json
+yade simWheelSoilBox.py params.json
 ```
 
 Paths are resolved relative to the current working directory where you
-run `yade`. To execute a simulation using, for example, eight threads,
-add `-j8 command line parameter:
+run `yade`. To execute a simulation with a parameter file
+`examples/Kyoto/tow0p30mps_2p0kg/params.json` using, for example,
+eight threads, add `-j8` command line parameter:
 
 ```bash
-yade -n -x -j8 simWheelSoilBox.py paramsCustom.json
+yade -j8 simWheelSoilBox.py examples/Kyoto/tow0p30mps_2p0kg/params.json
 ```
 
 Multi-thread simulations run faster than single-thread. Only the
-single-thread (-j1) simulations are perfectly reproducible.
+single-thread (`-j1`) simulations are perfectly reproducible.
 
 ## Running Simulator without GUI
 
@@ -122,10 +121,34 @@ flags as below
 yade -n -x simWheelSoilBox.py
 ```
 
-User can specify a parameter file from command line (example below)
+Instead of modifying the parameter file, the GUI mode can be
+set/overwritten from the command line
 
 ```bash
-yade -n -x simWheelSoilBox.py paramsCustom.json
+yade -n -x simWheelSoilBox.py --params sim.GUImode:false
+```
+
+Note that any simulation parameter, including those in the input
+parameter file, can be overwritten/set using the command line option
+`--params`, upon spelling out its full path:
+
+```bash
+yade -n -x -j8 simWheelSoilBox.py params.json --params sim.GUImode:false \
+sim.vis.saveInt:0.01 wheel.initVals.vx:0.6
+```
+
+To store screen printouts, for example, standard output in ``log.txt``
+file and standard error (including progress messages) in `log2.txt`
+file, use:
+
+```bash
+yade -n -x -j8 simWheelSoilBox.py params.json 2> log2.txt > log.txt
+```
+
+Then you can monitor the progress using
+
+```bash
+tail -f log2.txt
 ```
 
 ## Reading Wheel Geometry from STL File
@@ -224,6 +247,7 @@ for saving the dump files are in the JSON parameter file shown in the
 snippet below.
 
 ```json
+{
     "sim": {
         "Di's": {
             "saveInt": 0.02,
@@ -243,6 +267,7 @@ snippet below.
 ChatGPT helped to write command line argument parsing, set_nested, and
 Ovito exporter routines. Google Gemini helped ChatGPT, Google Gemini
 and MS Copilot helped to understand Yade usage and parameter setup.
+`plot.py` was created using Google Gemini.
 
 ## Copyright Statement
 
