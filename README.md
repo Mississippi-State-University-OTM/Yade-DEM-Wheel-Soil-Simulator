@@ -8,7 +8,10 @@ Design Competition](https://doi.org/10.1016/j.jterra.2025.101117) of
 the [International Society of Terrain-Vehicle
 Systems](https://www.istvs.org/). It simulates planar motion of a
 rigid wheel in a box with granular soil under prescribed forward
-and/or angular velocity conditions.
+and/or angular velocity conditions using open-source [Yade
+framework](https://yade-dem.org/doc/), main features of which are
+summarized by [Angelidakis et
+al. (2024)](https://doi.org/10.1016/j.cpc.2024.109293).
 
 The simulator follows the model and source code published by
 [Nakanishi (2020)](https://doi.org/10.1016/j.jterra.2020.10.001)
