@@ -272,6 +272,12 @@ Ovito exporter routines. Google Gemini helped ChatGPT, Google Gemini
 and MS Copilot helped to understand Yade usage and parameter setup.
 `plot.py` was created using Google Gemini.
 
+## Acknowledgment
+
+This work was funded by the [Center for Advanced Vehicular
+Systems](https://cavs.msstate.edu/), [Mississippi State
+University](https://www.msstate.edu/).
+
 ## Copyright Statement
 
 ```text
