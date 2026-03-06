@@ -267,10 +267,10 @@ snippet below.
 
 ## AI Use
 
-ChatGPT helped to write command line argument parsing, set_nested, and
-Ovito exporter routines. Google Gemini helped ChatGPT, Google Gemini
-and MS Copilot helped to understand Yade usage and parameter setup.
-`plot.py` was created using Google Gemini.
+ChatGPT assisted with writing command line argument parsing,
+set_nested, and Ovito exporter routines. Google Gemini and MS Copilot
+helped to understand Yade usage and parameter setup. `plot.py` was
+mostly created using Google Gemini.
 
 ## Acknowledgment
 
