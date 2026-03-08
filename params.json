@@ -81,7 +81,7 @@
         "progRepInterval": 0.01,
         "dataSaveInterval": 0.005,
         "vis": {
-            "saveInt": 0.02,
+            "saveInt": 0.4,
             "spheres": {
                 "on": true,
                 "singleFile": false,
@@ -92,6 +92,6 @@
         "GUImode": true
     },
     "postproc": {
-        "avgInt": [2.5, 9]
+        "avgInt": [2.5, 3.5]
     }
 }

@@ -23,7 +23,7 @@ The Yade DEM simulation environment can be installed according to the
 instructions at the [Yade DEM website](https://yade-dem.org/doc/),
 which provides an introduction to Linux, Python, and detailed
 documentation. The simulator was tested to work under Ubuntu 24.04 and
-Ubuntu 22.04 application installed under Windows 11 OS and in Docker
+Ubuntu 22.04 application installed under Windows 11 OS and in Singularity
 containers.
 
 ## Requirements
@@ -75,8 +75,8 @@ re-opened by clicking the `Show 3D` button in the YADE control panel.
 By default, the simulator reads the parameter file `params.json` from
 the working directory. This file contains the wheel and soil
 parameters used in [Nakanishi
-(2020)](https://doi.org/10.1016/j.jterra.2020.10.001) and particles
-size scaled up 10X to speed up the simulation. To get the particles
+(2020)](https://doi.org/10.1016/j.jterra.2020.10.001) and **particles
+size scaled up 10X** to speed up the simulation. To get the particles
 sizes matching the publication, change the `particles` `scale`
 parameter in the `params.json` file from 10.0 to 1.0.
 
@@ -152,6 +152,36 @@ Then you can monitor the progress using
 
 ```bash
 tail -f log2.txt
+```
+
+## Running Simulator within Singularity Container
+
+Following is an example execution of the simulator in a Singularity
+container
+
+```bash
+apptainer exec ~/containers/yade/debian-trixie.sif \
+yade -j1 simWheelSoilBox.py params.json
+```
+
+The screenshot of the simulation is below. The simulation within the
+container works same as the one executed without the container.
+
+![Screenshot of a simulation with GUI](screenshot.png)
+
+A recipe to create the container ``debian-trixie.sif`` from a Yade
+DEM docker image stored in GitLab registry is
+
+```bash
+bootstrap: docker
+from: registry.gitlab.com/yade-dev/docker-prod:debian-trixie
+```
+
+Saving the above text in a plain text file ``debian-trixie.rec`` allows to
+build the container, for example, on Ubuntu systems:
+
+```bash
+sudo apptainer build debian-trixie.sif debian-trixie.rec
 ```
 
 ## Reading Wheel Geometry from STL File
@@ -252,7 +282,7 @@ snippet below.
 ```json
 {
     "sim": {
-        "Di's": {
+        "vis": {
             "saveInt": 0.02,
             "spheres": {
                 "on": true,
