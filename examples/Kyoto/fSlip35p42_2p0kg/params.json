@@ -92,6 +92,6 @@
         "GUImode": false
     },
     "postproc": {
-        "avgInt": [2.0, 4.3]
+        "avgInt": [2.0, 4.25]
     }
 }
