@@ -25,21 +25,26 @@ def parse_cmdln_params(par_list):
     if not par_list:
         return par_map
     for item in par_list:
+        try:
             par_name, val = item.split(':')
-            if val == "true":
-                par_map[par_name] = True
-            elif val == "false":
-                par_map[par_name] = False
-            else:
+        except ValueError as e:
+            e.add_note(f' Exception when splitting command line parameter_name:value for string: "{item}"\n'+
+                       f'  - if this is parameter file name, please specify it before --param option.')
+            raise
+        if val == "true":
+            par_map[par_name] = True
+        elif val == "false":
+            par_map[par_name] = False
+        else:
+            try:
+                ival = int(val)
+                par_map[par_name] = ival
+            except ValueError:
                 try:
-                    ival = int(val)
-                    par_map[par_name] = ival
-                except ValueError:
-                    try:
-                        fval = float(val)
-                        par_map[par_name] = fval
-                    except ValueError: # not T/F, not int, not float => string
-                        par_map[par_name] = val
+                    fval = float(val)
+                    par_map[par_name] = fval
+                except ValueError: # not T/F, not int, not float => string
+                    par_map[par_name] = val
     return par_map
 
 # Example use: set_nested(data, "sim.GUImode", True)
