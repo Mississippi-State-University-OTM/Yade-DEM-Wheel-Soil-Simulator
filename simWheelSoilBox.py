@@ -457,10 +457,12 @@ pck      = data['particles']['pck']
 rndSeed  = data['particles']['rndSeed']
 part_gen = data['particles']['generation']
 pscale   = data['particles']['scale']
+partnumr = data['particles']['num']
 print(f"Particles:")
 print(f" Packing level up to z = {pck} m")
 print(f" Generation method: {part_gen}, random seed: {rndSeed=}")
 print(f" Scale-up particle sizes: {pscale} X original size (to speed up the simulation).")
+print(f" Number of particles requested: {partnumr}")
 if part_gen == "meanFuzz":
     rMean    = data['particles']['rMean']
     rRelFuzz = data['particles']['rRelFuzz']
@@ -630,7 +632,7 @@ elif part_gen == "clumpCloud":
             # top right corner
             (boxCenterX + hboxX, boxCenterY + hboxY, boxCenterZ - hboxZ + boxHeight*pck),
             [S1, S1r, S1R],
-            num = round(80000/pscale**3))
+            num = round(partnumr/pscale**3))
     else:
         sp.makeClumpCloud(
             # bottom left corner
@@ -638,7 +640,7 @@ elif part_gen == "clumpCloud":
             # top right corner
             (boxCenterX + hboxX, boxCenterY + hboxY, boxCenterZ - hboxZ + boxHeight*pck),
             [S1, S1r, S1R],
-            num = round(80000/pscale**3), seed = rndSeed)
+            num = round(partnumr/pscale**3), seed = rndSeed)
     sp.toSimulation(color=(.6,.57,.53))
     partnum = len(sp)
 
