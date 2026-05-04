@@ -401,7 +401,6 @@ wheelMass    = data['wheel']['mass']             # Rigid-body mass
 wheelInertia = (1, data['wheel']['Iyy'], 1)      # Inertia tensor
 initX        = data['wheel']['initVals']['x']    # Initial x-coordinate
 initY        = data['wheel']['initVals']['y']    # Initial y-coordinate
-initZ        = data['wheel']['initVals']['z']    # Wheel waiting-for-soil-to-settle height
 settleTime   = data['sim']['settleTime']         # Time to settle particles
 endTime      = data['sim']['endTime']            # Total simulated time
 progRepInt   = data['sim']['progRepInterval']    # Print simulated time and % done each this simulated interval
@@ -452,14 +451,14 @@ else:
     z_new = 'z'
 
 # Particle parameters
-# initial placement of particles up to 0.8 (= 80%) of box' height
+# initial placement of particles, e.g. up to 0.8 (= 80%) of box' height
 pck      = data['particles']['pck']
 rndSeed  = data['particles']['rndSeed']
 part_gen = data['particles']['generation']
 pscale   = data['particles']['scale']
 partnumr = data['particles']['num']
 print(f"Particles:")
-print(f" Packing level up to z = {pck} m")
+print(f" Packing level up to z = {pck} X box height")
 print(f" Generation method: {part_gen}, random seed: {rndSeed=}")
 print(f" Scale-up particle sizes: {pscale} X original size (to speed up the simulation).")
 print(f" Number of particles requested: {partnumr}")
@@ -485,6 +484,8 @@ boxCenterY = data['box']['center']['y']
 boxCenterZ = data['box']['center']['z']
 print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (lenght x width x height)")
 print(f"Box center: {boxCenterX} {boxCenterY} {boxCenterZ}")
+
+initZ = -hboxZ + boxHeight*pck + wheelRadEff # Wheel waiting-for-soil-to-settle height
 
 # Material parameters obtained using material names argument
 matWheelParams  = data['materials'][data['wheel']    ['material']]
