@@ -485,7 +485,7 @@ boxCenterZ = data['box']['center']['z']
 print(f"Box dimensions: {hboxX*2} x {hboxY*2} x {boxHeight} m (lenght x width x height)")
 print(f"Box center: {boxCenterX} {boxCenterY} {boxCenterZ}")
 
-initZ = -hboxZ + boxHeight*pck + wheelRadEff # Wheel waiting-for-soil-to-settle height
+initZ = -hboxZ + boxHeight*pck + wheelRadEff + boxCenterZ # Wheel waiting-for-soil-to-settle height
 
 # Material parameters obtained using material names argument
 matWheelParams  = data['materials'][data['wheel']    ['material']]
