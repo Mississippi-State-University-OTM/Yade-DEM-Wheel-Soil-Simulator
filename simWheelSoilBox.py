@@ -284,7 +284,7 @@ def liveDataOut(bodyID):
     else:
         f = open("Data_Output.csv", "a")
 
-    f.write(f"{O.time:.4f},{x:.4g},{y:.4g},{z:.4g},{fx:.6g},{fy:.6g},{fz:.6g},"
+    f.write(f"{O.time:.4f},{x:.4f},{y:.4f},{z:.4f},{fx:.6g},{fy:.6g},{fz:.6g},"
             f"{tx:.6g},{ty:.6g},{tz:.6g},{vx:.6g},{vy:.6g},{vz:.6g},"
             f"{wx:.6g},{wy:.6g},{wz:.6g},{slip:.6g}\n")
 
@@ -352,14 +352,14 @@ def exportDUMP(filename, append=False):
             typ = b.material.id
             f.write(
                 f"{b.id} {typ} "
-                f"{x:.4g} {y:.4g} {z:.4g} "
+                f"{x:.4f} {y:.4f} {z:.4f} "
                 f"{vx:.6g} {vy:.6g} {vz:.6g} "
-                f"{r:.3g} "
+                f"{r:.4f} "
                 f"{fx:.6g} {fy:.6g} {fz:.6g} "
                 f"{wx:.6g} {wy:.6g} {wz:.6g}\n"
             )
         else:
-            f.write(f"{b.id} {x:.4g} {y:.4g} {z:.4g} {r:.3g}\n")
+            f.write(f"{b.id} {x:.4f} {y:.4f} {z:.4f} {r:.4f}\n")
     f.close()
 
 
