@@ -257,17 +257,27 @@ prescribed slip condition, both `vx` and `wy` to be constrained and
 set to a desired value. The wheel is allowed to move freely in the
 z-direction.
 
-## YADE 3D Display Keyboard Shortcuts
+## YADE 3D Display Keyboard and Mouse Shortcuts
 
-- `z`: set z-axis up
+Keyboard:
+
+- `Z`: set z-axis up, x-axis right
+- `z`: set z-axis up, y-axis right
 - `x`: set x-axis up
 - `c`: center view
 - `o`: zoom in
 - `p`: zoom out
+- `t`: toggle perspective view
+
+Mouse:
+
+- `Left`: rotate
+- `Left Double-click`: align the view with nearest axes
+- `Middle`: zoom
+- `Right`: drag
 
 To see all available shortcuts, set focus on the 3D display window and
-press `h`. Double-click the 3D display window to align the view with
-nearest axes.
+press `h`.
 
 ## Post-processing
 
