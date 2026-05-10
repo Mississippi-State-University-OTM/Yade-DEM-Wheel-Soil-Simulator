@@ -59,8 +59,12 @@ def set_nested(data, path, value):
     d[keys[-1]] = value
 
 # Helper function that creates material by calling Yade function FrictMat()
-def createFrictMaterial(params, labelarg):
-    return FrictMat(density       = params['density'],
+def createFrictMaterial(params, labelarg, setDensity=False):
+    if setDensity:
+        density_value = params['density']  # used for particles
+    else:
+        density_value = 0.0                # not needed for wheel and walls
+    return FrictMat(density       = density_value,
                     young         = params['young'],
                     poisson       = params['poisson'],
                     frictionAngle = params['frictionAngle'],
@@ -493,7 +497,7 @@ matSphereParams = data['materials'][data['particles']['material']]
 matBoxParams    = data['materials'][data['box'      ]['material']]
 # Create materials, mark them with labels
 matWheel  = createFrictMaterial(matWheelParams, "wheelmat")
-matSphere = createFrictMaterial(matSphereParams, "mat1")
+matSphere = createFrictMaterial(matSphereParams, "mat1", setDensity=True)
 # set sphere friction to zero for settling only, restore when the wheel is set in motion
 sphereFrictionAngle = matSphere.frictionAngle  # store the value before setting to zero
 matSphere.frictionAngle = 0.0
